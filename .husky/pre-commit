@@ -1,0 +1,2 @@
+yarn run prepare
+yarn run prettier-format
