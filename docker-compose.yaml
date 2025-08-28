@@ -1,0 +1,61 @@
+name: ritual-dev
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ritual_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "${PG_HOST_PORT}:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks: [stack]
+    profiles: ["infrastructure"]
+
+  redis:
+    image: redis:7-alpine
+    container_name: ritual_redis
+    command: ["redis-server", "--appendonly", "yes"]
+    restart: unless-stopped
+    ports:
+      - "${REDIS_HOST_PORT}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks: [stack]
+    profiles: ["infrastructure"]
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: ritual_mailhog
+    restart: unless-stopped
+    ports:
+      - "${MAILHOG_SMTP_PORT}:1025"  # SMTP
+      - "${MAILHOG_UI_PORT}:8025"    # Web UI
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "1025"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks: [stack]
+    profiles: ["infrastructure"]
+
+networks:
+  stack:
+    driver: bridge
+
+volumes:
+  pg_data:
+  redis_data:
