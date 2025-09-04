@@ -7,7 +7,6 @@ import { performance as perf } from 'node:perf_hooks';
 const now = () => (typeof perf?.now === 'function' ? perf.now() : Date.now());
 
 @Injectable()
-@Injectable()
 export class HealthService {
   constructor(private readonly configurationService: ConfigurationService) {}
 

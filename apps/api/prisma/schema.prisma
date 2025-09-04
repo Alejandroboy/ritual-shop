@@ -1,0 +1,337 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  // output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ====== ENUMS ======
+
+/// Семейство продукта (материал/технология)
+enum Material {
+  CERMET // Металлокерамика
+  WHITE_CERAMIC_GRANITE // Белый керамогранит
+  BLACK_CERAMIC_GRANITE // Черный керамогранит
+  GLASS // Стекло
+  GROWTH_PHOTOCERAMICS // Ростовая фотокерамика (на глазурованном керамограните)
+  ENGRAVING // Гравировка на камне (черный камень)
+}
+
+/// Форма заготовки
+enum Shape {
+  RECTANGLE
+  OVAL
+  ARCH
+  STAR
+  HEART
+}
+
+/// Ориентация изделия (для прямоугольников и части фигурных)
+enum Orientation {
+  VERTICAL
+  HORIZONTAL
+}
+
+/// Цветность шаблона
+enum ColorMode {
+  BW // черно-белая
+  COLOR // цветная
+}
+
+/// Покрытие/заливка фона
+enum Coverage {
+  NORMAL // без полной затяжки
+  FULL_WRAP // полная затяжка (фон на всю заготовку)
+}
+
+/// Схема отверстий
+enum HolePattern {
+  NONE
+  TWO_HORIZONTAL // 2 отверстия по горизонтали
+  TWO_VERTICAL // 2 отверстия по вертикали
+  FOUR_CORNERS // 4 по углам
+}
+
+/// Поверхность для тех семейств, где это важно
+enum Finish {
+  MATTE
+  GLOSS
+}
+
+/// Тип файла, связанного с позицией заказа
+enum AssetKind {
+  PHOTO
+  REFERENCE
+  DOCUMENT
+}
+
+// ====== СПРАВОЧНИКИ ======
+
+/// Размеры изделий в сантиметрах (целые, как в каталоге)
+model Size {
+  id       Int    @id @default(autoincrement())
+  widthCm  Int
+  heightCm Int
+  label    String // "13×19", "20×30" и т.д.
+
+  // связи
+  allowedForTemplates TemplateSize[]
+  OrderItem           OrderItem[]
+
+  @@unique([widthCm, heightCm])
+  @@index([heightCm, widthCm])
+}
+
+/// Виды рамок (1–6 для металлокерамики)
+model Frame {
+  id   Int    @id @default(autoincrement())
+  code Int    @unique // 1..6 как в каталоге
+  name String
+
+  allowedForTemplates TemplateFrame[]
+  OrderItem           OrderItem[]
+}
+
+/// Фоны (1–36, 100 белый, 200 черный)
+model Background {
+  id   Int    @id @default(autoincrement())
+  code Int    @unique
+  name String
+
+  allowedForTemplates TemplateBackground[]
+  OrderItem           OrderItem[]
+}
+
+// ====== КАТАЛОГ ШАБЛОНОВ ======
+
+/// Шаблон позиции каталога (T1, T1ц, Т14, A5ц, К4 овал, Ст4ц овал, КЧ1, Г3 и т.п.)
+model Template {
+  id    String @id @default(cuid())
+  /// Машинный код без пробелов (slug), напр.: "T1", "T1c", "K4_oval", "St4c_oval", "KCh1", "G3"
+  code  String @unique
+  /// Человеческий код как в каталоге, напр.: "Т1ц", "К4 овал", "Ст4ц овал"
+  label String
+
+  material      Material
+  shape       Shape
+  orientation Orientation? // для форм, где есть ориентация
+  colorMode   ColorMode
+  coverage    Coverage     @default(NORMAL)
+
+  // Поведенческие флаги
+  supportsFrame      Boolean @default(false)
+  requiresBackground Boolean @default(false) // напр., стекло — обязательно; белый керамогранит — обычно есть; черный/гравировка — нет
+  requiresFinish     Boolean @default(false) // белый и черный керамогранит; ростовая — только глянец (см. allowedFinishes)
+  supportsHoles      Boolean @default(true)
+
+  // Состав (кол-во персон на изображении)
+  personsMin Int @default(1)
+  personsMax Int @default(1)
+
+  notes String?
+
+  // Разрешенные опции для данного шаблона
+  allowedSizes       TemplateSize[]
+  allowedHoles       TemplateHole[]
+  allowedFrames      TemplateFrame[]
+  allowedBackgrounds TemplateBackground[]
+  allowedFinishes    TemplateFinish[]
+
+  // Связь с заказами
+  items OrderItem[]
+
+  // связь с вариантами
+  variants      TemplateVariant[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([material, shape])
+  @@index([colorMode])
+}
+
+/// m:n — какие размеры доступны конкретному шаблону
+model TemplateSize {
+  templateId String
+  sizeId     Int
+
+  template Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  size     Size     @relation(fields: [sizeId], references: [id], onDelete: Restrict)
+
+  @@id([templateId, sizeId])
+}
+
+/// m:n — какие схемы отверстий доступны шаблону
+model TemplateHole {
+  templateId String
+  pattern    HolePattern
+
+  template Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@id([templateId, pattern])
+}
+
+/// m:n — какие рамки доступны шаблону (актуально для металлокерамики прямоугольных табличек)
+model TemplateFrame {
+  templateId String
+  frameId    Int
+
+  template Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  frame    Frame    @relation(fields: [frameId], references: [id], onDelete: Restrict)
+
+  @@id([templateId, frameId])
+}
+
+/// m:n — какие фоны разрешены для шаблона
+model TemplateBackground {
+  templateId   String
+  backgroundId Int
+
+  template   Template   @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  background Background @relation(fields: [backgroundId], references: [id], onDelete: Restrict)
+
+  @@id([templateId, backgroundId])
+}
+
+/// m:n — какие финиши (мат/глянец) допустимы для шаблона
+model TemplateFinish {
+  templateId String
+  finish     Finish
+
+  template Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@id([templateId, finish])
+}
+
+model TemplateVariant {
+  // составной ключ: один вариант на один holePattern внутри шаблона
+  templateId   String
+  holePattern  HolePattern
+
+  template     Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  // атрибуты варианта
+  finishRequired Boolean   @default(false)
+
+  // если есть разрешённые покрытия/финиши — пример явной M2M со связной таблицей:
+  allowedFinishes TemplateVariantFinish[]
+
+  @@id([templateId, holePattern]) // даст where: { templateId_holePattern: { ... } }
+}
+
+model FinishVariant {
+  id    Int    @id @default(autoincrement())
+  code  String @unique
+  label String
+  variants TemplateVariantFinish[]
+}
+
+model TemplateVariantFinish {
+  templateId  String
+  holePattern HolePattern
+  finishId    Int
+
+  variant TemplateVariant @relation(fields: [templateId, holePattern], references: [templateId, holePattern], onDelete: Cascade)
+  finish  FinishVariant          @relation(fields: [finishId], references: [id], onDelete: Cascade)
+
+  @@id([templateId, holePattern, finishId])
+}
+
+// ====== ЗАКАЗЫ ======
+
+model Order {
+  id            String    @id @default(cuid())
+  number        String    @unique
+  customerName  String?
+  customerPhone String?
+  intakePoint   String? // пункт приема
+  delivery      String? // самовывоз/доставка
+  intakeDate    DateTime? // дата приема (из бланка)
+  approveNeeded Boolean   @default(false)
+
+  items OrderItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// Позиция заказа (конкретный шаблон с выбранными опциями)
+model OrderItem {
+  id         String @id @default(cuid())
+  orderId    String
+  templateId String
+
+  // выбранные параметры
+  sizeId       Int?
+  holePattern  HolePattern?
+  frameId      Int?
+  backgroundId Int?
+  finish       Finish?
+  comment      String?
+
+  // для внутренней валидации можно хранить слепок кода/лейбла (на случай изменения справочников)
+  templateCode  String
+  templateLabel String
+
+  order    Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  template Template @relation(fields: [templateId], references: [id], onDelete: Restrict)
+
+  size       Size?       @relation(fields: [sizeId], references: [id], onDelete: Restrict)
+  frame      Frame?      @relation(fields: [frameId], references: [id], onDelete: Restrict)
+  background Background? @relation(fields: [backgroundId], references: [id], onDelete: Restrict)
+
+  persons OrderItemPerson[]
+  assets  Asset[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([orderId])
+  @@index([templateId])
+  @@index([sizeId])
+  @@index([frameId])
+  @@index([backgroundId])
+}
+
+/// Персоналии для позиции (ФИО и даты)
+model OrderItemPerson {
+  id     String @id @default(cuid())
+  itemId String
+
+  lastName   String?
+  firstName  String?
+  middleName String?
+
+  birthDate DateTime?
+  deathDate DateTime?
+
+  item OrderItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@index([itemId])
+}
+
+/// Файлы (фото/рефы/документы) по позиции
+model Asset {
+  id       String    @id @default(cuid())
+  itemId   String
+  kind     AssetKind
+  filename String
+  url      String? // S3/MinIO/локальный путь
+  primary  Boolean   @default(false)
+  note     String?
+
+  item OrderItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([itemId])
+}
