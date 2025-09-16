@@ -11,10 +11,22 @@ type ErrorsByItem = Record<string, string | null>;
 const ACCEPTED = ['image/png', 'image/jpeg', 'image/webp', 'application/pdf'];
 const MAX_FILES = 8;
 const MAX_SIZE = 15 * 1024 * 1024; // 15MB
+
+type OrderDetails = {
+  id: string;
+  items: {
+    id: string;
+    templateLabel: string;
+    templateCode: string;
+    size: {
+      label: string;
+    };
+  }[];
+};
 export default function CheckoutPage() {
   const router = useRouter();
   const [orderId, setOrderId] = useState<string | null>(null);
-  const [orderDetails, setOrderDetails] = useState<unknown | null>(null);
+  const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null);
   const [filesByItem, setFilesByItem] = useState<FilesByItem>({});
   const [progressByItem, setProgressByItem] = useState<ProgressByItem>({});
   const [errorsByItem, setErrorsByItem] = useState<ErrorsByItem>({});
@@ -90,7 +102,7 @@ export default function CheckoutPage() {
       const xhr = new XMLHttpRequest();
       xhr.open(
         'POST',
-        `${API_BASE}/order-items/${orderDetails.id}/items/${itemId}/assets`,
+        `${API_BASE}/order-items/${orderDetails?.id}/items/${itemId}/assets`,
       );
       xhr.onload = () => {
         if (xhr.status >= 200 && xhr.status < 300) resolve();
@@ -113,7 +125,7 @@ export default function CheckoutPage() {
     console.log('getOrderDetails orderId', idStr);
     if (idStr) {
       try {
-        const data = await api(`${API_BASE}/orders/${idStr}`);
+        const data = await api<OrderDetails>(`${API_BASE}/orders/${idStr}`);
         console.log('getOrderDetails', data);
         setOrderDetails(data);
       } catch (e) {

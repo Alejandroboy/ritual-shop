@@ -15,21 +15,21 @@ export const dynamic = 'force-dynamic'; // на всякий
 export default async function CatalogPage({
   searchParams,
 }: {
-  searchParams: Record<string, string | undefined>;
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const q = new URLSearchParams();
-  for (const k of [
-    'material',
-    'shape',
-    'orientation',
-    'colorMode',
-    'coverage',
-    'page',
-    'pageSize',
-  ]) {
-    const v = searchParams[k];
-    if (v) q.set(k, v);
-  }
+  // for (const k of [
+  //   'material',
+  //   'shape',
+  //   'orientation',
+  //   'colorMode',
+  //   'coverage',
+  //   'page',
+  //   'pageSize',
+  // ]) {
+  //   const v = searchParams && (await searchParams[k]);
+  //   if (v) q.set(k, v);
+  // }
   if (!q.has('pageSize')) q.set('pageSize', '24');
   const API_BASE = getApiBase();
 

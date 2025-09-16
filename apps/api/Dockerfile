@@ -11,7 +11,7 @@ RUN corepack enable && corepack prepare yarn@stable --activate
 COPY package.json yarn.lock .yarnrc.yml ./
 COPY apps/api/package.json apps/api/package.json
 COPY apps/web/package.json apps/web/package.json
-COPY prisma ./prisma
+COPY apps/api/prisma ./prisma
 
 
 # Install deps for all workspaces

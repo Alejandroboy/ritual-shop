@@ -4,10 +4,10 @@ import AddToOrderForm from '../../../components/add-to-order-form';
 export default async function TemplatePage({
   params,
 }: {
-  params: { code: string };
+  params: Promise<{ code: string }>;
 }) {
   const tpl = await api<TemplateDetails>(
-    `/catalog/templates/${encodeURIComponent(params.code)}`,
+    `/catalog/templates/${encodeURIComponent((await params).code)}`,
   );
   return (
     <div className="space-y-6">
