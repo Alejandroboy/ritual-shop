@@ -1,3 +1,4 @@
+version: "3.9"
 name: ritual-dev
 services:
   db:
@@ -10,30 +11,34 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB" ]
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB -h 127.0.0.1"]
       interval: 10s
       timeout: 5s
       retries: 10
+      start_period: 5s
+
   redis:
     image: redis:7-alpine
     restart: always
-    command: [ "redis-server", "--appendonly", "yes" ]
+    command: ["redis-server", "--appendonly", "yes"]
     volumes:
       - redis_data:/data
     healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
+      test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 10
+
   mailhog:
     image: mailhog/mailhog:v1.0.1
     restart: always
     ports:
-      - "127.0.0.1:8025:8025" # UI доступен на сервере по http://127.0.0.1:8025
+      - "127.0.0.1:8025:8025" # UI только локально (доступ через SSH-туннель)
     environment:
       MH_UI_BIND_ADDR: 0.0.0.0:8025
       MH_API_BIND_ADDR: 0.0.0.0:8025
       MH_SMTP_BIND_ADDR: 0.0.0.0:1025
+
   api:
     build:
       context: .
@@ -43,7 +48,6 @@ services:
     environment:
       PORT: 3001
       UPLOADS_ROOT: /uploads
-      # Redis / SMTP прокидываем внутрь контейнера
       REDIS_URL: ${REDIS_URL}
       SMTP_HOST: ${SMTP_HOST}
       SMTP_PORT: ${SMTP_PORT}
@@ -61,10 +65,12 @@ services:
     volumes:
       - uploads:/uploads
     healthcheck:
-      test: [ "CMD", "wget", "-qO-", "http://localhost:3001/health" ]
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3001/health || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 20
+      start_period: 15s
+
   web:
     build:
       context: .
@@ -76,10 +82,12 @@ services:
     depends_on:
       - api
     healthcheck:
-      test: [ "CMD", "wget", "-qO-", "http://localhost:3000" ]
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000 || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 20
+      start_period: 15s
+
   caddy:
     image: caddy:2.8
     restart: always
@@ -93,9 +101,10 @@ services:
     depends_on:
       - web
       - api
+
 volumes:
-db_data:
-uploads:
-redis_data:
-caddy_data:
-caddy_config:
+  db_data: {}
+  uploads: {}
+  redis_data: {}
+  caddy_data: {}
+  caddy_config: {}
