@@ -1,12 +1,33 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-// import config from '@repo/config';
+import { setupAdmin } from './admin/admin';
+import { mkdirSync } from 'fs';
+import { join, resolve } from 'path';
+
+function ensureUploadsDirs() {
+  // Лучше абсолютный путь: либо из ENV, либо из cwd
+  const root = process.env.UPLOADS_DIR
+    ? resolve(process.env.UPLOADS_DIR)
+    : join(process.cwd(), 'uploads');
+
+  // создаём uploads и uploads/orders
+  mkdirSync(root, { recursive: true });
+  mkdirSync(join(root, 'orders'), { recursive: true });
+
+  process.env.UPLOADS_DIR = root; // чтобы везде был один и тот же путь
+  // короткий лог для контроля
+  console.log('[UPLOADS] root:', root);
+}
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  // const cfg = config();
+  app.setGlobalPrefix('api'); // без ведущего слэша
+  app.enableCors({ origin: 'http://localhost:3000', credentials: true });
+
+  await setupAdmin(app);
+  ensureUploadsDirs();
+
   await app.listen(3001);
-  // eslint-disable-next-line no-console
-  console.log(`API listening on http://localhost:${3001}`);
+  console.log(`API listening on http://localhost:3001`);
 }
 bootstrap();

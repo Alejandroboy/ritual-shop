@@ -11,22 +11,45 @@ import { HealthService } from './health/health.service';
 import { CatalogModule } from './catalog/catalog.module';
 import { CatalogController } from './catalog/catalog.controller';
 import { CatalogService } from './catalog/catalog.service';
-import { PrismaService } from './prisma.service';
+import { PrismaService } from './prisma/prisma.service';
+import { OrdersModule } from './orders/orders.module';
+// import { AdminModule } from './admin/admin.module';
+import { PrismaModule } from './prisma/prisma.module';
+import { OrderItemsModule } from './order-items/order-items.module';
+import { MailerService } from './shared/mailer.service';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join, resolve } from 'path';
 
 @Module({
-  imports: [ConfigurationModule, EmailModule, HealthModule, CatalogModule],
-  controllers: [
-    AppController,
-    EmailController,
-    HealthController,
-    CatalogController,
+  imports: [
+    // AdminModule,
+    CatalogModule,
+    ConfigurationModule,
+    EmailModule,
+    HealthModule,
+    OrdersModule,
+    PrismaModule,
+    ServeStaticModule.forRoot({
+      rootPath: process.env.UPLOADS_DIR
+        ? resolve(process.env.UPLOADS_DIR)
+        : join(process.cwd(), 'uploads'),
+      serveRoot: '/uploads',
+    }),
+    OrderItemsModule,
   ],
+  // controllers: [
+  //   AppController,
+  //   EmailController,
+  //   HealthController,
+  //   CatalogController,
+  // ],
   providers: [
-    AppService,
-    EmailService,
-    HealthService,
-    CatalogService,
-    PrismaService,
+    MailerService,
+    //   AppService,
+    //   EmailService,
+    //   HealthService,
+    //   CatalogService,
+    //   PrismaService,
   ],
 })
 export class AppModule {}
