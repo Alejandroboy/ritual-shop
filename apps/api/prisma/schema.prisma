@@ -74,6 +74,15 @@ enum AssetKind {
   DOCUMENT
 }
 
+enum OrderStatus {
+  DRAFT
+  ACCEPTED
+  IN_PROGRESS
+  APPROVAL
+  SENT
+  READY
+}
+
 // ====== СПРАВОЧНИКИ ======
 
 /// Размеры изделий в сантиметрах (целые, как в каталоге)
@@ -253,10 +262,13 @@ model Order {
   number        String    @unique
   customerName  String?
   customerPhone String?
+  customerEmail String?
   intakePoint   String? // пункт приема
   delivery      String? // самовывоз/доставка
   intakeDate    DateTime? // дата приема (из бланка)
   approveNeeded Boolean   @default(false)
+  orderStatus   OrderStatus @default(DRAFT)
+  orderNumber   String? @unique
 
   items OrderItem[]
 
@@ -328,6 +340,8 @@ model Asset {
   url      String? // S3/MinIO/локальный путь
   primary  Boolean   @default(false)
   note     String?
+  size     Int?
+  mime     String?
 
   item OrderItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
 

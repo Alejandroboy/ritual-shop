@@ -1,0 +1,43 @@
+import { api, type TemplateDetails } from '../../../../api';
+import AddToOrderForm from '../../../components/add-to-order-form';
+
+export default async function TemplatePage({
+  params,
+}: {
+  params: { code: string };
+}) {
+  const tpl = await api<TemplateDetails>(
+    `/catalog/templates/${encodeURIComponent(params.code)}`,
+  );
+  return (
+    <div className="space-y-6">
+      <div>
+        <div className="text-sm text-neutral-500">{tpl.code}</div>
+        <h1 className="text-2xl font-semibold">{tpl.label}</h1>
+        <div className="text-sm text-neutral-600">
+          {tpl.material} · {tpl.shape}
+          {tpl.orientation ? ` · ${tpl.orientation}` : ''} · {tpl.colorMode}
+          {tpl.coverage === 'FULL_WRAP' ? ' · полная затяжка' : ''}
+        </div>
+      </div>
+
+      <AddToOrderForm tpl={tpl} />
+
+      <section className="text-sm text-neutral-700">
+        <h2 className="font-medium mb-2">Доступные опции</h2>
+        <ul className="list-disc ml-5 space-y-1">
+          <li>Размеры: {tpl.sizes.map((s) => s.label).join(', ') || '—'}</li>
+          <li>Отверстия: {tpl.holes.join(', ') || '—'}</li>
+          {tpl.supportsFrame && (
+            <li>Рамки: {tpl.frames.map((f) => f.code).join(', ') || '—'}</li>
+          )}
+          {tpl.requiresBackground && (
+            <li>
+              Фоны: {tpl.backgrounds.map((b) => b.code).join(', ') || '—'}
+            </li>
+          )}
+        </ul>
+      </section>
+    </div>
+  );
+}

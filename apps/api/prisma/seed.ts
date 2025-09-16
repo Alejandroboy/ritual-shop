@@ -12,7 +12,7 @@ import {
 
 const prisma = new PrismaClient({ log: ['warn', 'error'] });
 
-// ---------- helpers
+// ========= helpers (size parsing / upserts)
 
 const toLabel = (w: number, h: number) => `${w}×${h} см`;
 const parseSize = (s: string) => {
@@ -29,112 +29,368 @@ async function upsertSize(code: string) {
   });
 }
 
-async function connectSizesByCodes(codes: string[]) {
-  // Prisma не умеет IN по композитному ключу, поэтому забираем через OR:
-  const pairs = codes.map(parseSize);
+async function findSizeIds(sizeCodes: string[]) {
+  const pairs = sizeCodes.map(parseSize);
   const sizes = await prisma.size.findMany({
     where: {
       OR: pairs.map((p) => ({ widthCm: p.widthCm, heightCm: p.heightCm })),
     },
+    select: { id: true },
   });
-  return sizes.map((s) => ({ sizeId: s.id }));
+  return sizes.map((s) => s.id);
 }
 
-async function connectFramesByCodes(codes: number[]) {
-  const frames = await prisma.frame.findMany({
-    where: { code: { in: codes } },
-  });
-  return frames.map((f) => ({ frameId: f.id }));
+// ========= dictionaries to seed
+
+const SIZES = {
+  RECT_SMALL: ['13x18', '15x20', '20x25', '20x30', '25x30', '30x40'],
+  RECT_TALL: ['30x60', '40x60', '50x70', '50x80'],
+  RECT_CERMET: ['13x19', '17x22'],
+  OVAL_COMMON_V: ['9x12', '11x15', '13x18', '15x20', '18x24', '20x25'],
+  OVAL_COMMON_H: ['12x9', '15x11', '18x13', '20x15', '24x18', '25x20'],
+  ARCH_WHITE: ['20x25', '20x30', '25x30', '30x40'],
+  GROWTH: ['40x60', '50x70', '50x80', '55x80', '50x100', '60x100', '60x120'],
+};
+
+const FRAMES = [1, 2, 3, 4, 5, 6];
+const BACKGROUNDS = [
+  // 1..36 + белый(100) и чёрный(200)
+  ...Array.from({ length: 36 }, (_, i) => i + 1),
+  100,
+  200,
+];
+
+// ========= high-level catalog DSL
+
+type FamilyBase = {
+  codePrefix: string; // префикс кода (уникальный в рамках семейства)
+  labelPrefix: string; // префикс отображаемого кода (для зрительного отличия)
+  material: Material;
+  shape: Shape;
+  colorModes: ColorMode[]; // [BW], [COLOR], либо обе
+  orientations?: Orientation[]; // для прямоугольников/овалов
+  coverage?: Coverage; // NORMAL | FULL_WRAP
+  supportsFrame?: boolean;
+  requiresBackground?: boolean;
+  requiresFinish?: boolean;
+  variantFinishes?: Finish[]; // если finish обязателен — какие варианты допустимы у Variants
+  templateFinishes?: Finish[]; // допустимые финиши на уровне Template (enum Finish)
+  holesByOrientation?: Partial<Record<Orientation, HolePattern[]>>;
+  holes?: HolePattern[]; // если у формы нет ориентации
+  sizeCodesByOrientation?: Partial<Record<Orientation, string[]>>;
+  sizeCodes?: string[]; // если у формы нет ориентации
+  frameCodes?: number[]; // 1..6 (для металлокерамики)
+  backgroundCodes?: number[]; // допустимые фоны
+};
+
+function familyRectCermet(codePrefix: string, labelPrefix: string): FamilyBase {
+  return {
+    codePrefix,
+    labelPrefix,
+    material: Material.CERMET,
+    shape: Shape.RECTANGLE,
+    colorModes: [ColorMode.BW, ColorMode.COLOR],
+    orientations: [Orientation.VERTICAL, Orientation.HORIZONTAL],
+    supportsFrame: true,
+    requiresBackground: false,
+    requiresFinish: false,
+    holesByOrientation: {
+      [Orientation.VERTICAL]: [
+        HolePattern.NONE,
+        HolePattern.TWO_VERTICAL,
+        HolePattern.FOUR_CORNERS,
+      ],
+      [Orientation.HORIZONTAL]: [
+        HolePattern.NONE,
+        HolePattern.TWO_HORIZONTAL,
+        HolePattern.FOUR_CORNERS,
+      ],
+    },
+    sizeCodesByOrientation: {
+      [Orientation.VERTICAL]: SIZES.RECT_CERMET,
+      [Orientation.HORIZONTAL]: SIZES.RECT_CERMET.map((s) =>
+        s.split('x').reverse().join('x'),
+      ), // автоповорот
+    },
+    frameCodes: FRAMES,
+    backgroundCodes: [1, 2, 4, 5, 7, 10, 12, 13, 21, 23, 31, 32, 34, 36], // пример подкаталога
+  };
 }
 
-async function connectBackgroundsByCodes(codes: number[]) {
-  const bgs = await prisma.background.findMany({
-    where: { code: { in: codes } },
-  });
-  return bgs.map((bg) => ({ backgroundId: bg.id }));
+function familyOvalCermet(codePrefix: string, labelPrefix: string): FamilyBase {
+  return {
+    codePrefix,
+    labelPrefix,
+    material: Material.CERMET,
+    shape: Shape.OVAL,
+    colorModes: [ColorMode.BW, ColorMode.COLOR],
+    orientations: [Orientation.VERTICAL, Orientation.HORIZONTAL],
+    supportsFrame: true, // в каталоге есть «рамки» для овалов
+    holesByOrientation: {
+      [Orientation.VERTICAL]: [HolePattern.NONE, HolePattern.TWO_VERTICAL],
+      [Orientation.HORIZONTAL]: [HolePattern.NONE, HolePattern.TWO_HORIZONTAL],
+    },
+    sizeCodesByOrientation: {
+      [Orientation.VERTICAL]: SIZES.OVAL_COMMON_V,
+      [Orientation.HORIZONTAL]: SIZES.OVAL_COMMON_H,
+    },
+    frameCodes: FRAMES,
+    backgroundCodes: BACKGROUNDS, // овалы часто с фонами
+  };
 }
 
-// ---------- seed: dictionaries
-
-async function seedSizes() {
-  // Базовые размеры + ростовые
-  const rect = [
-    '13x18',
-    '15x20',
-    '20x25',
-    '20x30',
-    '25x30',
-    '30x40',
-    '30x60',
-    // металлокерамика прямоуг. из каталога
-    '13x19',
-    '17x22',
-    // ростовая
-    '40x60',
-    '50x70',
-    '50x80',
-    '55x80',
-    '50x100',
-    '60x100',
-    '60x120',
-  ];
-  const uniq = Array.from(new Set(rect));
-  await Promise.all(uniq.map(upsertSize));
-  console.log(`✓ Sizes: ${uniq.length}`);
+function familyRectWhite(
+  codePrefix: string,
+  labelPrefix: string,
+  fullWrap = false,
+): FamilyBase {
+  return {
+    codePrefix,
+    labelPrefix,
+    material: Material.WHITE_CERAMIC_GRANITE,
+    shape: Shape.RECTANGLE,
+    colorModes: [ColorMode.BW, ColorMode.COLOR],
+    orientations: [Orientation.VERTICAL, Orientation.HORIZONTAL],
+    requiresBackground: true,
+    requiresFinish: true,
+    templateFinishes: [Finish.MATTE, Finish.GLOSS],
+    variantFinishes: [Finish.MATTE, Finish.GLOSS],
+    coverage: fullWrap ? Coverage.FULL_WRAP : Coverage.NORMAL,
+    holesByOrientation: {
+      [Orientation.VERTICAL]: [
+        HolePattern.NONE,
+        HolePattern.TWO_VERTICAL,
+        HolePattern.FOUR_CORNERS,
+      ],
+      [Orientation.HORIZONTAL]: [
+        HolePattern.NONE,
+        HolePattern.TWO_HORIZONTAL,
+        HolePattern.FOUR_CORNERS,
+      ],
+    },
+    sizeCodesByOrientation: {
+      [Orientation.VERTICAL]: [...SIZES.RECT_SMALL, ...SIZES.RECT_TALL],
+      [Orientation.HORIZONTAL]: [...SIZES.RECT_SMALL, ...SIZES.RECT_TALL].map(
+        (s) => s.split('x').reverse().join('x'),
+      ),
+    },
+    backgroundCodes: BACKGROUNDS,
+  };
 }
 
-async function seedFrames() {
-  const list = [
-    { code: 1, name: 'Рамка 1' },
-    { code: 2, name: 'Рамка 2' },
-    { code: 3, name: 'Рамка 3' },
-    { code: 4, name: 'Рамка 4' },
-    { code: 5, name: 'Рамка 5' },
-    { code: 6, name: 'Рамка 6' },
-  ];
-  for (const f of list) {
-    await prisma.frame.upsert({
-      where: { code: f.code },
-      update: { name: f.name },
-      create: f,
-    });
-  }
-  console.log(`✓ Frames: ${list.length}`);
+function familyOvalWhite(codePrefix: string, labelPrefix: string): FamilyBase {
+  return {
+    codePrefix,
+    labelPrefix,
+    material: Material.WHITE_CERAMIC_GRANITE,
+    shape: Shape.OVAL,
+    colorModes: [ColorMode.BW, ColorMode.COLOR],
+    orientations: [Orientation.VERTICAL, Orientation.HORIZONTAL],
+    requiresBackground: true,
+    requiresFinish: true,
+    templateFinishes: [Finish.MATTE, Finish.GLOSS],
+    variantFinishes: [Finish.MATTE, Finish.GLOSS],
+    holesByOrientation: {
+      [Orientation.VERTICAL]: [HolePattern.NONE, HolePattern.TWO_VERTICAL],
+      [Orientation.HORIZONTAL]: [HolePattern.NONE, HolePattern.TWO_HORIZONTAL],
+    },
+    sizeCodesByOrientation: {
+      [Orientation.VERTICAL]: SIZES.OVAL_COMMON_V,
+      [Orientation.HORIZONTAL]: SIZES.OVAL_COMMON_H,
+    },
+    backgroundCodes: BACKGROUNDS,
+  };
 }
 
-async function seedBackgrounds() {
-  // 1..36 + 100 белый + 200 черный
-  const base = Array.from({ length: 36 }, (_, i) => i + 1);
-  const extra = [100, 200];
-  const all = [...base, ...extra];
-  for (const code of all) {
-    await prisma.background.upsert({
-      where: { code },
-      update: { name: `Фон ${code}` },
-      create: { code, name: `Фон ${code}` },
-    });
-  }
-  console.log(`✓ Backgrounds: ${all.length}`);
+function familyArchWhite(codePrefix: string, labelPrefix: string): FamilyBase {
+  return {
+    codePrefix,
+    labelPrefix,
+    material: Material.WHITE_CERAMIC_GRANITE,
+    shape: Shape.ARCH,
+    colorModes: [ColorMode.BW, ColorMode.COLOR],
+    orientations: [Orientation.VERTICAL],
+    requiresBackground: true,
+    requiresFinish: true,
+    templateFinishes: [Finish.MATTE, Finish.GLOSS],
+    variantFinishes: [Finish.MATTE, Finish.GLOSS],
+    holesByOrientation: {
+      [Orientation.VERTICAL]: [
+        HolePattern.NONE,
+        HolePattern.TWO_VERTICAL,
+        HolePattern.FOUR_CORNERS,
+      ],
+    },
+    sizeCodesByOrientation: {
+      [Orientation.VERTICAL]: SIZES.ARCH_WHITE,
+    },
+    backgroundCodes: BACKGROUNDS,
+  };
 }
 
-async function seedFinishVariants() {
-  const list = [
-    { code: 'MATTE', label: 'Матовый' },
-    { code: 'GLOSS', label: 'Глянец' },
-  ];
-  for (const f of list) {
-    await prisma.finishVariant.upsert({
-      where: { code: f.code },
-      update: { label: f.label },
-      create: f,
-    });
-  }
-  console.log(`✓ Finish variants: ${list.length}`);
+function familyRectGlass(codePrefix: string, labelPrefix: string): FamilyBase {
+  return {
+    codePrefix,
+    labelPrefix,
+    material: Material.GLASS,
+    shape: Shape.RECTANGLE,
+    colorModes: [ColorMode.BW, ColorMode.COLOR],
+    orientations: [Orientation.VERTICAL, Orientation.HORIZONTAL],
+    requiresBackground: true,
+    requiresFinish: false,
+    holesByOrientation: {
+      [Orientation.VERTICAL]: [
+        HolePattern.NONE,
+        HolePattern.TWO_VERTICAL,
+        HolePattern.FOUR_CORNERS,
+      ],
+      [Orientation.HORIZONTAL]: [
+        HolePattern.NONE,
+        HolePattern.TWO_HORIZONTAL,
+        HolePattern.FOUR_CORNERS,
+      ],
+    },
+    sizeCodesByOrientation: {
+      [Orientation.VERTICAL]: SIZES.RECT_SMALL,
+      [Orientation.HORIZONTAL]: SIZES.RECT_SMALL.map((s) =>
+        s.split('x').reverse().join('x'),
+      ),
+    },
+    backgroundCodes: BACKGROUNDS,
+  };
+}
+function familyOvalGlass(codePrefix: string, labelPrefix: string): FamilyBase {
+  return {
+    codePrefix,
+    labelPrefix,
+    material: Material.GLASS,
+    shape: Shape.OVAL,
+    colorModes: [ColorMode.BW, ColorMode.COLOR],
+    orientations: [Orientation.VERTICAL, Orientation.HORIZONTAL],
+    requiresBackground: true,
+    holesByOrientation: {
+      [Orientation.VERTICAL]: [HolePattern.NONE, HolePattern.TWO_VERTICAL],
+      [Orientation.HORIZONTAL]: [HolePattern.NONE, HolePattern.TWO_HORIZONTAL],
+    },
+    sizeCodesByOrientation: {
+      [Orientation.VERTICAL]: SIZES.OVAL_COMMON_V,
+      [Orientation.HORIZONTAL]: SIZES.OVAL_COMMON_H,
+    },
+    backgroundCodes: BACKGROUNDS,
+  };
+}
+function familyArchGlass(codePrefix: string, labelPrefix: string): FamilyBase {
+  return {
+    codePrefix,
+    labelPrefix,
+    material: Material.GLASS,
+    shape: Shape.ARCH,
+    colorModes: [ColorMode.BW, ColorMode.COLOR],
+    orientations: [Orientation.VERTICAL],
+    requiresBackground: true,
+    holesByOrientation: {
+      [Orientation.VERTICAL]: [
+        HolePattern.NONE,
+        HolePattern.TWO_VERTICAL,
+        HolePattern.FOUR_CORNERS,
+      ],
+    },
+    sizeCodesByOrientation: {
+      [Orientation.VERTICAL]: SIZES.ARCH_WHITE,
+    },
+    backgroundCodes: BACKGROUNDS,
+  };
 }
 
-// ---------- seed: templates
+function familyRectBlack(codePrefix: string, labelPrefix: string): FamilyBase {
+  return {
+    codePrefix,
+    labelPrefix,
+    material: Material.BLACK_CERAMIC_GRANITE,
+    shape: Shape.RECTANGLE,
+    colorModes: [ColorMode.BW], // обычно ч/б
+    orientations: [Orientation.VERTICAL, Orientation.HORIZONTAL],
+    requiresFinish: true,
+    templateFinishes: [Finish.MATTE, Finish.GLOSS],
+    variantFinishes: [Finish.MATTE, Finish.GLOSS],
+    holesByOrientation: {
+      [Orientation.VERTICAL]: [
+        HolePattern.NONE,
+        HolePattern.TWO_VERTICAL,
+        HolePattern.FOUR_CORNERS,
+      ],
+      [Orientation.HORIZONTAL]: [
+        HolePattern.NONE,
+        HolePattern.TWO_HORIZONTAL,
+        HolePattern.FOUR_CORNERS,
+      ],
+    },
+    sizeCodesByOrientation: {
+      [Orientation.VERTICAL]: [...SIZES.RECT_SMALL, ...SIZES.RECT_TALL],
+      [Orientation.HORIZONTAL]: [...SIZES.RECT_SMALL, ...SIZES.RECT_TALL].map(
+        (s) => s.split('x').reverse().join('x'),
+      ),
+    },
+  };
+}
 
-type TemplateInput = {
+function familyGrowth(codePrefix: string, labelPrefix: string): FamilyBase {
+  return {
+    codePrefix,
+    labelPrefix,
+    material: Material.GROWTH_PHOTOCERAMICS,
+    shape: Shape.RECTANGLE,
+    colorModes: [ColorMode.COLOR], // ростовая чаще цвет
+    orientations: [Orientation.VERTICAL, Orientation.HORIZONTAL],
+    requiresFinish: true,
+    templateFinishes: [Finish.GLOSS], // только глянец
+    variantFinishes: [Finish.GLOSS],
+    holesByOrientation: {
+      [Orientation.VERTICAL]: [HolePattern.NONE, HolePattern.TWO_VERTICAL],
+      [Orientation.HORIZONTAL]: [HolePattern.NONE, HolePattern.TWO_HORIZONTAL],
+    },
+    sizeCodesByOrientation: {
+      [Orientation.VERTICAL]: SIZES.GROWTH,
+      [Orientation.HORIZONTAL]: SIZES.GROWTH.map((s) =>
+        s.split('x').reverse().join('x'),
+      ),
+    },
+  };
+}
+
+function familyEngraving(codePrefix: string, labelPrefix: string): FamilyBase {
+  return {
+    codePrefix,
+    labelPrefix,
+    material: Material.ENGRAVING,
+    shape: Shape.RECTANGLE,
+    colorModes: [ColorMode.BW],
+    orientations: [Orientation.VERTICAL, Orientation.HORIZONTAL],
+    requiresFinish: false,
+    holesByOrientation: {
+      [Orientation.VERTICAL]: [
+        HolePattern.NONE,
+        HolePattern.TWO_VERTICAL,
+        HolePattern.FOUR_CORNERS,
+      ],
+      [Orientation.HORIZONTAL]: [
+        HolePattern.NONE,
+        HolePattern.TWO_HORIZONTAL,
+        HolePattern.FOUR_CORNERS,
+      ],
+    },
+    sizeCodesByOrientation: {
+      [Orientation.VERTICAL]: SIZES.RECT_SMALL,
+      [Orientation.HORIZONTAL]: SIZES.RECT_SMALL.map((s) =>
+        s.split('x').reverse().join('x'),
+      ),
+    },
+  };
+}
+
+// ========= template generator
+
+type BuiltTemplate = {
   code: string;
   label: string;
   material: Material;
@@ -145,51 +401,173 @@ type TemplateInput = {
   supportsFrame?: boolean;
   requiresBackground?: boolean;
   requiresFinish?: boolean;
-  supportsHoles?: boolean;
-
-  sizeCodes: string[]; // "13x19", "17x22", ...
-  holePatterns: HolePattern[]; // какие схемы отверстий разрешены
-  frameCodes?: number[]; // 1..6
-  backgroundCodes?: number[]; // 1..36, 100, 200
-  allowedTemplateFinishes?: Finish[]; // для TemplateFinish (enum)
-  variantFinishes?: string[]; // коды FinishVariant для всех вариантов
+  sizeCodes: string[];
+  frameCodes?: number[];
+  backgroundCodes?: number[];
+  holePatterns: HolePattern[];
+  templateFinishes?: Finish[];
+  variantFinishes?: Finish[];
 };
 
-async function addTemplate(input: TemplateInput) {
+function buildTemplates(f: FamilyBase): BuiltTemplate[] {
+  const items: BuiltTemplate[] = [];
+  const orientations = f.orientations ?? [];
+  const holesMap = f.holesByOrientation ?? {};
+  const sizeMap = f.sizeCodesByOrientation ?? {};
+
+  // формы с ориентацией
+  if (orientations.length) {
+    for (const orient of orientations) {
+      for (const cm of f.colorModes) {
+        const suffix =
+          `${f.shape === Shape.OVAL ? 'OV' : f.shape === Shape.ARCH ? 'AR' : 'R'}-` +
+          `${orient === Orientation.VERTICAL ? 'V' : 'H'}-` +
+          `${cm === ColorMode.BW ? 'BW' : 'C'}`;
+
+        const code = `${f.codePrefix}-${suffix}`;
+        const label = `${f.labelPrefix} ${orient === Orientation.VERTICAL ? 'верт.' : 'гор.'} ${cm === ColorMode.BW ? 'ч/б' : 'цвет'}`;
+
+        items.push({
+          code,
+          label,
+          material: f.material,
+          shape: f.shape,
+          orientation: orient,
+          colorMode: cm,
+          coverage: f.coverage ?? Coverage.NORMAL,
+          supportsFrame: !!f.supportsFrame,
+          requiresBackground: !!f.requiresBackground,
+          requiresFinish: !!f.requiresFinish,
+          sizeCodes: sizeMap[orient] ?? [],
+          frameCodes: f.frameCodes,
+          backgroundCodes: f.backgroundCodes,
+          holePatterns: holesMap[orient] ?? [],
+          templateFinishes: f.templateFinishes,
+          variantFinishes: f.variantFinishes,
+        });
+      }
+    }
+  } else {
+    // формы без ориентации
+    for (const cm of f.colorModes) {
+      const suffix =
+        `${f.shape === Shape.OVAL ? 'OV' : f.shape === Shape.ARCH ? 'AR' : 'R'}-` +
+        `${cm === ColorMode.BW ? 'BW' : 'C'}`;
+      const code = `${f.codePrefix}-${suffix}`;
+      const label = `${f.labelPrefix} ${cm === ColorMode.BW ? 'ч/б' : 'цвет'}`;
+      items.push({
+        code,
+        label,
+        material: f.material,
+        shape: f.shape,
+        colorMode: cm,
+        coverage: f.coverage ?? Coverage.NORMAL,
+        supportsFrame: !!f.supportsFrame,
+        requiresBackground: !!f.requiresBackground,
+        requiresFinish: !!f.requiresFinish,
+        sizeCodes: f.sizeCodes ?? [],
+        frameCodes: f.frameCodes,
+        backgroundCodes: f.backgroundCodes,
+        holePatterns: f.holes ?? [],
+        templateFinishes: f.templateFinishes,
+        variantFinishes: f.variantFinishes,
+      });
+    }
+  }
+  return items;
+}
+
+// ========= seeders
+
+async function seedSizes() {
+  const all = new Set<string>([
+    ...SIZES.RECT_SMALL,
+    ...SIZES.RECT_TALL,
+    ...SIZES.RECT_CERMET,
+    ...SIZES.OVAL_COMMON_V,
+    ...SIZES.OVAL_COMMON_H,
+    ...SIZES.ARCH_WHITE,
+    ...SIZES.GROWTH,
+  ]);
+  // автодобавим повернутые для H
+  [...SIZES.RECT_SMALL, ...SIZES.RECT_TALL].forEach((s) =>
+    all.add(s.split('x').reverse().join('x')),
+  );
+  SIZES.OVAL_COMMON_V.forEach((s) => all.add(s)); // V уже есть
+  SIZES.OVAL_COMMON_H.forEach((s) => all.add(s)); // H уже есть
+  await Promise.all([...all].map(upsertSize));
+  console.log(`✓ Sizes: ${all.size}`);
+}
+
+async function seedFrames() {
+  for (const code of FRAMES) {
+    await prisma.frame.upsert({
+      where: { code },
+      update: { name: `Рамка ${code}` },
+      create: { code, name: `Рамка ${code}` },
+    });
+  }
+  console.log(`✓ Frames: ${FRAMES.length}`);
+}
+
+async function seedBackgrounds() {
+  for (const code of BACKGROUNDS) {
+    await prisma.background.upsert({
+      where: { code },
+      update: { name: `Фон ${code}` },
+      create: { code, name: `Фон ${code}` },
+    });
+  }
+  console.log(`✓ Backgrounds: ${BACKGROUNDS.length}`);
+}
+
+async function seedFinishVariants() {
+  for (const f of [
+    { code: 'MATTE', label: 'Матовый' },
+    { code: 'GLOSS', label: 'Глянец' },
+  ]) {
+    await prisma.finishVariant.upsert({
+      where: { code: f.code },
+      update: { label: f.label },
+      create: f,
+    });
+  }
+  console.log('✓ Finish variants: 2');
+}
+
+// низкоуровневый апсертер шаблона + все связи
+async function upsertTemplate(t: BuiltTemplate) {
   const tpl = await prisma.template.upsert({
-    where: { code: input.code },
+    where: { code: t.code },
     update: {
-      label: input.label,
-      material: input.material,
-      shape: input.shape,
-      orientation: input.orientation,
-      colorMode: input.colorMode,
-      coverage: input.coverage ?? Coverage.NORMAL,
-      supportsFrame: input.supportsFrame ?? false,
-      requiresBackground: input.requiresBackground ?? false,
-      requiresFinish: input.requiresFinish ?? false,
-      supportsHoles: input.supportsHoles ?? true,
-      personsMin: 1,
-      personsMax: 1,
+      label: t.label,
+      material: t.material,
+      shape: t.shape,
+      orientation: t.orientation,
+      colorMode: t.colorMode,
+      coverage: t.coverage ?? Coverage.NORMAL,
+      supportsFrame: t.supportsFrame ?? false,
+      requiresBackground: t.requiresBackground ?? false,
+      requiresFinish: t.requiresFinish ?? false,
     },
     create: {
-      code: input.code,
-      label: input.label,
-      material: input.material,
-      shape: input.shape,
-      orientation: input.orientation,
-      colorMode: input.colorMode,
-      coverage: input.coverage ?? Coverage.NORMAL,
-      supportsFrame: input.supportsFrame ?? false,
-      requiresBackground: input.requiresBackground ?? false,
-      requiresFinish: input.requiresFinish ?? false,
-      supportsHoles: input.supportsHoles ?? true,
+      code: t.code,
+      label: t.label,
+      material: t.material,
+      shape: t.shape,
+      orientation: t.orientation,
+      colorMode: t.colorMode,
+      coverage: t.coverage ?? Coverage.NORMAL,
+      supportsFrame: t.supportsFrame ?? false,
+      requiresBackground: t.requiresBackground ?? false,
+      requiresFinish: t.requiresFinish ?? false,
       personsMin: 1,
       personsMax: 1,
     },
+    select: { id: true },
   });
 
-  // очистим все m:n, чтобы «сид переигрывался»
+  // очистим старые связи (чтобы сид был переигрываемым)
   await prisma.$transaction([
     prisma.templateSize.deleteMany({ where: { templateId: tpl.id } }),
     prisma.templateHole.deleteMany({ where: { templateId: tpl.id } }),
@@ -201,190 +579,125 @@ async function addTemplate(input: TemplateInput) {
   ]);
 
   // sizes
-  const sizeLinks = await connectSizesByCodes(input.sizeCodes);
-  if (sizeLinks.length) {
-    await prisma.templateSize.createMany({
-      data: sizeLinks.map((s) => ({
-        templateId: tpl.id,
-        sizeId: s.sizeId,
-      })),
-      skipDuplicates: true,
-    });
-  }
+  const sizeIds = await findSizeIds(t.sizeCodes);
+  await prisma.templateSize.createMany({
+    data: sizeIds.map((sizeId) => ({ templateId: tpl.id, sizeId })),
+    skipDuplicates: true,
+  });
 
   // holes
-  if (input.holePatterns?.length) {
-    await prisma.templateHole.createMany({
-      data: input.holePatterns.map((p) => ({ templateId: tpl.id, pattern: p })),
-      skipDuplicates: true,
-    });
-  }
+  await prisma.templateHole.createMany({
+    data: t.holePatterns.map((pattern) => ({ templateId: tpl.id, pattern })),
+    skipDuplicates: true,
+  });
 
   // frames
-  if (input.frameCodes?.length) {
-    const frameLinks = await connectFramesByCodes(input.frameCodes);
-    if (frameLinks.length) {
-      await prisma.templateFrame.createMany({
-        data: frameLinks.map((s) => ({
-          templateId: tpl.id,
-          frameId: s.frameId,
-        })),
-        skipDuplicates: true,
-      });
-    }
+  if (t.frameCodes?.length) {
+    const frames = await prisma.frame.findMany({
+      where: { code: { in: t.frameCodes } },
+      select: { id: true },
+    });
+    await prisma.templateFrame.createMany({
+      data: frames.map((f) => ({ templateId: tpl.id, frameId: f.id })),
+      skipDuplicates: true,
+    });
   }
 
   // backgrounds
-  if (input.backgroundCodes?.length) {
-    const bgLinks = await connectBackgroundsByCodes(input.backgroundCodes);
-    if (bgLinks.length) {
-      await prisma.templateBackground.createMany({
-        data: bgLinks.map((s) => ({
-          templateId: tpl.id,
-          backgroundId: s.backgroundId,
-        })),
-        skipDuplicates: true,
-      });
-    }
+  if (t.backgroundCodes?.length) {
+    const bgs = await prisma.background.findMany({
+      where: { code: { in: t.backgroundCodes } },
+      select: { id: true },
+    });
+    await prisma.templateBackground.createMany({
+      data: bgs.map((b) => ({ templateId: tpl.id, backgroundId: b.id })),
+      skipDuplicates: true,
+    });
   }
 
-  // template-level finishes (enum Finish)
-  if (input.allowedTemplateFinishes?.length) {
+  // template-level finishes (enum)
+  if (t.templateFinishes?.length) {
     await prisma.templateFinish.createMany({
-      data: input.allowedTemplateFinishes.map((f) => ({
-        templateId: tpl.id,
-        finish: f,
-      })),
+      data: t.templateFinishes.map((f) => ({ templateId: tpl.id, finish: f })),
       skipDuplicates: true,
     });
   }
 
   // variants per hole pattern
-  for (const p of input.holePatterns) {
-    const variant = await prisma.templateVariant.upsert({
+  for (const p of t.holePatterns) {
+    await prisma.templateVariant.upsert({
       where: { templateId_holePattern: { templateId: tpl.id, holePattern: p } },
-      update: { finishRequired: !!input.requiresFinish },
+      update: { finishRequired: !!t.requiresFinish },
       create: {
         templateId: tpl.id,
         holePattern: p,
-        finishRequired: !!input.requiresFinish,
+        finishRequired: !!t.requiresFinish,
       },
     });
 
-    // variant-level finish variants (через справочник FinishVariant)
-    if (input.variantFinishes?.length) {
+    if (t.variantFinishes?.length) {
       const fv = await prisma.finishVariant.findMany({
-        where: { code: { in: input.variantFinishes } },
+        where: { code: { in: t.variantFinishes.map((x) => x) } },
         select: { id: true },
       });
-      if (fv.length) {
-        await prisma.templateVariantFinish.createMany({
-          data: fv.map((x) => ({
-            templateId: tpl.id,
-            holePattern: variant.holePattern,
-            finishId: x.id,
-          })),
-          skipDuplicates: true,
-        });
-      }
+      await prisma.templateVariantFinish.createMany({
+        data: fv.map((x) => ({
+          templateId: tpl.id,
+          holePattern: p,
+          finishId: x.id,
+        })),
+        skipDuplicates: true,
+      });
     }
   }
-
-  return tpl;
 }
 
-async function seedTemplates() {
-  // Металлокерамика, прямоугольник, вертикаль: Т1 (Ч/Б) и Т1ц (цвет)
-  await addTemplate({
-    code: 'T1',
-    label: 'Т1',
-    material: Material.CERMET,
-    shape: Shape.RECTANGLE,
-    orientation: Orientation.VERTICAL,
-    colorMode: ColorMode.BW,
-    supportsFrame: true,
-    requiresBackground: false,
-    requiresFinish: false,
-    sizeCodes: ['13x19', '17x22'],
-    holePatterns: [
-      HolePattern.NONE,
-      HolePattern.TWO_VERTICAL,
-      HolePattern.FOUR_CORNERS,
-    ],
-    frameCodes: [1, 2, 3, 4, 5, 6],
-    backgroundCodes: [1, 2, 7, 5, 4], // любые из справочника
-  });
+async function seedCatalog() {
+  // === ОПИСАНИЕ СЕМЕЙСТВ (можно расширять)
+  const families: FamilyBase[] = [
+    // Металлокерамика: таблички + овалы
+    familyRectCermet('CERM-T', 'Табличка Т'),
+    familyOvalCermet('CERM-O', 'Овал'),
 
-  await addTemplate({
-    code: 'T1c',
-    label: 'Т1ц',
-    material: Material.CERMET,
-    shape: Shape.RECTANGLE,
-    orientation: Orientation.VERTICAL,
-    colorMode: ColorMode.COLOR,
-    supportsFrame: true,
-    sizeCodes: ['13x19', '17x22'],
-    holePatterns: [
-      HolePattern.NONE,
-      HolePattern.TWO_VERTICAL,
-      HolePattern.FOUR_CORNERS,
-    ],
-    frameCodes: [1, 2, 3, 4, 5, 6],
-    backgroundCodes: [1, 2, 7, 5, 4],
-  });
+    // Белый керамогранит: прям/овал/арка, обычные и «полная затяжка»
+    familyRectWhite('WCG-T', 'Керамогранит бел. табличка', false),
+    familyRectWhite('WCG-TF', 'Керамогранит бел. табличка полная', true),
+    familyOvalWhite('WCG-O', 'Керамогранит бел. овал'),
+    familyArchWhite('WCG-A', 'Керамогранит бел. арка'),
 
-  // Белый керамогранит, прямоугольник, вертикаль: K1 (Ч/Б) и K1ц (цвет)
-  await addTemplate({
-    code: 'K1',
-    label: 'К1',
-    material: Material.WHITE_CERAMIC_GRANITE,
-    shape: Shape.RECTANGLE,
-    orientation: Orientation.VERTICAL,
-    colorMode: ColorMode.BW,
-    requiresBackground: true,
-    requiresFinish: true,
-    sizeCodes: ['13x18', '15x20', '20x25', '20x30', '25x30', '30x40', '30x60'],
-    holePatterns: [
-      HolePattern.NONE,
-      HolePattern.TWO_VERTICAL,
-      HolePattern.FOUR_CORNERS,
-    ],
-    backgroundCodes: [1, 2, 7, 5, 4, 10, 12, 13, 21, 23, 31, 32, 34, 36, 100],
-    allowedTemplateFinishes: [Finish.MATTE, Finish.GLOSS],
-    variantFinishes: ['MATTE', 'GLOSS'],
-  });
+    // Стекло
+    familyRectGlass('GLS-T', 'Стекло табличка'),
+    familyOvalGlass('GLS-O', 'Стекло овал'),
+    familyArchGlass('GLS-A', 'Стекло арка'),
 
-  await addTemplate({
-    code: 'K1c',
-    label: 'К1ц',
-    material: Material.WHITE_CERAMIC_GRANITE,
-    shape: Shape.RECTANGLE,
-    orientation: Orientation.VERTICAL,
-    colorMode: ColorMode.COLOR,
-    requiresBackground: true,
-    requiresFinish: true,
-    sizeCodes: ['13x18', '15x20', '20x25', '20x30', '25x30', '30x40', '30x60'],
-    holePatterns: [
-      HolePattern.NONE,
-      HolePattern.TWO_VERTICAL,
-      HolePattern.FOUR_CORNERS,
-    ],
-    backgroundCodes: [1, 2, 7, 5, 4, 10, 12, 13, 21, 23, 31, 32, 34, 36, 100],
-    allowedTemplateFinishes: [Finish.MATTE, Finish.GLOSS],
-    variantFinishes: ['MATTE', 'GLOSS'],
-  });
+    // Чёрный керамогранит
+    familyRectBlack('BCG-T', 'Керамогранит чёрный'),
 
-  console.log('✓ Templates: T1, T1ц, K1, K1ц');
+    // Ростовая фотокерамика
+    familyGrowth('GROWTH', 'Ростовая фотокерамика'),
+
+    // Гравировка
+    familyEngraving('ENGR', 'Гравировка'),
+  ];
+
+  // Собираем и апсертим все сгенерированные шаблоны
+  const built = families.flatMap(buildTemplates);
+  console.log(`→ Building ${built.length} templates...`);
+
+  for (const t of built) {
+    await upsertTemplate(t);
+  }
+  console.log('✓ Templates seeded');
 }
 
-// ---------- main
+// ========= main
 
 async function main() {
   await seedSizes();
   await seedFrames();
   await seedBackgrounds();
   await seedFinishVariants();
-  await seedTemplates();
+  await seedCatalog();
 }
 
 main()

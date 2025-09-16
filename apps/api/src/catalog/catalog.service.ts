@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import type { ListTemplatesQuery } from './dto/list-templates.dto';
 
 const templateSelect = {
@@ -12,35 +12,6 @@ const templateSelect = {
   colorMode: true,
   coverage: true,
 };
-
-const templateWithOptionsSelect = {
-  ...templateSelect,
-  allowedSizes: {
-    select: {
-      size: {
-        select: { id: true, widthCm: true, heightCm: true, label: true },
-      },
-    },
-  },
-  allowedHoles: { select: { pattern: true } },
-  allowedFrames: {
-    select: { frame: { select: { id: true, code: true, name: true } } },
-  },
-  allowedBackgrounds: {
-    select: { background: { select: { id: true, code: true, name: true } } },
-  },
-  allowedFinishes: { select: { finish: true } },
-  variants: {
-    select: {
-      holePattern: true,
-      finishRequired: true,
-      allowedFinishes: {
-        select: { finish: { select: { id: true, code: true, label: true } } },
-      },
-    },
-  },
-} as const;
-
 @Injectable()
 export class CatalogService {
   constructor(private prisma: PrismaService) {}
@@ -57,9 +28,6 @@ export class CatalogService {
         colorMode: q.colorMode,
         coverage: q.coverage,
       };
-      Object.keys(where).forEach(
-        (k) => (where as any)[k] === undefined && delete (where as any)[k],
-      );
 
       const skip = (page - 1) * pageSize;
       const take = pageSize;

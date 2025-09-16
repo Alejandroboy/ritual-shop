@@ -39,7 +39,7 @@ export class HealthService {
 
       socket.setTimeout(timeoutMs);
       socket.once('connect', () => finish('up'));
-      socket.once('error', (e) => finish('down', e as Error));
+      socket.once('error', (e) => finish('down', e));
       socket.once('timeout', () => finish('down', new Error('timeout')));
       try {
         socket.connect(port, host);
