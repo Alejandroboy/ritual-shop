@@ -15,7 +15,7 @@ export default function AddToOrderForm({ tpl }: Props) {
   }, []);
 
   const [sizeId, setSizeId] = useState<number | ''>(tpl.defaults.sizeId ?? '');
-  const [holePattern, setHolePattern] = useState<HolePattern | ''>(
+  const [holePattern, setHolePattern] = useState<string | ''>(
     tpl.defaults.holePattern ?? '',
   );
   const [frameId, setFrameId] = useState<number | ''>(
@@ -24,7 +24,7 @@ export default function AddToOrderForm({ tpl }: Props) {
   const [backgroundId, setBackgroundId] = useState<number | ''>(
     tpl.defaults.backgroundId ?? '',
   );
-  const [finish, setFinish] = useState<Finish | ''>('');
+  const [finish, setFinish] = useState<string | ''>('');
   const [comment, setComment] = useState('');
 
   const needFinish =
@@ -41,7 +41,7 @@ export default function AddToOrderForm({ tpl }: Props) {
     const url = `${API_BASE}/orders`;
     const res = await fetch(url, { method: 'POST' });
 
-    let data: any = null;
+    let data = null;
     try {
       data = await res.json();
     } catch {
@@ -59,7 +59,7 @@ export default function AddToOrderForm({ tpl }: Props) {
   async function submit() {
     const id = await ensureOrder();
     console.log('submit', id);
-    const payload: any = {
+    const payload = {
       templateCode: tpl.code,
       sizeId: sizeId || undefined,
       holePattern: holePattern || undefined,
@@ -113,7 +113,7 @@ export default function AddToOrderForm({ tpl }: Props) {
           <select
             className="border rounded-md px-2 py-1 bg-white w-full"
             value={holePattern}
-            onChange={(e) => setHolePattern((e.target.value || '') as any)}
+            onChange={(e) => setHolePattern(e.target.value || '')}
           >
             <option value="">—</option>
             {tpl.holes.map((h) => (
@@ -170,7 +170,7 @@ export default function AddToOrderForm({ tpl }: Props) {
             <select
               className="border rounded-md px-2 py-1 bg-white w-full"
               value={finish}
-              onChange={(e) => setFinish((e.target.value || '') as any)}
+              onChange={(e) => setFinish(e.target.value || '')}
             >
               <option value="">—</option>
               {finishOptions.map((f) => (

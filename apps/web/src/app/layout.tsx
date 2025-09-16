@@ -1,4 +1,5 @@
 import './globals.css';
+import Link from 'next/link';
 
 export const metadata = {
   title: 'Ritual Shop',
@@ -15,12 +16,12 @@ export default function RootLayout({
       <body className="min-h-screen bg-neutral-50 text-neutral-900">
         <header className="border-b bg-white">
           <div className="mx-auto max-w-6xl px-4 py-3 flex items-center gap-6">
-            <a href="/" className="font-semibold">
+            <Link href="/" className="font-semibold">
               Ritual Shop
-            </a>
+            </Link>
             <nav className="text-sm flex gap-4">
-              <a href="/catalog">Каталог</a>
-              <a href="/account">Личный кабинет</a>
+              <Link href="/catalog">Каталог</Link>
+              <Link href="/account">Личный кабинет</Link>
             </nav>
           </div>
         </header>

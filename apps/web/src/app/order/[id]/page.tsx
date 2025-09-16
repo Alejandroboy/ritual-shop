@@ -1,5 +1,6 @@
 import React from 'react';
 import { getApiBase } from '../../../utils/api-base';
+import Link from 'next/link';
 
 async function fetchOrder(id: string) {
   const API_BASE = getApiBase();
@@ -8,13 +9,16 @@ async function fetchOrder(id: string) {
   return res.json();
 }
 
+type OrderItem = {
+  templateLabel: string;
+};
+
 export default async function OrderPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const order = await fetchOrder(params.id);
-  console.log('order', order);
+  const order = await fetchOrder((await params).id);
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
       <h1 className="text-2xl font-semibold mb-2">Заказ принят</h1>
@@ -25,8 +29,8 @@ export default async function OrderPage({
         <div>
           Состав:&nbsp;
           <div>
-            {order.items.map((item) => {
-              return <p>{item.templateLabel}</p>;
+            {order.items.map((item: OrderItem) => {
+              return <p key={item.templateLabel}>{item.templateLabel}</p>;
             })}
           </div>
         </div>
@@ -37,9 +41,9 @@ export default async function OrderPage({
           Клиент: {order.customerName} · {order.customerPhone}
         </p>
       </div>
-      <a href="/catalog" className="inline-block mt-6 underline">
+      <Link href="/catalog" className="inline-block mt-6 underline">
         Вернуться в каталог
-      </a>
+      </Link>
     </div>
   );
 }
