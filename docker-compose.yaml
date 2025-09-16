@@ -1,61 +1,101 @@
 name: ritual-dev
 services:
-  postgres:
+  db:
     image: postgres:16-alpine
-    container_name: ritual_postgres
-    restart: unless-stopped
+    restart: always
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    ports:
-      - "${PG_HOST_PORT}:5432"
     volumes:
-      - pg_data:/var/lib/postgresql/data
+      - db_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
-      interval: 5s
-      timeout: 3s
-      retries: 20
-    networks: [stack]
-    profiles: ["infrastructure"]
-
+    test: [ "CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB" ]
+    interval: 10s
+    timeout: 5s
+    retries: 10
   redis:
     image: redis:7-alpine
-    container_name: ritual_redis
-    command: ["redis-server", "--appendonly", "yes"]
-    restart: unless-stopped
-    ports:
-      - "${REDIS_HOST_PORT}:6379"
+    restart: always
+    command: [ "redis-server", "--appendonly", "yes" ]
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 20
-    networks: [stack]
-    profiles: ["infrastructure"]
-
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
   mailhog:
-    image: mailhog/mailhog:latest
-    container_name: ritual_mailhog
-    restart: unless-stopped
+    image: mailhog/mailhog:v1.0.1
+    restart: always
     ports:
-      - "${MAILHOG_SMTP_PORT}:1025"  # SMTP
-      - "${MAILHOG_UI_PORT}:8025"    # Web UI
+      - "127.0.0.1:8025:8025" # UI доступен на сервере по http://127.0.0.1:8025
+    environment:
+      MH_UI_BIND_ADDR: 0.0.0.0:8025
+      MH_API_BIND_ADDR: 0.0.0.0:8025
+      MH_SMTP_BIND_ADDR: 0.0.0.0:1025
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    restart: always
+    env_file: .env
+    environment:
+      PORT: 3001
+      UPLOADS_ROOT: /uploads
+      # Redis / SMTP прокидываем внутрь контейнера
+      REDIS_URL: ${REDIS_URL}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+      SMTP_SECURE: ${SMTP_SECURE}
+      MAIL_FROM: ${MAIL_FROM}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mailhog:
+        condition: service_started
+    volumes:
+      - uploads:/uploads
     healthcheck:
-      test: ["CMD", "nc", "-z", "localhost", "1025"]
-      interval: 5s
-      timeout: 3s
+      test: [ "CMD", "wget", "-qO-", "http://localhost:3001/health" ]
+      interval: 15s
+      timeout: 5s
       retries: 20
-    networks: [stack]
-    profiles: ["infrastructure"]
-
-networks:
-  stack:
-    driver: bridge
-
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        API_BASE: ${API_BASE}
+    restart: always
+    env_file: .env
+    depends_on:
+      - api
+    healthcheck:
+      test: [ "CMD", "wget", "-qO-", "http://localhost:3000" ]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+  caddy:
+    image: caddy:2.8
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - web
+      - api
 volumes:
-  pg_data:
-  redis_data:
+db_data:
+uploads:
+redis_data:
+caddy_data:
+caddy_config:
