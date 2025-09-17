@@ -21,17 +21,21 @@ if [ "$SEED" = "true" ]; then
 fi
 
 
-# Стартуем API
-# Авто-детект main.js
+# Авто-детект main.js в типичных местах (работаем из /app/apps/api)
+APP_MAIN=""
 if [ -f dist/main.js ]; then
-  APP_MAIN=dist/main.js
+  APP_MAIN="dist/main.js"
 elif [ -f ../dist/apps/api/main.js ]; then
-  APP_MAIN=../dist/apps/api/main.js
+  APP_MAIN="../dist/apps/api/main.js"
 elif [ -f /app/dist/apps/api/main.js ]; then
-  APP_MAIN=/app/dist/apps/api/main.js
-else
-  echo "[entrypoint] main.js not found, printing tree:"
-  (ls -la .; ls -la ../dist || true; ls -la /app/dist/apps/api || true)
+  APP_MAIN="/app/dist/apps/api/main.js"
+fi
+
+if [ -z "$APP_MAIN" ]; then
+  echo "[entrypoint] main.js not found. Listing candidates:"
+  (ls -la .; ls -la dist 2>/dev/null || true; ls -la ../dist/apps/api 2>/dev/null || true; find /app -maxdepth 4 -name main.js || true)
   exit 1
 fi
+
+echo "[entrypoint] starting: node $APP_MAIN"
 node "$APP_MAIN"

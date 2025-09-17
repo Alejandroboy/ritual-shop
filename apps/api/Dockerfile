@@ -25,31 +25,26 @@ COPY . .
 
 
 # Build API and generate Prisma client
-# NOTE: при отличающемся имени воркспейса замените "api" на своё
 RUN cd apps/api \
   && npx prisma generate --schema=./prisma/schema.prisma \
   && yarn build \
-  && ls -la dist | sed -n '1,50p'
+  && ( [ -f dist/main.js ] \
+       || [ -f ../dist/apps/api/main.js ] \
+       || (echo '❌ dist/main.js not found; tree:' && find /app -maxdepth 4 -type f -name main.js && exit 1) )
 
 
 # --- Runtime stage ---
 FROM node:20-alpine AS runner
-WORKDIR /app
+WORKDIR /app/apps/api
 ENV NODE_ENV=production
-
-
 RUN corepack enable && corepack prepare yarn@stable --activate
 
-
-# Copy runtime deps and build artifacts
+# Копируем всё из build-слоя (чтобы попали /app/dist и /app/apps/api/dist)
 COPY --from=build /app /app
 
+# Entrypoint
+COPY apps/api/docker-entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
-# entrypoint запускает миграции/сид и стартует API
-COPY apps/api/docker-entrypoint.sh ./docker-entrypoint.sh
-RUN chmod +x ./docker-entrypoint.sh
-
-
-VOLUME ["/uploads"]
 EXPOSE 3001
-ENTRYPOINT ["./docker-entrypoint.sh"]
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
