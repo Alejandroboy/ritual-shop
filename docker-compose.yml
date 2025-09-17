@@ -39,6 +39,7 @@ services:
       MH_SMTP_BIND_ADDR: 0.0.0.0:1025
 
   api:
+    working_dir: /app/apps/api
     build:
       context: .
       dockerfile: apps/api/Dockerfile
