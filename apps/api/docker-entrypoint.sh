@@ -22,4 +22,4 @@ fi
 
 
 # Стартуем API
-node apps/api/dist/main.js
+node dist/main.js
