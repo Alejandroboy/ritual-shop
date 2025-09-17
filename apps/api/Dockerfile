@@ -1,6 +1,6 @@
 # --- Build stage ---
 FROM node:20-alpine AS build
-WORKDIR /app
+WORKDIR /app/apps/api
 
 
 # Enable Yarn via Corepack
@@ -43,9 +43,9 @@ RUN corepack enable && corepack prepare yarn@stable --activate
 # Copy runtime deps and build artifacts
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/package.json ./package.json
-COPY --from=build /app/apps/api/package.json ./apps/api/package.json
-COPY --from=build /app/apps/api/dist ./apps/api/dist
-COPY --from=build /app/apps/api/prisma ./apps/api/prisma
+COPY --from=build /app/apps/api/package.json ./package.json
+COPY --from=build /app/apps/api/dist ./dist
+COPY --from=build /app/apps/api/prisma ./prisma
 
 
 # entrypoint запускает миграции/сид и стартует API
