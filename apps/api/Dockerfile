@@ -41,11 +41,7 @@ RUN corepack enable && corepack prepare yarn@stable --activate
 
 
 # Copy runtime deps and build artifacts
-COPY --from=build /app/node_modules ./node_modules
-COPY --from=build /app/package.json ./package.json
-COPY --from=build /app/apps/api/package.json ./package.json
-COPY --from=build /app/apps/api/dist ./dist
-COPY --from=build /app/apps/api/prisma ./prisma
+COPY --from=build /app /app
 
 
 # entrypoint запускает миграции/сид и стартует API
