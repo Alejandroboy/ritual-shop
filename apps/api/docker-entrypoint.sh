@@ -22,4 +22,16 @@ fi
 
 
 # Стартуем API
-node dist/main.js
+# Авто-детект main.js
+if [ -f dist/main.js ]; then
+  APP_MAIN=dist/main.js
+elif [ -f ../dist/apps/api/main.js ]; then
+  APP_MAIN=../dist/apps/api/main.js
+elif [ -f /app/dist/apps/api/main.js ]; then
+  APP_MAIN=/app/dist/apps/api/main.js
+else
+  echo "[entrypoint] main.js not found, printing tree:"
+  (ls -la .; ls -la ../dist || true; ls -la /app/dist/apps/api || true)
+  exit 1
+fi
+node "$APP_MAIN"
