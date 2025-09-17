@@ -26,9 +26,9 @@ COPY . .
 
 # Build API and generate Prisma client
 # NOTE: при отличающемся имени воркспейса замените "api" на своё
-ARG PRISMA_SCHEMA_PATH=/apps/api/prisma/schema.prisma
-RUN yarn workspace api build \
- && yarn workspace api prisma generate --schema="$PRISMA_SCHEMA_PATH"
+ARG PRISMA_SCHEMA_PATH=/app/apps/api/prisma/schema.prisma
+RUN yarn workspace api prisma generate --schema=/app/apps/api/prisma/schema.prisma \
+  && yarn workspace api build
 
 
 # --- Runtime stage ---
