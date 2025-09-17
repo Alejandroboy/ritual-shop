@@ -42,6 +42,9 @@ services:
     build:
       context: .
       dockerfile: apps/api/Dockerfile
+      args:
+         PRISMA_SRC: apps/api/prisma
+         PRISMA_SCHEMA_PATH: /apps/api/prisma/schema.prisma
     restart: always
     env_file: .env
     environment:
@@ -54,6 +57,7 @@ services:
       SMTP_PASSWORD: ${SMTP_PASSWORD}
       SMTP_SECURE: ${SMTP_SECURE}
       MAIL_FROM: ${MAIL_FROM}
+      PRISMA_SCHEMA_PATH: /apps/api/prisma/schema.prisma
     depends_on:
       db:
         condition: service_healthy
