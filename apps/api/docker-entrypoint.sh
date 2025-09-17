@@ -8,7 +8,7 @@ export NODE_ENV=${NODE_ENV:-production}
 
 # За обратным прокси (Caddy) нужны доверенные заголовки для secure cookies
 export TRUST_PROXY=${TRUST_PROXY:-1}
-export PRISMA_SCHEMA_PATH="${PRISMA_SCHEMA_PATH:-/apps/api/prisma/schema.prisma}"
+export PRISMA_SCHEMA_PATH="${PRISMA_SCHEMA_PATH:-/app/apps/api/prisma/schema.prisma}"
 
 
 # Применяем миграции (без интерактива)
