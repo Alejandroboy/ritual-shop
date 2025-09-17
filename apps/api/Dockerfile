@@ -28,7 +28,8 @@ COPY . .
 # NOTE: при отличающемся имени воркспейса замените "api" на своё
 RUN cd apps/api \
   && npx prisma generate --schema=./prisma/schema.prisma \
-  && yarn build
+  && yarn build \
+  && ls -la dist | sed -n '1,50p'
 
 
 # --- Runtime stage ---
