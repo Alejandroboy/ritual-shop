@@ -11,7 +11,9 @@ RUN corepack enable && corepack prepare yarn@stable --activate
 COPY package.json yarn.lock .yarnrc.yml ./
 COPY apps/api/package.json apps/api/package.json
 COPY apps/web/package.json apps/web/package.json
-COPY apps/api/prisma ./prisma
+
+ARG PRISMA_SRC=apps/api/prisma
+COPY ${PRISMA_SRC} ./apps/api/prisma
 
 
 # Install deps for all workspaces
@@ -24,8 +26,9 @@ COPY . .
 
 # Build API and generate Prisma client
 # NOTE: при отличающемся имени воркспейса замените "api" на своё
+ARG PRISMA_SCHEMA_PATH=/apps/api/prisma/schema.prisma
 RUN yarn workspace api build \
-&& yarn workspace api prisma generate
+ && yarn workspace api prisma generate --schema="$PRISMA_SCHEMA_PATH"
 
 
 # --- Runtime stage ---
@@ -42,7 +45,7 @@ COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/package.json ./package.json
 COPY --from=build /app/apps/api/package.json ./apps/api/package.json
 COPY --from=build /app/apps/api/dist ./apps/api/dist
-COPY --from=build /app/prisma ./prisma
+COPY --from=build /app/apps/api/prisma ./apps/api/prisma
 
 
 # entrypoint запускает миграции/сид и стартует API
