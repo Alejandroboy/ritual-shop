@@ -21,13 +21,14 @@ function ensureUploadsDirs() {
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.setGlobalPrefix('api'); // без ведущего слэша
+  app.setGlobalPrefix('api');
   app.enableCors({ origin: 'http://localhost:3000', credentials: true });
 
   await setupAdmin(app);
   ensureUploadsDirs();
 
-  await app.listen(3001);
+  const port = Number(process.env.PORT || 3001);
+  await app.listen(port, '0.0.0.0');
   console.log(`API listening on http://localhost:3001`);
 }
 bootstrap();

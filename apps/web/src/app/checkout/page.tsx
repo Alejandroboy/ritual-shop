@@ -122,17 +122,13 @@ export default function CheckoutPage() {
   }
 
   async function getOrderDetails(idStr: string) {
-    console.log('getOrderDetails orderId', idStr);
     if (idStr) {
       try {
-        const data = await api<OrderDetails>(`${API_BASE}/orders/${idStr}`);
-        console.log('getOrderDetails', data);
+        const data = await api<OrderDetails>(`/orders/${idStr}`);
         setOrderDetails(data);
       } catch (e) {
-        console.log('getOrderDetails', e);
+        console.log('getOrderDetails error', e);
       }
-
-      console.log('data');
     }
   }
 
@@ -147,13 +143,11 @@ export default function CheckoutPage() {
         await uploadItemFiles(it.id, files);
       });
       await Promise.all(uploads);
-      const res = await fetch(`${API_BASE}/orders/${orderId}/checkout`, {
+      const data = await api(`/orders/${orderId}/checkout`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
       });
-      if (!res.ok) throw new Error('Checkout failed');
-      const data = await res.json();
       window.localStorage.removeItem('orderId');
       window.localStorage.removeItem('draftOrderId');
       router.push(`/order/${data.id}`);

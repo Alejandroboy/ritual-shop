@@ -33,9 +33,7 @@ export default async function CatalogPage({
   if (!q.has('pageSize')) q.set('pageSize', '24');
   const API_BASE = getApiBase();
 
-  const data = await api<ListResp>(
-    `${API_BASE}/catalog/templates?${q.toString()}`,
-  );
+  const data = await api<ListResp>(`/catalog/templates?${q.toString()}`);
 
   return (
     <div className="space-y-6">

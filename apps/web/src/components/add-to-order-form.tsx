@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { HolePattern, Finish, TemplateDetails } from '../../api';
 import { getApiBase } from '../utils/api-base';
+import { api } from '../../api';
 
 type Props = { tpl: TemplateDetails };
 
@@ -38,18 +39,8 @@ export default function AddToOrderForm({ tpl }: Props) {
   async function ensureOrder(): Promise<string> {
     const API_BASE = getApiBase();
     if (orderId) return orderId;
-    const url = `${API_BASE}/orders`;
-    const res = await fetch(url, { method: 'POST' });
-
-    let data = null;
-    try {
-      data = await res.json();
-    } catch {
-      console.log('Fuck you', res);
-      // const text = await res;
-      throw new Error(`HTTP ${res.status} ${res.statusText}`);
-    }
-    if (!res.ok) throw new Error(data?.message ?? 'Не удалось создать заказ');
+    const url = `/orders`;
+    const data = await api(url, { method: 'POST' });
 
     window.localStorage.setItem('draftOrderId', data.id);
     setOrderId(data.id);
@@ -58,7 +49,6 @@ export default function AddToOrderForm({ tpl }: Props) {
 
   async function submit() {
     const id = await ensureOrder();
-    console.log('submit', id);
     const payload = {
       templateCode: tpl.code,
       sizeId: sizeId || undefined,
@@ -69,19 +59,12 @@ export default function AddToOrderForm({ tpl }: Props) {
       comment: comment || undefined,
     };
     const API_BASE = getApiBase();
-    const url = `${API_BASE}/orders/${id}/items`;
-    const res = await fetch(url, {
+    const url = `/orders/${id}/items`;
+    const data = await api(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
-    if (!res.ok) {
-      const text = await res.text();
-      alert(`Ошибка: ${text}`);
-      return;
-    }
-    const item = await res.json();
-    console.log('item =', item);
     window.localStorage.setItem('orderId', id);
     alert('Позиция добавлена в заказ');
     // по желанию перейти в /account или показать мини-корзину

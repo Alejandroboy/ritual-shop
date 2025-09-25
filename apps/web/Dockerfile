@@ -1,43 +1,38 @@
-FROM node:20-alpine AS build
+FROM node:22-alpine AS base
 WORKDIR /app
+ENV NODE_ENV=production \
+NEXT_TELEMETRY_DISABLED=1 \
+CI=1
 
 
-RUN corepack enable && corepack prepare yarn@stable --activate
+FROM base AS deps
+RUN corepack enable
+COPY package.json yarn.lock .yarnrc.yml* ./
+#COPY .yarn/ ./.yarn/
+COPY apps/web/package.json ./apps/web/
+COPY apps/api/package.json ./apps/api/
+RUN yarn install --immutable || yarn install
 
 
-COPY package.json yarn.lock .yarnrc.yml ./
-COPY apps/web/package.json apps/web/package.json
-
-
-RUN yarn install --immutable
-
-
-# Вся кодовая база для сборки
+FROM deps AS build
 COPY . .
+# Важно: переменные окружения, нужные на этапе build, передаются через compose
+RUN yarn --cwd apps/web build
+
+RUN set -eux; \
+  echo "== .next dirs =="; find /app -maxdepth 4 -type d -name .next -print; \
+  ls -la /app/apps/web/.next || true
 
 
-# Если Next.js использует API_BASE на этапе билда — прокинем ARG
-ARG API_BASE
-ENV API_BASE=${API_BASE}
-
-
-# Сборка фронта
-RUN yarn workspace web build
-
-
-# --- Runtime stage ---
-FROM node:20-alpine AS runner
-WORKDIR /app
-RUN corepack enable && corepack prepare yarn@stable --activate
-ENV NODE_ENV=production
-
-
-COPY --from=build /app/node_modules ./node_modules
-COPY --from=build /app/package.json ./package.json
-COPY --from=build /app/apps/web/package.json ./apps/web/package.json
-COPY --from=build /app/apps/web/.next ./apps/web/.next
-COPY --from=build /app/apps/web/public ./apps/web/public
-
-
+FROM base AS runtime
+WORKDIR /app/apps/web
+ENV NODE_ENV=production \
+    PORT=3000
+# Копируем артефакты билда веба
+COPY --from=build /app/apps/web/.next ./.next
+COPY --from=build /app/apps/web/public ./public
+COPY --from=build /app/apps/web/package.json ./package.json
+# (если есть next.config.* в пакете)
+COPY --from=build /app/apps/web/next.config.* ./
 EXPOSE 3000
-CMD ["yarn", "workspace", "web", "start", "-p", "3000"]
+CMD ["yarn","start","-p","3000"]

@@ -1,0 +1,35 @@
+# VCS
+.git
+.gitignore
+
+
+# Node/Yarn
+node_modules
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.pnp.*
+
+
+# Next/Nest artifacts
+.next
+out
+coverage
+dist
+
+
+# Env/OS/editor
+.env
+.env.*
+.DS_Store
+*.log
+*.swp
+.idea
+.vscode
+
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+
+!apps/api/prisma/**

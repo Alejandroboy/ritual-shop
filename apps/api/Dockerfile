@@ -1,50 +1,39 @@
-# --- Build stage ---
-FROM node:20-alpine AS build
-WORKDIR /app/apps/api
+FROM node:22-alpine AS dependencies
+ENV NODE_ENV=development
+ENV DATABASE_URL="postgresql://ritual:f8bc908e-80af-41b7-88ec-386b1bf0d31f@db:5432/ritual?schema=public"
 
+WORKDIR /app
+COPY package.json yarn.lock ./
+RUN yarn install
 
-# Enable Yarn via Corepack
-RUN corepack enable && corepack prepare yarn@stable --activate
+FROM node:22-alpine AS build
 
-
-# Copy manifests first for better caching
-COPY package.json yarn.lock .yarnrc.yml ./
-COPY apps/api/package.json apps/api/package.json
-COPY apps/web/package.json apps/web/package.json
-
-ARG PRISMA_SRC=apps/api/prisma
-COPY ${PRISMA_SRC} ./apps/api/prisma
-
-
-# Install deps for all workspaces
-RUN yarn install --immutable
-
-
-# Copy the rest of the source
+WORKDIR /app
+COPY --from=dependencies /app/node_modules ./node_modules
 COPY . .
 
+RUN npx prisma generate
+RUN yarn global add @nestjs/cli
+RUN yarn build
 
-# Build API and generate Prisma client
-RUN cd apps/api \
-  && npx prisma generate --schema=./prisma/schema.prisma \
-  && yarn build \
-  && ( [ -f dist/main.js ] \
-       || [ -f ../dist/apps/api/main.js ] \
-       || (echo '❌ dist/main.js not found; tree:' && find /app -maxdepth 4 -type f -name main.js && exit 1) )
+FROM node:22-alpine AS deploy
 
+WORKDIR /app
 
-# --- Runtime stage ---
-FROM node:20-alpine AS runner
-WORKDIR /app/apps/api
 ENV NODE_ENV=production
-RUN corepack enable && corepack prepare yarn@stable --activate
+ENV DATABASE_URL="postgresql://ritual:f8bc908e-80af-41b7-88ec-386b1bf0d31f@db:5432/ritual?schema=public"
 
-# Копируем всё из build-слоя (чтобы попали /app/dist и /app/apps/api/dist)
-COPY --from=build /app /app
-
-# Entrypoint
-COPY apps/api/docker-entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
+COPY --from=dependencies /app/node_modules ./node_modules
+COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=build /app/node_modules/@prisma ./node_modules/@prisma
+COPY package.json yarn.lock  ./
+COPY . .
+COPY --from=build /app/dist ./dist
 
 EXPOSE 3001
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+
+ENV PORT=3001
+# DEBUG: посмотреть, что видит процесс
+RUN node -e "console.log('DATABASE_URL=', process.env.DATABASE_URL)"
+
+CMD [ "node", "dist/src/main.js" ]

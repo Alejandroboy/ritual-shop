@@ -62,7 +62,6 @@ export class HealthService {
 
   async checkPostgres(): Promise<CheckResult> {
     const dbUrl = this.configurationService.get('DATABASE_URL');
-    console.log('dbUrl', dbUrl);
     const parsed = dbUrl ? this.parseHostPortFromUrl(dbUrl, 5432) : null;
     if (!parsed) {
       return {
@@ -76,17 +75,11 @@ export class HealthService {
   }
 
   async checkRedis(): Promise<CheckResult> {
-    const redisUrl = this.configurationService.get('REDIS_URL');
-    const parsed = redisUrl ? this.parseHostPortFromUrl(redisUrl, 6379) : null;
-    if (!parsed) {
-      return {
-        name: 'redis',
-        status: 'down',
-        latencyMs: null,
-        error: 'REDIS_URL not set or invalid',
-      };
-    }
-    return this.tcpCheck('redis', parsed.host, parsed.port);
+    const host = this.configurationService.get('REDIS_HOST');
+    const port = Number(
+      this.configurationService.get('REDIS_HOST_PORT') ?? '6379',
+    );
+    return this.tcpCheck('redis', host, port);
   }
 
   async checkSmtp(): Promise<CheckResult> {

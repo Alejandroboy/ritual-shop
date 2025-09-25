@@ -49,9 +49,10 @@ export class HealthController {
   env() {
     return {
       databaseUrl: this.configurationService.get('DATABASE_URL'),
-      redisUrl: this.configurationService.get('REDIS_URL'),
-      host: this.configurationService.get('SMTP_HOST'),
-      port: this.configurationService.get('SMTP_PORT'),
+      redisUrl: this.configurationService.get('REDIS_HOST'),
+      redisPort: this.configurationService.get('REDIS_HOST_PORT'),
+      smtpHost: this.configurationService.get('SMTP_HOST'),
+      smtpPort: this.configurationService.get('SMTP_PORT'),
       secure: this.configurationService.get('SMTP_SECURE'),
     };
   }

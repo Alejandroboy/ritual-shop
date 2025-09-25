@@ -51,14 +51,16 @@ export type TemplateDetails = TemplateListItem & {
   };
 };
 
-const API_BASE = process.env.API_BASE || 'http://localhost:3001';
+// const API_BASE = process.env.API_BASE || 'http://localhost:3001';
+
+const isServer = typeof window === 'undefined';
 
 function makeUrl(path: string) {
-  if (path.startsWith('http://') || path.startsWith('https://')) return path;
-  // в браузере оставляем относительный путь — сработают rewrites Next
-  if (typeof window !== 'undefined') return path;
-  // на сервере — абсолютный URL (Node fetch требует полный)
-  return `${API_BASE}${path}`;
+  const base = isServer
+    ? process.env.API_BASE || 'http://api:3001/api'
+    : process.env.NEXT_PUBLIC_API_BASE || '/api';
+  const normalized = path.startsWith('/') ? path : `/${path}`;
+  return `${base}${normalized}`;
 }
 
 export async function api<T>(input: string, init?: RequestInit): Promise<T> {
@@ -69,6 +71,7 @@ export async function api<T>(input: string, init?: RequestInit): Promise<T> {
     cache: 'no-store',
   });
   if (!res.ok) {
+    console.log('res not ok', res);
     const text = await res.text().catch(() => '');
     throw new Error(`API ${res.status} ${res.statusText}: ${text}`);
   }
