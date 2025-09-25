@@ -1,4 +1,4 @@
-name: ritual-dev
+name: ritual-dev-development
 services:
   db:
     image: postgres:16-alpine
@@ -33,7 +33,7 @@ services:
       interval: 5s
       timeout: 3s
       retries: 20
-#    networks: [ stack ]
+  #    networks: [ stack ]
 
   mailhog:
     image: mailhog/mailhog:latest
@@ -47,14 +47,14 @@ services:
       interval: 5s
       timeout: 3s
       retries: 20
-#    networks: [ stack ]
+  #    networks: [ stack ]
 
   api:
     container_name: ritual_api
     build:
       context: ./apps/api
-      dockerfile: ./apps/api/Dockerfile
-    env_file: .env
+      dockerfile: development.Dockerfile
+    env_file: ./apps/api/.env
     environment:
       PORT: 3001
       DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?schema=public"
@@ -67,15 +67,20 @@ services:
     volumes:
       - ./apps/api:/app
       - /app/node_modules
+      - /app/prisma
     ports:
       - "3001:3001"
 #    networks: [ stack ]
+
   web:
     container_name: ritual_web
     build:
       context: ./apps/web
-      dockerfile: Dockerfile
+      dockerfile: development.Dockerfile
     env_file: ./apps/web/.env.local
+    environment:
+      API_BASE: "http://api:3001/api"
+      NEXT_PUBLIC_API_BASE: ""
     depends_on:
       - api
     volumes:
