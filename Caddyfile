@@ -1,0 +1,5 @@
+ritual.alejandrogroup.org {
+  encode zstd gzip
+  tls shepardhero@gmail.com          # ваш email для Let's Encrypt (необязательно, но полезно)
+  reverse_proxy web:3000       # весь трафик на Next.js
+}

@@ -1,1 +1,4 @@
-(function(){"use strict";AdminJS.UserComponents={}})();
+(function () {
+  'use strict';
+  AdminJS.UserComponents = {};
+})();

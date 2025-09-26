@@ -65,15 +65,19 @@ function makeUrl(path: string) {
 
 export async function api<T>(input: string, init?: RequestInit): Promise<T> {
   const url = makeUrl(input);
-  const res = await fetch(url, {
-    ...init,
-    headers: { 'Content-Type': 'application/json', ...(init?.headers || {}) },
-    cache: 'no-store',
-  });
-  if (!res.ok) {
-    console.log('res not ok', res);
-    const text = await res.text().catch(() => '');
-    throw new Error(`API ${res.status} ${res.statusText}: ${text}`);
+  try {
+    const res = await fetch(url, {
+      ...init,
+      headers: { 'Content-Type': 'application/json', ...(init?.headers || {}) },
+      cache: 'no-store',
+    });
+    if (!res.ok) {
+      console.log('res not ok', res);
+    }
+    return res.json() as Promise<T>;
+  } catch (e) {
+    console.log('res not ok', e);
+
+    throw new Error(`API ${e.status} ${e.statusText}: ${e.text}`);
   }
-  return res.json() as Promise<T>;
 }
