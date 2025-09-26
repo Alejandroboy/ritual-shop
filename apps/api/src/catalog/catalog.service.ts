@@ -151,7 +151,6 @@ export class CatalogService {
     });
 
     if (!tpl) throw new NotFoundException('Template not found');
-    console.log('tpl', tpl);
 
     // лёгкий маппинг для фронта
     return {

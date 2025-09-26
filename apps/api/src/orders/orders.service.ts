@@ -61,10 +61,9 @@ export class OrdersService {
           approveNeeded: dto?.approveNeeded ?? false,
         },
       });
-      console.log('order', order);
       return order;
     } catch (e: any) {
-      console.log('dfdfdfdf', e);
+      console.log('createOrder error', e);
       if ((e as Prisma.PrismaClientKnownRequestError)?.code === 'P2002') {
         throw new BadRequestException('Order number already exists');
       }
@@ -423,7 +422,6 @@ export class OrdersService {
 
     // size
     if (input.sizeId) {
-      console.log('tpl.allowedSizes', tpl.allowedSizes);
       const ok = tpl.allowedSizes.some((s) => s.sizeId === input.sizeId);
       if (!ok)
         throw new BadRequestException('Size is not allowed for template');
@@ -479,7 +477,6 @@ export class OrdersService {
   }
 
   async checkout(id: string, dto: CheckoutDto) {
-    console.log('checkout', id, dto);
     const order = await this.prisma.order.findUnique({
       where: { id },
       include: { items: true },

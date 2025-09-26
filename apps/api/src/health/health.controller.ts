@@ -15,7 +15,7 @@ export class HealthController {
     try {
       return await this.healthService.getHealth();
     } catch (e: any) {
-      console.log('error', e);
+      console.log('Health error', e);
       return {
         status: 'error',
         uptimeSec: Math.round(process.uptime()),

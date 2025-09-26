@@ -12,8 +12,6 @@ RUN npx prisma generate
 RUN yarn global add @nestjs/cli
 
 EXPOSE 3001
-# DEBUG: посмотреть, что видит процесс
-RUN node -e "console.log('DATABASE_URL=', process.env.DATABASE_URL)"
 
 CMD ["sh", "-c", "\
   npx prisma migrate dev --name init || true && \

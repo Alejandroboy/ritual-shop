@@ -27,13 +27,11 @@ COPY --from=dependencies /app/node_modules ./node_modules
 COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=build /app/node_modules/@prisma ./node_modules/@prisma
 COPY package.json yarn.lock  ./
-COPY . .
+
 COPY --from=build /app/dist ./dist
 
 EXPOSE 3001
 
 ENV PORT=3001
-# DEBUG: посмотреть, что видит процесс
-RUN node -e "console.log('DATABASE_URL=', process.env.DATABASE_URL)"
 
 CMD [ "node", "dist/src/main.js" ]

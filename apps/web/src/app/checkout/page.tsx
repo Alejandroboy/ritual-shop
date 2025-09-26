@@ -12,6 +12,10 @@ const ACCEPTED = ['image/png', 'image/jpeg', 'image/webp', 'application/pdf'];
 const MAX_FILES = 8;
 const MAX_SIZE = 15 * 1024 * 1024; // 15MB
 
+type Order = {
+  id: string;
+};
+
 type OrderDetails = {
   id: string;
   items: {
@@ -143,7 +147,7 @@ export default function CheckoutPage() {
         await uploadItemFiles(it.id, files);
       });
       await Promise.all(uploads);
-      const data = await api(`/orders/${orderId}/checkout`, {
+      const data = await api<Order>(`/orders/${orderId}/checkout`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
