@@ -75,7 +75,7 @@ export async function api<T>(input: string, init?: RequestInit): Promise<T> {
       console.log('res not ok', res);
     }
     return res.json() as Promise<T>;
-  } catch (e) {
+  } catch (e: any) {
     console.log('res not ok', e);
 
     throw new Error(`API ${e.status} ${e.statusText}: ${e.text}`);
