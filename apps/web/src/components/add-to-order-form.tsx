@@ -5,6 +5,9 @@ import { getApiBase } from '../utils/api-base';
 import { api } from '../../api';
 
 type Props = { tpl: TemplateDetails };
+type Order = {
+  id: string;
+};
 
 export default function AddToOrderForm({ tpl }: Props) {
   // хранить черновой orderId в localStorage
@@ -37,10 +40,9 @@ export default function AddToOrderForm({ tpl }: Props) {
   }, [holePattern, tpl.variants]);
 
   async function ensureOrder(): Promise<string> {
-    const API_BASE = getApiBase();
     if (orderId) return orderId;
     const url = `/orders`;
-    const data = await api(url, { method: 'POST' });
+    const data = await api<Order>(url, { method: 'POST' });
 
     window.localStorage.setItem('draftOrderId', data.id);
     setOrderId(data.id);
@@ -58,13 +60,19 @@ export default function AddToOrderForm({ tpl }: Props) {
       finish: finish || undefined,
       comment: comment || undefined,
     };
-    const API_BASE = getApiBase();
     const url = `/orders/${id}/items`;
-    const data = await api(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
+    try {
+      const data = await api<Order>(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      console.log(data);
+      window.localStorage.setItem('orderId', id);
+    } catch (e) {
+      alert('Ошибка добавления заказа');
+      console.log('Ошибка добавления заказа', e);
+    }
     window.localStorage.setItem('orderId', id);
     alert('Позиция добавлена в заказ');
     // по желанию перейти в /account или показать мини-корзину

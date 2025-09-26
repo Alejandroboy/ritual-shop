@@ -1,5 +1,10 @@
 import { Button } from '../components/button';
-import type { Product } from '@repo/types';
+
+interface Product {
+  id: string;
+  title: string;
+  price: number;
+}
 
 export default function Home() {
   const p: Product = { id: '1', title: 'Пример', price: 1000 };

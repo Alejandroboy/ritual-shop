@@ -12,6 +12,7 @@ services:
       - "${POSTGRES_HOST_PORT}:5432"
     volumes:
       - pg_data:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
       interval: 5s
@@ -49,11 +50,25 @@ services:
       retries: 20
 #    networks: [ stack ]
 
+  migrator:
+    image: ritual_api
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      SEED_ENABLED: "true"              # можно выключить, когда не нужен
+    entrypoint: [ "sh", "-lc" ]
+    command:  >
+      npx prisma migrate deploy
+      && node prisma/seed-once.js
+    restart: "no"
+
   api:
     container_name: ritual_api
     build:
       context: ./apps/api
-      dockerfile: ./apps/api/Dockerfile
+      dockerfile: Dockerfile
     env_file: .env
     environment:
       PORT: 3001
@@ -64,9 +79,6 @@ services:
       SMTP_PORT: 1025
     depends_on:
       - db
-    volumes:
-      - ./apps/api:/app
-      - /app/node_modules
     ports:
       - "3001:3001"
 #    networks: [ stack ]
@@ -76,11 +88,13 @@ services:
       context: ./apps/web
       dockerfile: Dockerfile
     env_file: ./apps/web/.env.local
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      API_BASE: "http://api:3001/api"
+      NEXT_PUBLIC_API_BASE: ""
     depends_on:
       - api
-    volumes:
-      - ./apps/web:/app
-      - /app/node_modules
     ports:
       - "3000:3000"
 

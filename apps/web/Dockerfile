@@ -1,38 +1,34 @@
-FROM node:22-alpine AS base
+FROM node:22-alpine AS build
 WORKDIR /app
-ENV NODE_ENV=production \
-NEXT_TELEMETRY_DISABLED=1 \
-CI=1
+COPY package.json yarn.lock ./
 
+RUN yarn install
 
-FROM base AS deps
-RUN corepack enable
-COPY package.json yarn.lock .yarnrc.yml* ./
-#COPY .yarn/ ./.yarn/
-COPY apps/web/package.json ./apps/web/
-COPY apps/api/package.json ./apps/api/
-RUN yarn install --immutable || yarn install
-
-
-FROM deps AS build
 COPY . .
-# Важно: переменные окружения, нужные на этапе build, передаются через compose
-RUN yarn --cwd apps/web build
 
-RUN set -eux; \
-  echo "== .next dirs =="; find /app -maxdepth 4 -type d -name .next -print; \
-  ls -la /app/apps/web/.next || true
+RUN yarn build
+RUN test -d /app/.next/standalone || (ls -la /app/.next && echo "NO .next/standalone" && exit 1)
 
+RUN yarn install --production --ignore-scripts --prefer-offline
 
-FROM base AS runtime
-WORKDIR /app/apps/web
-ENV NODE_ENV=production \
-    PORT=3000
-# Копируем артефакты билда веба
-COPY --from=build /app/apps/web/.next ./.next
-COPY --from=build /app/apps/web/public ./public
-COPY --from=build /app/apps/web/package.json ./package.json
-# (если есть next.config.* в пакете)
-COPY --from=build /app/apps/web/next.config.* ./
+FROM node:22-alpine
+WORKDIR /app
+
+#COPY --from=build /app/package.json ./package.json
+#COPY --from=build /app/node_modules ./node_modules
+#COPY --from=build /app/.next ./.next
+#COPY --from=build /app/public ./public
+WORKDIR /app
+ENV NODE_ENV=production
+ENV HOSTNAME=0.0.0.0
+ENV PORT=3000
+
+# Next standalone приносит сервер и все runtime-зависимости внутрь .next/standalone
+COPY --from=build /app/package.json ./package.json
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/.next/standalone ./
+COPY --from=build /app/.next/static ./.next/static
+COPY --from=build /app/public ./public
+
 EXPOSE 3000
-CMD ["yarn","start","-p","3000"]
+CMD ["node", "server.js"]
