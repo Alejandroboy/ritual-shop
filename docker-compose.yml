@@ -1,18 +1,18 @@
 name: ritual-dev
 services:
-#  caddy:
-#    image: caddy:2.8
-#    restart: unless-stopped
-#    ports:
-#      - "80:80"
-#      - "443:443"
-#    volumes:
-#      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-#      - caddy_data:/data
-#      - caddy_config:/config
-#    depends_on:
-#      web:
-#        condition: service_started
+  caddy:
+    image: caddy:2.8
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      web:
+        condition: service_started
 
   db:
     image: postgres:16-alpine
@@ -120,5 +120,5 @@ networks:
 volumes:
   pg_data:
   redis_data:
-#  caddy_data:
-#  caddy_config:
+  caddy_data:
+  caddy_config:
