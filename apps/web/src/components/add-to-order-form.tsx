@@ -1,7 +1,6 @@
 'use client';
 import { useEffect, useMemo, useState } from 'react';
-import type { HolePattern, Finish, TemplateDetails } from '../../api';
-import { getApiBase } from '../utils/api-base';
+import type { Finish, TemplateDetails } from '../../api';
 import { api } from '../../api';
 
 type Props = { tpl: TemplateDetails };
@@ -42,6 +41,7 @@ export default function AddToOrderForm({ tpl }: Props) {
   async function ensureOrder(): Promise<string> {
     if (orderId) return orderId;
     const url = `/orders`;
+    console.log('url', url);
     const data = await api<Order>(url, { method: 'POST' });
 
     window.localStorage.setItem('draftOrderId', data.id);
