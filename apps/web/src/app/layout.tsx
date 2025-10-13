@@ -12,8 +12,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ru">
-      <body className="min-h-screen bg-neutral-50 text-neutral-900">
+    <html lang="ru" suppressHydrationWarning={true}>
+      <body
+        className="min-h-screen bg-neutral-50 text-neutral-900"
+        suppressHydrationWarning={true}
+      >
         <header className="border-b bg-white">
           <div className="mx-auto max-w-6xl px-4 py-3 flex items-center gap-6">
             <Link href="/" className="font-semibold">

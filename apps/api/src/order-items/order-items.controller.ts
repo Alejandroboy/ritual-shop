@@ -13,6 +13,7 @@ import { OrderItemsService } from './order-items.service';
 import { mkdir } from 'fs/promises';
 
 function assertCuid(id: string, label: string) {
+  console.log('assertCuid', id);
   if (!/^c[a-z0-9]{8,}$/i.test(id))
     throw new BadRequestException(`${label} is invalid`);
 }
@@ -66,6 +67,7 @@ export class OrderItemsController {
     @Param('orderId') orderId: string,
     @UploadedFiles() files: Express.Multer.File[],
   ) {
+    console.log('uploadAssets', itemId, orderId);
     if (!itemId) throw new BadRequestException('Invalid item id');
     return this.service.attachAssetsToItem(itemId, orderId, files);
   }

@@ -1,16 +1,26 @@
 'use client';
-import { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import type { Finish, TemplateDetails } from '../../api';
-import { api } from '../../api';
+import { api, makeUrl } from '../../api';
 
 type Props = { tpl: TemplateDetails };
 type Order = {
   id: string;
 };
+type FilesByItem = Record<string, File[]>;
+type ProgressByItem = Record<string, number>;
+type ErrorsByItem = Record<string, string | null>;
+
+const ACCEPTED = ['image/png', 'image/jpeg', 'image/webp', 'application/pdf'];
+const MAX_FILES = 8;
+const MAX_SIZE = 15 * 1024 * 1024; // 15MB
 
 export default function AddToOrderForm({ tpl }: Props) {
   // хранить черновой orderId в localStorage
   const [orderId, setOrderId] = useState<string | null>(null);
+  const [filesByItem, setFilesByItem] = useState<FilesByItem>({});
+  const [errorsByItem, setErrorsByItem] = useState<ErrorsByItem>({});
+  const [itemId, setItemId] = useState<string | null>(null);
 
   useEffect(() => {
     const id = window.localStorage.getItem('draftOrderId');
@@ -29,6 +39,7 @@ export default function AddToOrderForm({ tpl }: Props) {
   );
   const [finish, setFinish] = useState<string | ''>('');
   const [comment, setComment] = useState('');
+  const [files, setFiles] = useState<FileList | null>(null);
 
   const needFinish =
     tpl.requiresFinish ||
@@ -41,12 +52,70 @@ export default function AddToOrderForm({ tpl }: Props) {
   async function ensureOrder(): Promise<string> {
     if (orderId) return orderId;
     const url = `/orders`;
-    console.log('url', url);
     const data = await api<Order>(url, { method: 'POST' });
 
     window.localStorage.setItem('draftOrderId', data.id);
     setOrderId(data.id);
     return data.id;
+  }
+
+  function onFilesChange(itemId: string | null, list: FileList | null) {
+    if (!list) return;
+    const files = Array.from(list);
+
+    // валидации
+    const invalid = files.find(
+      (f) => !ACCEPTED.includes(f.type) || f.size > MAX_SIZE,
+    );
+    if (invalid) {
+      setErrorsByItem((p) => ({
+        ...p,
+        [itemId]: `Разрешены PNG/JPEG/WEBP/PDF до 15MB. Файл "${invalid.name}" не подходит.`,
+      }));
+      return;
+    }
+
+    setErrorsByItem((p) => ({ ...p, [itemId]: null }));
+    setFilesByItem((prev) => {
+      const prevArr = prev[itemId] ?? [];
+      const nextArr = [...prevArr, ...files].slice(0, MAX_FILES);
+      return { ...prev, [itemId]: nextArr };
+    });
+  }
+
+  // удалить один файл до аплоада
+  function removeFile(itemId: string | null, i: number) {
+    setFilesByItem((prev) => {
+      const arr = [...(prev[itemId] ?? [])];
+      arr.splice(i, 1);
+      return { ...prev, [itemId]: arr };
+    });
+  }
+
+  async function uploadItemFiles(
+    itemId: string | null,
+    files: File[],
+    orderId: string | null,
+  ) {
+    console.log(itemId, files, orderId);
+    if (!files || !files.length || !itemId) return;
+
+    const fd = new FormData();
+    files.forEach((f) => fd.append('files', f));
+
+    try {
+      const data = await api<Order>(
+        `/order-items/${orderId}/items/${itemId}/assets`,
+        {
+          method: 'POST',
+          body: fd,
+        },
+      );
+      console.log('order-items', data);
+    } catch (e) {
+      alert('Ошибка добавления файла');
+      console.log('Ошибка добавления файла', e);
+    }
   }
 
   async function submit() {
@@ -67,16 +136,74 @@ export default function AddToOrderForm({ tpl }: Props) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      console.log(data);
+
+      setItemId(data.id);
+      const files = filesByItem[orderId] ?? [];
+      await uploadItemFiles(data.id, files, id);
+      alert('Файлы добавлены в заказ');
       window.localStorage.setItem('orderId', id);
     } catch (e) {
       alert('Ошибка добавления заказа');
       console.log('Ошибка добавления заказа', e);
     }
-    window.localStorage.setItem('orderId', id);
+
     alert('Позиция добавлена в заказ');
-    // по желанию перейти в /account или показать мини-корзину
   }
+
+  const renderPreview = () => {
+    const list = filesByItem[orderId] ?? [];
+    const err = errorsByItem[orderId];
+    if (err) {
+      return (
+        <div className="border rounded p-3">
+          {err && <p className="text-red-600 text-sm mt-2">{err}</p>}
+        </div>
+      );
+    }
+    if (!!list.length) {
+      return (
+        <div className="border rounded p-3">
+          {!!list.length && (
+            <div className="mt-3 flex flex-wrap gap-3">
+              {list.map((f, i) => {
+                const isImg = f.type.startsWith('image/');
+                return (
+                  <div key={i} className="border rounded p-2">
+                    <div className="text-xs mb-1 max-w-[180px] truncate">
+                      {f.name}
+                    </div>
+                    {isImg ? (
+                      <img
+                        src={URL.createObjectURL(f)}
+                        alt={f.name}
+                        className="w-32 h-32 object-cover rounded"
+                        onLoad={(e) =>
+                          URL.revokeObjectURL(
+                            (e.target as HTMLImageElement).src,
+                          )
+                        }
+                      />
+                    ) : (
+                      <div className="w-32 h-32 flex items-center justify-center bg-neutral-100 rounded text-xs">
+                        PDF
+                      </div>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => removeFile(orderId, i)}
+                      className="mt-2 text-xs underline"
+                    >
+                      убрать
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      );
+    }
+  };
 
   return (
     <div className="border rounded-xl p-4 bg-white space-y-3">
@@ -182,6 +309,19 @@ export default function AddToOrderForm({ tpl }: Props) {
           value={comment}
           onChange={(e) => setComment(e.target.value)}
         />
+      </label>
+      <label className="text-sm block">
+        <div className="mb-1 text-neutral-600">
+          Файлы (фото/макеты) — до 8 шт.
+        </div>
+        <div>
+          <input
+            type="file"
+            multiple
+            onChange={(e) => onFilesChange(orderId, e.target.files)}
+          />
+        </div>
+        {renderPreview()}
       </label>
 
       <div className="flex gap-2">

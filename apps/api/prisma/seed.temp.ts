@@ -132,7 +132,7 @@ async function seedFinishVariants() {
   console.log(`✓ Finish variants: ${list.length}`);
 }
 
-// ---------- seed: templates
+// ---------- seed: admin-templates
 
 type TemplateInput = {
   code: string;

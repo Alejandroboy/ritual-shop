@@ -1,9 +1,10 @@
-name: ritual-dev-development
+name: ritual-development
 services:
   db:
     image: postgres:16-alpine
     container_name: ritual_postgres
     restart: unless-stopped
+    profiles: ["infrastructure"]
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -24,6 +25,7 @@ services:
     container_name: ritual_redis
     command: [ "redis-server", "--appendonly", "yes" ]
     restart: unless-stopped
+    profiles: ["infrastructure"]
     ports:
       - "${REDIS_HOST_PORT}:6379"
     volumes:
@@ -39,6 +41,7 @@ services:
     image: mailhog/mailhog:latest
     container_name: ritual_mailhog
     restart: unless-stopped
+    profiles: ["infrastructure"]
     ports:
       - "${MAILHOG_SMTP_PORT}:1025"  # SMTP
       - "${MAILHOG_UI_PORT}:8025"    # Web UI
@@ -49,45 +52,44 @@ services:
       retries: 20
   #    networks: [ stack ]
 
-  api:
-    container_name: ritual_api
-    build:
-      context: ./apps/api
-      dockerfile: development.Dockerfile
-    env_file: ./apps/api/.env
-    environment:
-      PORT: 3001
-      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?schema=public"
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      SMTP_HOST: mailhog
-      SMTP_PORT: 1025
-    depends_on:
-      - db
-    volumes:
-      - ./apps/api:/app
-      - /app/node_modules
-      - /app/prisma
-    ports:
-      - "3001:3001"
-#    networks: [ stack ]
-
-  web:
-    container_name: ritual_web
-    build:
-      context: ./apps/web
-      dockerfile: development.Dockerfile
-    env_file: ./apps/web/.env.local
-    environment:
-      API_BASE: "http://api:3001/api"
-      NEXT_PUBLIC_API_BASE: ""
-    depends_on:
-      - api
-    volumes:
-      - ./apps/web:/app
-      - /app/node_modules
-    ports:
-      - "3000:3000"
+#  api:
+#    container_name: ritual_api
+#    build:
+#      context: .
+#      dockerfile: ./apps/api/development.Dockerfile
+#    env_file: ./apps/api/.env
+#    environment:
+#      PORT: 3001
+#      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?schema=public"
+#      REDIS_HOST: redis
+#      REDIS_PORT: 6379
+#      SMTP_HOST: mailhog
+#      SMTP_PORT: 1025
+#    depends_on:
+#      - db
+#    volumes:
+#      - ../apps/api/:/app/
+#    ports:
+#      - "3001:3001"
+##    networks: [ stack ]
+#
+#  web:
+#    container_name: ritual_web
+#    build:
+#      context: .
+#      dockerfile: ./apps/web/development.Dockerfile
+#    env_file: ./apps/web/.env.local
+#    environment:
+#      API_BASE: "http://api:3001/api"
+#      NEXT_PUBLIC_API_BASE: ""
+#    working_dir: "/app"
+#    command: "yarn dev"
+#    depends_on:
+#      - api
+#    volumes:
+#      - ../apps/web/:/app
+#    ports:
+#      - "3000:3000"
 
 
 networks:

@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { setupAdmin } from './admin/admin';
 import { mkdirSync } from 'fs';
 import { join, resolve } from 'path';
+import cookieParser from 'cookie-parser';
 
 function ensureUploadsDirs() {
   // Лучше абсолютный путь: либо из ENV, либо из cwd
@@ -21,11 +22,14 @@ function ensureUploadsDirs() {
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const expressApp = app.getHttpAdapter().getInstance();
   app.setGlobalPrefix('api');
   app.enableCors({ origin: 'http://localhost:3000', credentials: true });
+  expressApp.set('trust proxy', 1);
+  app.use(cookieParser());
 
-  await setupAdmin(app);
-  ensureUploadsDirs();
+  // await setupAdmin(app);
+  // ensureUploadsDirs();
 
   const port = Number(process.env.PORT || 3001);
   await app.listen(port, '0.0.0.0');

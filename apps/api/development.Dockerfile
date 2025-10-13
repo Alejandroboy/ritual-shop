@@ -7,6 +7,7 @@ COPY package.json yarn.lock ./
 RUN yarn install
 COPY . .
 
+
 RUN npx prisma generate
 
 RUN yarn global add @nestjs/cli

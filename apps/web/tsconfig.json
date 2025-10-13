@@ -10,7 +10,8 @@
     "paths": {
       "@repo/ui": ["../../packages/ui/src/index.ts"],
       "@repo/types": ["../../packages/types/src/index.ts"],
-      "@repo/config": ["../../packages/config/src/index.ts"]
+      "@repo/config": ["../../packages/config/src/index.ts"],
+      "@utils": ["./src/utils/index.ts"]
     },
     "jsx": "preserve",
     "lib": ["dom", "dom.iterable", "esnext"],
