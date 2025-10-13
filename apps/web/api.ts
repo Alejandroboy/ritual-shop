@@ -41,21 +41,20 @@ export type TemplateDetails = TemplateListItem & {
   variants: {
     holePattern: HolePattern;
     finishRequired: boolean;
-    finishes: { id: number; code: string; label: string }[];
+    finishes: Finish[];
   }[];
   defaults: {
     sizeId: number | null;
     holePattern: HolePattern | null;
+    finishes: HolePattern | null;
     frameId: number | null;
     backgroundId: number | null;
   };
 };
 
-// const API_BASE = process.env.API_BASE || 'http://localhost:3001';
-
 const isServer = typeof window === 'undefined';
 
-function makeUrl(path: string) {
+export function makeUrl(path: string) {
   const base = isServer
     ? process.env.API_BASE || 'http://api:3001/api'
     : process.env.NEXT_PUBLIC_API_BASE || '/api';
@@ -68,8 +67,6 @@ export async function api<T>(input: string, init?: RequestInit): Promise<T> {
   try {
     const res = await fetch(url, {
       ...init,
-      headers: { 'Content-Type': 'application/json', ...(init?.headers || {}) },
-      cache: 'no-store',
     });
     if (!res.ok) {
       console.log('res not ok', res);

@@ -16,13 +16,21 @@ import { OrdersModule } from './orders/orders.module';
 // import { AdminModule } from './admin/admin.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { OrderItemsModule } from './order-items/order-items.module';
-import { MailerService } from './shared/mailer.service';
+import { MailerService } from './common/mailer.service';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join, resolve } from 'path';
+import { AdminAuthModule } from './admin/admin-auth/admin-auth.module';
+import { AdminOrdersModule } from './admin/admin-orders/admin-orders.module';
+import { AdminTemplatesModule } from './admin/admin-templates/admin-templates.module';
+import { AdminStatsModule } from './admin/admin-stats/admin-stats.module';
 
 @Module({
   imports: [
     // AdminModule,
+    AdminAuthModule,
+    AdminOrdersModule,
+    AdminTemplatesModule,
+    AdminStatsModule,
     CatalogModule,
     ConfigurationModule,
     EmailModule,
@@ -37,19 +45,6 @@ import { join, resolve } from 'path';
     }),
     OrderItemsModule,
   ],
-  // controllers: [
-  //   AppController,
-  //   EmailController,
-  //   HealthController,
-  //   CatalogController,
-  // ],
-  providers: [
-    MailerService,
-    //   AppService,
-    //   EmailService,
-    //   HealthService,
-    //   CatalogService,
-    //   PrismaService,
-  ],
+  providers: [MailerService],
 })
 export class AppModule {}

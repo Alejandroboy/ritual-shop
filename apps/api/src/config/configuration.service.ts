@@ -6,7 +6,7 @@ export type TEnvironmentVariable =
   | 'POSTGRES_DB'
   | 'POSTGRES_USER'
   | 'POSTGRES_PASSWORD'
-  | 'PG_HOST_PORT'
+  | 'POSTGRES_HOST_PORT'
   | 'MAILHOG_SMTP_PORT'
   | 'MAILHOG_UI_PORT'
   | 'DATABASE_URL'
@@ -16,7 +16,9 @@ export type TEnvironmentVariable =
   | 'SMTP_PORT'
   | 'SMTP_SECURE'
   | 'SMTP_USER'
-  | 'SMTP_PASS';
+  | 'SMTP_PASS'
+  | 'JWT_EXPIRES'
+  | 'JWT_SECRET';
 
 @Injectable()
 export class ConfigurationService {

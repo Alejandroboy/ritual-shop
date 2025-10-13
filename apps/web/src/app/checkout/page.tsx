@@ -176,7 +176,7 @@ export default function CheckoutPage() {
                   className="rounded-xl border bg-white p-4 flex flex-col gap-2"
                 >
                   <p>{item.templateLabel}</p>
-                  <p>{item.size.label}</p>
+                  <p>{item?.size?.label}</p>
                 </div>
               );
             })}
@@ -218,87 +218,6 @@ export default function CheckoutPage() {
           value={form.comment}
           onChange={(e) => setForm({ ...form, comment: e.target.value })}
         />
-        <div>
-          <label className="block mb-1">Файлы (фото/макеты) — до 8 шт.</label>
-          <input
-            type="file"
-            multiple
-            onChange={(e) => setFiles(e.target.files)}
-          />
-        </div>
-
-        <div className="mt-6 space-y-4">
-          {items.map((it, idx) => {
-            const list = filesByItem[it.id] ?? [];
-            const err = errorsByItem[it.id];
-            const progress = progressByItem[it.id] ?? 0;
-            return (
-              <div key={it.id} className="border rounded p-3">
-                <div className="font-medium mb-2">
-                  Позиция #{idx + 1} —{' '}
-                  {it.templateLabel ?? it.templateCode ?? it.id}
-                </div>
-                <input
-                  type="file"
-                  multiple
-                  accept="image/png,image/jpeg,image/webp,application/pdf"
-                  onChange={(e) => onFilesChange(it.id, e.target.files)}
-                />
-                {err && <p className="text-red-600 text-sm mt-2">{err}</p>}
-
-                {/* предпросмотр */}
-                {!!list.length && (
-                  <div className="mt-3 flex flex-wrap gap-3">
-                    {list.map((f, i) => {
-                      const isImg = f.type.startsWith('image/');
-                      return (
-                        <div key={i} className="border rounded p-2">
-                          <div className="text-xs mb-1 max-w-[180px] truncate">
-                            {f.name}
-                          </div>
-                          {isImg ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                              src={URL.createObjectURL(f)}
-                              alt={f.name}
-                              className="w-32 h-32 object-cover rounded"
-                              onLoad={(e) =>
-                                URL.revokeObjectURL(
-                                  (e.target as HTMLImageElement).src,
-                                )
-                              }
-                            />
-                          ) : (
-                            <div className="w-32 h-32 flex items-center justify-center bg-neutral-100 rounded text-xs">
-                              PDF
-                            </div>
-                          )}
-                          <button
-                            type="button"
-                            onClick={() => removeFile(it.id, i)}
-                            className="mt-2 text-xs underline"
-                          >
-                            убрать
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-
-                {/* прогресс */}
-                {progress > 0 && progress < 100 && (
-                  <div className="mt-3 h-2 bg-neutral-200 rounded">
-                    <div
-                      className="h-2 rounded bg-black"
-                      style={{ width: `${progress}%` }}
-                    />
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
         <button
           disabled={loading}
           className="px-4 py-2 rounded bg-black text-white disabled:opacity-50"

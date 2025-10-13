@@ -11,11 +11,18 @@ export class OrderItemsService {
     orderId: string,
     files: Express.Multer.File[],
   ) {
+    const order = await this.prisma.order.findUnique({
+      where: {
+        id: orderId,
+      },
+    });
+    console.log('order attachAssetsToItem', order);
     const item = await this.prisma.orderItem.findUnique({
       where: { id: itemId },
     });
     if (!item) throw new NotFoundException('Order item not found');
     if (!files?.length) return { ok: true, count: 0 };
+    console.log('item', item);
 
     try {
       await this.prisma.asset.createMany({

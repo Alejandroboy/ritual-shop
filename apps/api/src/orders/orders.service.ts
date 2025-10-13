@@ -17,7 +17,7 @@ import { AddAssetDto } from './dto/add-asset.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { UpdateOrderItemDto } from './dto/update-item.dto';
-import { MailerService } from '../shared/mailer.service';
+import { MailerService } from '../common/mailer.service';
 import { CheckoutDto } from './dto/checkout.dto';
 import { log } from '@adminjs/express';
 

@@ -1,4 +1,4 @@
-name: ritual-dev
+name: ritual-production
 services:
   caddy:
     image: caddy:2.8

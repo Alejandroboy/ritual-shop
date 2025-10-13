@@ -1,7 +1,6 @@
 import FilterBar from '../../components/filter-bar';
 import TemplateCard from '../../components/template-card';
 import { api, type TemplateListItem } from '../../../api';
-import { getApiBase } from '../../utils/api-base';
 
 type ListResp = {
   total: number;
@@ -31,7 +30,6 @@ export default async function CatalogPage({
   //   if (v) q.set(k, v);
   // }
   if (!q.has('pageSize')) q.set('pageSize', '24');
-  const API_BASE = getApiBase();
 
   const data = await api<ListResp>(`/catalog/templates?${q.toString()}`);
 

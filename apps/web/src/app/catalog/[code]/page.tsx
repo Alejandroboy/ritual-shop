@@ -1,5 +1,6 @@
 import { api, type TemplateDetails } from '../../../../api';
 import AddToOrderForm from '../../../components/add-to-order-form';
+import React from 'react';
 
 export default async function TemplatePage({
   params,
@@ -10,7 +11,7 @@ export default async function TemplatePage({
     `/catalog/templates/${encodeURIComponent((await params).code)}`,
   );
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-qa="template-page">
       <div>
         <div className="text-sm text-neutral-500">{tpl.code}</div>
         <h1 className="text-2xl font-semibold">{tpl.label}</h1>
@@ -23,6 +24,10 @@ export default async function TemplatePage({
 
       <AddToOrderForm tpl={tpl} />
 
+      <div className="flex justify-between">
+        <div>Итоговая цена:</div>
+        <div>{tpl.basePriceMinor}</div>
+      </div>
       <section className="text-sm text-neutral-700">
         <h2 className="font-medium mb-2">Доступные опции</h2>
         <ul className="list-disc ml-5 space-y-1">
