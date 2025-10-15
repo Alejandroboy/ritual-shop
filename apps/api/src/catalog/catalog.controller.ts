@@ -1,7 +1,13 @@
-import { Controller, Get, Query, Param } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Query,
+  Param,
+  BadRequestException,
+} from '@nestjs/common';
 import { CatalogService } from './catalog.service';
-import type { ListTemplatesQuery } from './dto/list-templates.dto';
-import type { GetTemplateParam } from './dto/get-template.param';
+import { ListTemplatesQuery } from './dto/list-templates.dto';
+import { GetTemplateDto } from './dto/get-template.dto';
 
 @Controller('catalog')
 export class CatalogController {
@@ -12,7 +18,11 @@ export class CatalogController {
     return this.catalogService.listTemplates(q);
   }
   @Get('templates/:code')
-  getTemplate(@Param() { code }: GetTemplateParam) {
+  getTemplate(@Param() params: GetTemplateDto) {
+    const code = params.code.trim();
+    if (!code || code === 'undefined' || code === 'null') {
+      throw new BadRequestException('Template code is required');
+    }
     return this.catalogService.getTemplate(code);
   }
 

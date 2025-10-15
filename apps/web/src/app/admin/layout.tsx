@@ -32,6 +32,10 @@ export default function AdminLayout({
           <a href="/admin/templates">Шаблоны</a>
           <br />
           <a href="/admin/templates/pricing">Смена цен</a>
+          <br />
+          <a href="/admin/users">Пользователи</a>
+          <br />
+          <a href="/admin/users/new">Создать пользователя</a>
         </nav>
         <div className="cursor-pointer" onClick={handleExit}>
           Exit

@@ -89,6 +89,13 @@ enum Currency {
   RUB
 }
 
+enum Role {
+  ADMIN_GOD
+  ADMIN
+  MANAGER
+  CUSTOMER
+}
+
 // ====== СПРАВОЧНИКИ ======
 
 /// Размеры изделий в сантиметрах (целые, как в каталоге)
@@ -285,6 +292,13 @@ model Order {
 
   items OrderItem[]
 
+  customerId String?
+  customer   User?    @relation("CustomerOrders", fields: [customerId], references: [id])
+
+  managerId  String?
+  manager    User?    @relation("ManagerOrders", fields: [managerId], references: [id])
+
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -326,6 +340,36 @@ model OrderItem {
   @@index([sizeId])
   @@index([frameId])
   @@index([backgroundId])
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String?
+  phone        String?
+  role         Role     @default(CUSTOMER)
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Связи с заказами
+  customerOrders Order[] @relation("CustomerOrders")
+  managedOrders  Order[] @relation("ManagerOrders")
+
+  // Ротация refresh-токенов
+  refreshSessions RefreshSession[]
+}
+
+model RefreshSession {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash  String
+  userAgent  String?
+  ip         String?
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
 }
 
 /// Персоналии для позиции (ФИО и даты)

@@ -499,11 +499,15 @@ export class OrdersService {
         data: {
           orderStatus: OrderStatus.ACCEPTED, // предполагается, что enum уже существует согласно ТЗ
           orderNumber: number, // если поля нет — добавьте его в Prisma schema как String @unique?
-          customerName: dto.fullName,
+          customerName: dto.name,
           customerPhone: dto.phone,
           customerEmail: dto.email ?? null,
+          customerId: dto.userId,
         },
-        include: { items: { include: { assets: true } } },
+        include: {
+          items: { include: { assets: true } },
+          customer: true,
+        },
       });
       return updated;
     });
