@@ -58,7 +58,10 @@ export class AdminOrdersController {
   async one(@Param('id') id: string) {
     return this.prisma.order.findUnique({
       where: { id },
-      include: { items: { include: { assets: true } } },
+      include: {
+        items: { include: { assets: true } },
+        customer: true,
+      },
     });
   }
 

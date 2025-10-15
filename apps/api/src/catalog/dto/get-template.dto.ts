@@ -1,4 +1,4 @@
 import { IsString } from 'class-validator';
-export class GetTemplateParam {
+export class GetTemplateDto {
   @IsString() code!: string;
 }

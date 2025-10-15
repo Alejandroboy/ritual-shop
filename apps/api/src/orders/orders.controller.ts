@@ -103,6 +103,7 @@ export class OrdersController {
 
   @Post(':id/checkout')
   async checkout(@Param('id') id: string, @Body() dto: CheckoutDto) {
+    console.log('dto', dto);
     return this.ordersService.checkout(id, dto);
   }
 

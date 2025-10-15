@@ -9,18 +9,17 @@ import {
 export class CheckoutDto {
   @IsString()
   @MaxLength(120)
-  fullName: string;
+  name: string;
+
+  @IsString()
+  userId: string;
 
   @IsPhoneNumber('RU')
   phone: string;
 
   @IsEmail()
   @IsOptional()
-  email?: string;
-
-  @IsString()
-  @MaxLength(120)
-  city: string;
+  email: string;
 
   @IsString()
   @IsOptional()

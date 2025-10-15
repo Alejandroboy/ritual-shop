@@ -4,6 +4,7 @@ import { setupAdmin } from './admin/admin';
 import { mkdirSync } from 'fs';
 import { join, resolve } from 'path';
 import cookieParser from 'cookie-parser';
+import { ValidationPipe } from '@nestjs/common';
 
 function ensureUploadsDirs() {
   // Лучше абсолютный путь: либо из ENV, либо из cwd
@@ -28,6 +29,13 @@ async function bootstrap() {
   expressApp.set('trust proxy', 1);
   app.use(cookieParser());
 
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true, // отсекаем лишние поля
+      forbidNonWhitelisted: false,
+      transform: true, // приведение типов для query/params
+    }),
+  );
   // await setupAdmin(app);
   // ensureUploadsDirs();
 

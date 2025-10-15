@@ -4,8 +4,8 @@ import * as bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
 
 type AdminPayload = { id: string; email: string; role: 'admin' };
-const ACCESS_TTL = process.env.JWT_ACCESS_EXPIRES ?? '60m';
-const REFRESH_TTL = process.env.JWT_REFRESH_EXPIRES ?? '14d';
+const ACCESS_TTL = Number(process.env.JWT_ACCESS_EXPIRES) ?? 3600;
+const REFRESH_TTL = Number(process.env.JWT_REFRESH_EXPIRES) ?? 2592000;
 
 @Injectable()
 export class AdminAuthService {
