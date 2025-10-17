@@ -1,7 +1,7 @@
 'use client';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import type { Material, Shape, Orientation, ColorMode } from '../../api';
+import type { Material, Shape, Orientation, ColorMode } from '../utils/api';
 
 const MATERIALS: Material[] = [
   'CERMET',

@@ -1,6 +1,6 @@
 import FilterBar from '../../components/filter-bar';
 import TemplateCard from '../../components/template-card';
-import { api, type TemplateListItem } from '../../../api';
+import { api, type TemplateListItem } from '../../utils/api';
 
 type ListResp = {
   total: number;

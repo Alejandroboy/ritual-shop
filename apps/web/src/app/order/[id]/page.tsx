@@ -10,6 +10,7 @@ async function fetchOrder(id: string) {
 }
 
 type OrderItem = {
+  id: string;
   templateLabel: string;
 };
 
@@ -30,7 +31,7 @@ export default async function OrderPage({
           Состав:&nbsp;
           <div>
             {order.items.map((item: OrderItem) => {
-              return <p key={item.templateLabel}>{item.templateLabel}</p>;
+              return <p key={item.id}>{item.templateLabel}</p>;
             })}
           </div>
         </div>
