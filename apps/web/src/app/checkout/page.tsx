@@ -2,11 +2,26 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getApiBase } from '@utils';
-import { api } from '../../../api';
+import { api } from '@utils';
+import { useAppStore } from '../../state/app-store';
 
 type FilesByItem = Record<string, File[]>;
 type ProgressByItem = Record<string, number>;
 type ErrorsByItem = Record<string, string | null>;
+
+function useHydrated() {
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => {
+    // моментальная проверка
+    setHydrated(useAppStore.persist.hasHydrated());
+    // событие окончания
+    const unsub = useAppStore.persist.onFinishHydration(() =>
+      setHydrated(true),
+    );
+    return () => unsub();
+  }, []);
+  return hydrated;
+}
 
 type Order = {
   id: string;
@@ -32,8 +47,17 @@ type User = {
 };
 export default function CheckoutPage() {
   const router = useRouter();
+  const draftOrderId = useAppStore((s) => s.draftOrderId);
+  console.log('draftOrderId checout page', draftOrderId);
+  const clearDraft = useAppStore((s) => s.clearDraft);
+  const me = useAppStore((s) => s.me);
+  const fetchMe = useAppStore((s) => s.fetchMe);
+  const hydrated = useHydrated();
+  console.log('hydrated', hydrated);
   const [orderId, setOrderId] = useState<string | null>(null);
   const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null);
+  const [order, setOrder] = useState<OrderDetails | null>(null);
+  const [loading, setLoading] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [filesByItem, setFilesByItem] = useState<FilesByItem>({});
   const [progressByItem, setProgressByItem] = useState<ProgressByItem>({});
@@ -45,96 +69,150 @@ export default function CheckoutPage() {
     phone: '',
   });
   const [files, setFiles] = useState<FileList | null>(null);
-  const [loading, setLoading] = useState(false);
   const API_BASE = getApiBase();
 
   useEffect(() => {
-    try {
-      const idStr = window.localStorage.getItem('orderId');
-      if (!idStr) {
-        router.push('/catalog');
-        return;
-      }
-      setOrderId(idStr);
-      getOrderDetails(idStr);
-      getUser();
-    } catch {
-      router.push('/catalog');
+    console.log('useEffect draftOrderId', draftOrderId);
+    if (!hydrated) return;
+    if (draftOrderId === null) {
+      router.replace('/catalog');
     }
-  }, [router]);
+  }, [hydrated, draftOrderId, router]);
 
-  const items = useMemo(() => orderDetails?.items ?? [], [orderDetails]);
-  const getUser = async () => {
-    const data = await api('/users/me', {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include', //
-    });
-    console.log('data', data);
-    const { user } = data;
-    setUser(user);
+  useEffect(() => {
+    if (!me) fetchMe().catch(() => {});
     setForm({
-      userId: user.id,
-      email: user.email,
-      name: user.name,
-      phone: user.phone,
+      userId: me?.user?.id || '',
+      email: me?.user?.email || '',
+      name: me?.user?.name || '',
+      phone: me?.user?.phone || '',
     });
-  };
-  async function getOrderDetails(idStr: string) {
-    if (idStr) {
+  }, [me, fetchMe]);
+
+  useEffect(() => {
+    if (!hydrated || !draftOrderId) return;
+    let ignore = false;
+    async function load() {
+      if (!draftOrderId) return;
       try {
-        const data = await api<OrderDetails>(`/orders/${idStr}`);
-        setOrderDetails(data);
+        const data = await api<OrderDetails>(`/orders/${draftOrderId}`);
+        if (!ignore) setOrder(data);
       } catch (e) {
-        console.log('getOrderDetails error', e);
+        console.warn('getOrderDetails error', e);
+        // если заказа по id нет — очищаем черновик и уводим в каталог
+        clearDraft();
+        router.replace('/catalog');
       }
     }
-  }
+    load();
+    return () => {
+      ignore = true;
+    };
+  }, [hydrated, draftOrderId, clearDraft, router]);
+
+  const items = useMemo(() => order?.items ?? [], [order]);
+  console.log('items', items);
+  console.log('form', form);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!orderId) return;
+    if (!draftOrderId) return;
     setLoading(true);
-    console.log('JSON.stringify(form)', JSON.stringify(form));
+    console.log('form', form);
+    const payload = {
+      userId: String(form.userId || me?.id || ''),
+      email: String(form.email || ''),
+      name: String(form.name || ''),
+      phone: form.phone || '',
+    };
     try {
-      const data = await api<Order>(`/orders/${orderId}/checkout`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      });
-      window.localStorage.removeItem('orderId');
-      window.localStorage.removeItem('draftOrderId');
+      const data = await api<{ id: string }>(
+        `/orders/${draftOrderId}/checkout`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        },
+      );
+      // очистим черновой заказ в zustand (persist), чтобы не цепляться к старому
+      clearDraft();
+      // на всякий случай подчистим старые ключи, если вдруг где-то остались
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('draftOrderId');
+        localStorage.removeItem('orderId');
+      }
       router.push(`/order/${data.id}`);
     } catch (e) {
-      alert('Ошибка оформления заказа');
-      console.log('e Ошибка оформления заказа', e);
+      const msg = e?.message || '';
+      console.error('checkout error', e);
+      alert(`Ошибка оформления заказа${msg ? `: ${msg}` : ''}`);
     } finally {
+      alert('Заказ оформлен');
       setLoading(false);
     }
   }
 
+  // async function handleSubmit(e: React.FormEvent) {
+  //   e.preventDefault();
+  //   if (!orderId) return;
+  //   setLoading(true);
+  //   console.log('JSON.stringify(form)', JSON.stringify(form));
+  //   try {
+  //     const data = await api<Order>(`/orders/${orderId}/checkout`, {
+  //       method: 'POST',
+  //       headers: { 'Content-Type': 'application/json' },
+  //       body: JSON.stringify(form),
+  //     });
+  //     window.localStorage.removeItem('orderId');
+  //     window.localStorage.removeItem('draftOrderId');
+  //     router.push(`/order/${data.id}`);
+  //   } catch (e) {
+  //     alert('Ошибка оформления заказа');
+  //     console.log('e Ошибка оформления заказа', e);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }
+
+  // Прелоадер до гидратации
+  if (!hydrated) {
+    return <div className="mx-auto max-w-2xl px-4 py-8">Загрузка…</div>;
+  }
+
+  // Если гидратировались, но id нет — редирект случится в useEffect; можно показать skeleton
+  if (!draftOrderId) {
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-8">Переход в каталог…</div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
-      {orderDetails && (
+      {order && (
         <>
           <h1 className="text-2xl font-semibold mb-6">В заказе</h1>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 ">
-            {orderDetails.items.map((item) => {
-              return (
-                <div
-                  key={item.id}
-                  className="rounded-xl border bg-white p-4 flex flex-col gap-2"
-                >
-                  <p>{item.templateLabel}</p>
-                  <p>{item?.size?.label}</p>
-                </div>
-              );
-            })}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {items.map((item) => (
+              <div
+                key={item.id}
+                className="rounded-xl border bg-white p-4 flex flex-col gap-2"
+              >
+                <p>{item.templateLabel}</p>
+                <p>{item.size?.label}</p>
+              </div>
+            ))}
           </div>
         </>
       )}
-      <h1 className="text-2xl font-semibold mb-6">Оформление заказа</h1>
-      <button onClick={handleSubmit}>Оформить заказ</button>
+
+      <h1 className="text-2xl font-semibold my-6">Оформление заказа</h1>
+      <button
+        onClick={handleSubmit}
+        disabled={!draftOrderId || loading || items.length === 0}
+        className="px-4 py-2 rounded-md bg-neutral-900 text-white disabled:opacity-50"
+      >
+        {loading ? 'Оформляем…' : 'Оформить заказ'}
+      </button>
     </div>
   );
 }

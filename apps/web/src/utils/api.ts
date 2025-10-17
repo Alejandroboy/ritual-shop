@@ -109,7 +109,8 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
         : data?.message || res.statusText;
       const err: any = new Error(msg);
       err.status = res.status;
-      throw err;
+      // throw err;
+      return err;
     }
     return res.json() as Promise<T>;
   }
@@ -118,10 +119,54 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   const base = process.env.NEXT_PUBLIC_API_BASE || '/api';
   const url = joinBase(base, toApiPath(path));
 
-  const res = await fetch(url, {
-    credentials: 'include',
-    ...init,
-  });
+  /** Единственный общий промис рефреша во всём модуле */
+  let __refreshing: Promise<void> | null = null;
+  async function ensureRefreshed() {
+    if (!__refreshing) {
+      __refreshing = (async () => {
+        const refreshUrl = joinBase(base, toApiPath('/auth/refresh'));
+        const r = await fetch(refreshUrl, {
+          method: 'POST',
+          credentials: 'include',
+        });
+        if (!r.ok) {
+          const body = await r.json().catch(() => ({}));
+          const msg = body?.message || `refresh failed: ${r.status}`;
+          throw new Error(msg);
+        }
+      })().finally(() => {
+        __refreshing = null;
+      });
+    }
+    return __refreshing;
+  }
+
+  /** Одна попытка + один ретрай после refresh */
+  async function doFetch(
+    u: string,
+    init: RequestInit & { __retry?: boolean } = {},
+  ) {
+    const res = await fetch(u, { credentials: 'include', ...init });
+
+    if (res.status === 401 && !init.__retry) {
+      try {
+        await ensureRefreshed();
+        // повторяем исходный запрос ровно один раз
+        return await fetch(u, {
+          credentials: 'include',
+          ...init,
+          __retry: true,
+        });
+      } catch {
+        // провал рефреша — отдаём исходный 401
+        return res;
+      }
+    }
+    return res;
+  }
+
+  const res = await doFetch(url, init as any);
+
   if (!res.ok) {
     const data = await res.json().catch(() => ({}));
     const msg = Array.isArray(data?.message)
@@ -129,7 +174,24 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
       : data?.message || res.statusText;
     const err: any = new Error(msg);
     err.status = res.status;
-    throw err;
+    return err;
   }
   return res.json() as Promise<T>;
+}
+
+export async function getJSON<T>(url: string): Promise<T> {
+  const r = await fetch(url, { credentials: 'include' });
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+
+export async function postJSON<T>(url: string, body: any): Promise<T> {
+  const r = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(body),
+  });
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
 }
