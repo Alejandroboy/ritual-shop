@@ -52,6 +52,12 @@ export default function OrderDetail() {
         )}
       </div>
       <div>
+        <h2 className="font-semibold">Заказчик</h2>
+        <p>{data.customer.name}</p>
+        <p>{data.customer.email}</p>
+        <p>{data.customer.phone}</p>
+      </div>
+      <div>
         <h2 className="font-semibold">Позиции</h2>
         {data.items.map((it: any) => (
           <div key={it.id} className="border rounded-xl p-3 my-2">

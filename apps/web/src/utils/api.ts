@@ -55,7 +55,6 @@ export type TemplateDetails = TemplateListItem & {
 const isServer = typeof window === 'undefined';
 
 function toApiPath(path: string) {
-  // принимает '/auth/profile' или '/api/auth/profile' -> всегда '/api/...'
   return path.startsWith('/api')
     ? path
     : `/api${path.startsWith('/') ? path : `/${path}`}`;
@@ -69,9 +68,7 @@ function joinBase(base: string, apiPath: string) {
 }
 
 export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
-  // --- Server (RSC/Route Handlers) ---
   if (isServer) {
-    // Импорт только на сервере, чтобы не тащить модуль в браузер
     const mod = await import('next/headers');
     const headersList = await mod.headers();
     const cookiesList = await mod.cookies();
@@ -80,11 +77,9 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
     const proto = headersList.get('x-forwarded-proto') ?? 'http';
     if (!host) throw new Error('Cannot resolve host for server fetch');
 
-    // Можно переопределить API_BASE (напр. http://api:3001/api) при необходимости
     const base = process.env.API_BASE ?? `${proto}://${host}`;
     const url = joinBase(base, toApiPath(path));
 
-    // Сериализуем все входящие куки в один заголовок Cookie
     const cookieHeader = cookiesList
       .getAll()
       .map(({ name, value }) => `${name}=${value}`)
@@ -119,7 +114,6 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   const base = process.env.NEXT_PUBLIC_API_BASE || '/api';
   const url = joinBase(base, toApiPath(path));
 
-  /** Единственный общий промис рефреша во всём модуле */
   let __refreshing: Promise<void> | null = null;
   async function ensureRefreshed() {
     if (!__refreshing) {
@@ -141,7 +135,6 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
     return __refreshing;
   }
 
-  /** Одна попытка + один ретрай после refresh */
   async function doFetch(
     u: string,
     init: RequestInit & { __retry?: boolean } = {},
@@ -151,14 +144,12 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
     if (res.status === 401 && !init.__retry) {
       try {
         await ensureRefreshed();
-        // повторяем исходный запрос ровно один раз
         return await fetch(u, {
           credentials: 'include',
           ...init,
           __retry: true,
         });
       } catch {
-        // провал рефреша — отдаём исходный 401
         return res;
       }
     }

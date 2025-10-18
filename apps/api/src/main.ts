@@ -1,10 +1,10 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { setupAdmin } from './admin/admin';
 import { mkdirSync } from 'fs';
 import { join, resolve } from 'path';
 import cookieParser from 'cookie-parser';
 import { ValidationPipe } from '@nestjs/common';
+import { v4 as uuid } from 'uuid';
 
 function ensureUploadsDirs() {
   // Лучше абсолютный путь: либо из ENV, либо из cwd
@@ -28,6 +28,19 @@ async function bootstrap() {
   app.enableCors({ origin: 'http://localhost:3000', credentials: true });
   expressApp.set('trust proxy', 1);
   app.use(cookieParser());
+  app.use((req, res, next) => {
+    (req as any).reqId = uuid();
+    next();
+  });
+  app.use((req, res, next) => {
+    res.on('finish', () => {
+      const id = (req as any).reqId;
+      console.log(
+        `[${id}] ${req.method} ${req.originalUrl} ${res.statusCode} rt:${!!req.cookies?.refresh_token} at:${!!req.cookies?.access_token}`,
+      );
+    });
+    next();
+  });
 
   app.useGlobalPipes(
     new ValidationPipe({

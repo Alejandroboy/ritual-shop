@@ -16,10 +16,13 @@ import { AdminStatsModule } from './admin/admin-stats/admin-stats.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { AdminUsersModule } from './admin/admin-users/admin-users.module';
+import { S3Module } from './s3/s3.module';
+import { AssetsModule } from './assets/assets.module';
 
 @Module({
   imports: [
-    // AdminModule,
+    S3Module,
+    AssetsModule,
     AdminUsersModule,
     AdminAuthModule,
     AuthModule,

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { api } from '../../../utils/api';
+import { api } from '@utils';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');

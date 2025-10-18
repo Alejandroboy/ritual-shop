@@ -7,8 +7,6 @@ import {
   Query,
   Post,
   UseGuards,
-  ParseIntPipe,
-  DefaultValuePipe,
 } from '@nestjs/common';
 
 import { UsersService } from './users.service';
@@ -28,7 +26,6 @@ import { ListUsersQueryDto } from './dto/list-user.query';
 export class UsersController {
   constructor(private readonly users: UsersService) {}
 
-  // ======== Текущий пользователь ========
   @UseGuards(AuthGuard('jwt'))
   @Get('me')
   async me(@CurrentUser() me: CurrentUserShape) {
@@ -46,7 +43,6 @@ export class UsersController {
     return { user: u };
   }
 
-  // ======== Админ/менеджер ========
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('ADMIN', 'MANAGER')
   @Get('list')

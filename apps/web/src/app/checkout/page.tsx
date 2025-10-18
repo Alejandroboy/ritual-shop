@@ -12,9 +12,7 @@ type ErrorsByItem = Record<string, string | null>;
 function useHydrated() {
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => {
-    // моментальная проверка
     setHydrated(useAppStore.persist.hasHydrated());
-    // событие окончания
     const unsub = useAppStore.persist.onFinishHydration(() =>
       setHydrated(true),
     );
@@ -53,15 +51,8 @@ export default function CheckoutPage() {
   const me = useAppStore((s) => s.me);
   const fetchMe = useAppStore((s) => s.fetchMe);
   const hydrated = useHydrated();
-  console.log('hydrated', hydrated);
-  const [orderId, setOrderId] = useState<string | null>(null);
-  const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null);
   const [order, setOrder] = useState<OrderDetails | null>(null);
   const [loading, setLoading] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
-  const [filesByItem, setFilesByItem] = useState<FilesByItem>({});
-  const [progressByItem, setProgressByItem] = useState<ProgressByItem>({});
-  const [errorsByItem, setErrorsByItem] = useState<ErrorsByItem>({});
   const [form, setForm] = useState({
     userId: '',
     email: '',
@@ -72,7 +63,6 @@ export default function CheckoutPage() {
   const API_BASE = getApiBase();
 
   useEffect(() => {
-    console.log('useEffect draftOrderId', draftOrderId);
     if (!hydrated) return;
     if (draftOrderId === null) {
       router.replace('/catalog');
@@ -99,7 +89,6 @@ export default function CheckoutPage() {
         if (!ignore) setOrder(data);
       } catch (e) {
         console.warn('getOrderDetails error', e);
-        // если заказа по id нет — очищаем черновик и уводим в каталог
         clearDraft();
         router.replace('/catalog');
       }
@@ -111,8 +100,6 @@ export default function CheckoutPage() {
   }, [hydrated, draftOrderId, clearDraft, router]);
 
   const items = useMemo(() => order?.items ?? [], [order]);
-  console.log('items', items);
-  console.log('form', form);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -134,9 +121,7 @@ export default function CheckoutPage() {
           body: JSON.stringify(payload),
         },
       );
-      // очистим черновой заказ в zustand (persist), чтобы не цепляться к старому
       clearDraft();
-      // на всякий случай подчистим старые ключи, если вдруг где-то остались
       if (typeof window !== 'undefined') {
         localStorage.removeItem('draftOrderId');
         localStorage.removeItem('orderId');
@@ -152,34 +137,10 @@ export default function CheckoutPage() {
     }
   }
 
-  // async function handleSubmit(e: React.FormEvent) {
-  //   e.preventDefault();
-  //   if (!orderId) return;
-  //   setLoading(true);
-  //   console.log('JSON.stringify(form)', JSON.stringify(form));
-  //   try {
-  //     const data = await api<Order>(`/orders/${orderId}/checkout`, {
-  //       method: 'POST',
-  //       headers: { 'Content-Type': 'application/json' },
-  //       body: JSON.stringify(form),
-  //     });
-  //     window.localStorage.removeItem('orderId');
-  //     window.localStorage.removeItem('draftOrderId');
-  //     router.push(`/order/${data.id}`);
-  //   } catch (e) {
-  //     alert('Ошибка оформления заказа');
-  //     console.log('e Ошибка оформления заказа', e);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // }
-
-  // Прелоадер до гидратации
   if (!hydrated) {
     return <div className="mx-auto max-w-2xl px-4 py-8">Загрузка…</div>;
   }
 
-  // Если гидратировались, но id нет — редирект случится в useEffect; можно показать skeleton
   if (!draftOrderId) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-8">Переход в каталог…</div>

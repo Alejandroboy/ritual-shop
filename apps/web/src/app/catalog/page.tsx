@@ -1,6 +1,6 @@
 import FilterBar from '../../components/filter-bar';
 import TemplateCard from '../../components/template-card';
-import { api, type TemplateListItem } from '../../utils/api';
+import { api, type TemplateListItem } from '@utils';
 
 type ListResp = {
   total: number;
@@ -17,18 +17,6 @@ export default async function CatalogPage({
   searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const q = new URLSearchParams();
-  // for (const k of [
-  //   'material',
-  //   'shape',
-  //   'orientation',
-  //   'colorMode',
-  //   'coverage',
-  //   'page',
-  //   'pageSize',
-  // ]) {
-  //   const v = searchParams && (await searchParams[k]);
-  //   if (v) q.set(k, v);
-  // }
   if (!q.has('pageSize')) q.set('pageSize', '24');
 
   const data = await api<ListResp>(`/catalog/templates?${q.toString()}`);

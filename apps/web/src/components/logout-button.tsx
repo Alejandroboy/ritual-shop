@@ -12,7 +12,6 @@ export function LogoutButton() {
         credentials: 'include',
       });
     } catch {
-      // игнорируем сетевую ошибку — всё равно очищаем клиентское состояние редиректом
     } finally {
       setPending(false);
       window.location.href = '/login';

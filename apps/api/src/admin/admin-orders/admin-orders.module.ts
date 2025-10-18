@@ -6,11 +6,12 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigurationModule } from '../../config/configuration.module';
 import { ConfigurationService } from '../../config/configuration.service';
 import { AdminAuthModule } from '../admin-auth/admin-auth.module';
+import { AdminOrdersService } from './admin-orders.service';
 
 @Module({
   imports: [
     AdminAuthModule,
-    ConfigurationModule, // если ConfigModule.isGlobal=true — можно опустить
+    ConfigurationModule,
     JwtModule.registerAsync({
       imports: [ConfigurationModule],
       inject: [ConfigurationService],
@@ -20,6 +21,7 @@ import { AdminAuthModule } from '../admin-auth/admin-auth.module';
     }),
   ],
   controllers: [AdminOrdersController],
-  providers: [PrismaService, AdminGuard],
+  providers: [AdminOrdersService, PrismaService, AdminGuard],
+  exports: [AdminOrdersService],
 })
 export class AdminOrdersModule {}

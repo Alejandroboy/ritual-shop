@@ -96,6 +96,11 @@ enum Role {
   CUSTOMER
 }
 
+enum StorageType {
+  local
+  s3
+}
+
 // ====== СПРАВОЧНИКИ ======
 
 /// Размеры изделий в сантиметрах (целые, как в каталоге)
@@ -330,7 +335,7 @@ model OrderItem {
   unitPriceMinor Int @default(0)
 
   persons OrderItemPerson[]
-  assets  Asset[]
+  assets    OrderItemAsset[]   @relation("OrderItemToAssets")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -390,20 +395,48 @@ model OrderItemPerson {
 }
 
 /// Файлы (фото/рефы/документы) по позиции
-model Asset {
-  id       String    @id @default(cuid())
-  itemId   String
-  kind     AssetKind
-  filename String
-  url      String? // S3/MinIO/локальный путь
-  primary  Boolean   @default(false)
-  note     String?
-  size     Int?
-  mime     String?
+// model Asset {
+//   id       String    @id @default(cuid())
+//   itemId   String
+//   kind     AssetKind
+//   filename String
+//   url      String? // S3/MinIO/локальный путь
+//   primary  Boolean   @default(false)
+//   note     String?
+//   size     Int?
+//   mime     String?
+//
+//   item OrderItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+//
+//   createdAt DateTime @default(now())
+//
+//   @@index([itemId])
+// }
 
-  item OrderItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+model OrderItemAsset {
+  id           String        @id @default(cuid())
+  orderItemId  String
 
-  createdAt DateTime @default(now())
+  // Прямая сторона связи (+ onDelete: Cascade — когда позицию удаляют, ассеты чистятся)
+  orderItem    OrderItem     @relation("OrderItemToAssets", fields: [orderItemId], references: [id], onDelete: Cascade)
 
-  @@index([itemId])
+  storage      StorageType   @default(s3)
+
+  // Для совместимости со старым локальным хранением:
+  path         String?
+
+  // S3-метаданные:
+  bucket       String?
+  key          String?
+  contentType  String?
+  size         Int?
+  etag         String?
+
+  kind         AssetKind      @default(PHOTO)
+  primary      Boolean        @default(false)
+
+  originalName String?
+  createdAt    DateTime      @default(now())
+
+  @@index([orderItemId, createdAt])
 }

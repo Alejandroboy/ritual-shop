@@ -49,7 +49,7 @@ export default function AddToOrderForm({ tpl }: Props) {
       comment: comment || undefined,
     };
     try {
-      const item = await addItem(payload); // { id, orderId }
+      const item = await addItem(payload);
       setItemId(item.id);
       attachPendingToItem(orderId, item.id);
       alert('Позиция добавлена в заказ');

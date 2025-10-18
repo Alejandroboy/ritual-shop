@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppStore } from '../../state/app-store';
 import AssetThumb from '../../components/asset-thumb';
+import { LogoutButton } from '../../components/logout-button';
 
 function useHydrated() {
   const [hydrated, setHydrated] = useState(false);
@@ -34,15 +35,13 @@ export default function AccountPage() {
   const loadMyOrders = useAppStore((s) => s.loadMyOrders);
   const isLoading = useAppStore((s) => s.isLoadingOrders);
 
-  // дождались persist и подкачиваем всё
   useEffect(() => {
     if (!hydrated) return;
     (async () => {
       try {
-        await fetchMe(); // бросит, если 401/нет data.user
-        await loadMyOrders(); // грузит заказы
+        await fetchMe();
+        await loadMyOrders();
       } catch (e: any) {
-        // редиректим только если 401/403, иначе оставим страницу и покажем ошибку
         const status =
           e?.status ?? (/\b401\b|\bunauth/i.test(e?.message) ? 401 : 0);
         if (status === 401 || status === 403) {
@@ -52,7 +51,7 @@ export default function AccountPage() {
         }
       }
     })();
-  }, [hydrated]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [hydrated]);
 
   if (!hydrated || isLoading || !me || !myOrders) {
     return <div className="max-w-3xl mx-auto p-6">Загрузка…</div>;
@@ -67,7 +66,7 @@ export default function AccountPage() {
             Добро пожаловать, {me.name || me.email}
           </p>
         </div>
-        {/* <LogoutButton /> */}
+        <LogoutButton />
       </header>
 
       <section className="rounded-2xl border p-6">

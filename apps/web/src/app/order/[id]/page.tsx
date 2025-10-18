@@ -1,5 +1,5 @@
 import React from 'react';
-import { getApiBase } from '../../../utils/api-base';
+import { getApiBase } from '@utils';
 import Link from 'next/link';
 
 async function fetchOrder(id: string) {

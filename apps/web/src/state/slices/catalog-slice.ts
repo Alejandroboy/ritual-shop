@@ -1,5 +1,5 @@
 import type { Template, TemplateFilter } from '../../types';
-import { api } from '../../utils/api';
+import { api } from '@utils';
 
 export type CatalogSlice = {
   templatesByKey: Record<string, Template[] | undefined>;

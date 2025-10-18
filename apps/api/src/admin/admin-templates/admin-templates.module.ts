@@ -6,6 +6,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigurationModule } from '../../config/configuration.module';
 import { ConfigurationService } from '../../config/configuration.service';
 import { AdminAuthModule } from '../admin-auth/admin-auth.module';
+import { AdminTemplatesService } from './admin-templates.service';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { AdminAuthModule } from '../admin-auth/admin-auth.module';
     }),
   ],
   controllers: [AdminTemplatesController],
-  providers: [PrismaService, AdminGuard],
+  providers: [AdminTemplatesService, PrismaService, AdminGuard],
+  exports: [AdminTemplatesService],
 })
 export class AdminTemplatesModule {}

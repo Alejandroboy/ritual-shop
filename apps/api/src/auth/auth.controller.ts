@@ -90,13 +90,29 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    if (!me?.userId) throw new UnauthorizedException();
+    const userId =
+      (me as any)?.userId ??
+      (req.user as any)?.userId ?? // объект из validate
+      (req.user as any)?.sub ??
+      null; // fallback, если стратегия вдруг вернула payload
+
+    if (!userId) throw new UnauthorizedException('No user in refresh');
+
     const raw = (req as any)?.cookies?.refresh_token as string | undefined;
+    if (!raw) throw new UnauthorizedException('No refresh cookie');
+
     const { accessToken, refreshToken } = await this.auth.rotateRefreshToken(
-      me.userId,
-      raw || '',
+      userId,
+      raw,
     );
-    this.setAuthCookies(res, accessToken, refreshToken);
+    this.setAuthCookies(res, accessToken, refreshToken); // кладём новый access+refresh
+    console.log(
+      `[${(req as any).reqId}] /auth/refresh rt:${!!(req as any)?.cookies?.refresh_token}`,
+    );
+    console.log(
+      `[${(req as any).reqId}] set-cookie:`,
+      res.getHeader('set-cookie'),
+    );
     return { ok: true };
   }
 

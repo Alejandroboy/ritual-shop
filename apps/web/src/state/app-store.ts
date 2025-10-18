@@ -53,12 +53,10 @@ export const useAppStore = create<AppState>()(
               }
             : null,
           draftOrderId: s.draftOrderId,
-          // каталог можно не сохранять, чтобы не раздувать localStorage
         }),
         onRehydrateStorage: () => () => {
-          // этот коллбек вызывается ПОСЛЕ загрузки состояния из storage
           return () => {
-            set({ _hydrated: true }); // 🎯 финиш гидратации
+            set({ _hydrated: true });
           };
         },
       },
