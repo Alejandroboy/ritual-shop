@@ -1,4 +1,4 @@
-import { api, type TemplateDetails } from '../../../utils/api';
+import { api, type TemplateDetails } from '@utils';
 import AddToOrderForm from '../../../components/add-to-order-form';
 import React from 'react';
 

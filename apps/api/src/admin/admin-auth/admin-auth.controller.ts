@@ -19,7 +19,7 @@ const baseCookie: CookieOptions = {
 
 const accessMs = +(process.env.ADMIN_ACCESS_TTL_MIN ?? 60) * 60 * 1000; // 60 мин
 const refreshMs =
-  +(process.env.ADMIN_REFRESH_TTL_DAYS ?? 14) * 24 * 60 * 60 * 1000;
+  +(process.env.ADMIN_REFRESH_TTL_DAYS ?? 14) * 24 * 60 * 60 * 1000; // 14 дн
 
 @Controller('admin/auth')
 export class AdminAuthController {
@@ -33,9 +33,6 @@ export class AdminAuthController {
   ) {
     const admin = await this.adminAuthService.validate(dto.email, dto.password);
     const token = this.adminAuthService.sign(admin);
-    console.log('admin', admin);
-    console.log('token', token);
-    // res.token();
     const { access, refresh } = await this.adminAuthService.signTokens(admin);
     const secure = req.secure;
 
@@ -44,12 +41,12 @@ export class AdminAuthController {
         ...baseCookie,
         secure,
         maxAge: accessMs,
-      }) // 15 минут
+      })
       .cookie('refresh_token', refresh, {
         ...baseCookie,
         secure,
         maxAge: refreshMs,
-      }) // 7 дней
+      })
       .status(201)
       .json({ ok: true });
   }
@@ -58,7 +55,7 @@ export class AdminAuthController {
     const rt = req.cookies?.refresh_token as string | undefined;
     if (!rt) throw new UnauthorizedException('No refresh cookie');
 
-    const admin = await this.adminAuthService.verifyRefresh(rt); // проверка + (опц.) ротация jti
+    const admin = await this.adminAuthService.verifyRefresh(rt);
     const access = await this.adminAuthService.signAccess(admin);
     const secure = req.secure;
 
@@ -66,7 +63,7 @@ export class AdminAuthController {
       .cookie('access_token', access, {
         ...baseCookie,
         secure,
-        maxAge: 15 * 60 * 1000,
+        maxAge: accessMs,
       })
       .json({ ok: true });
   }
@@ -80,7 +77,6 @@ export class AdminAuthController {
 
   @Get('me')
   me(@Res({ passthrough: true }) res: Response) {
-    // заполняется guard’ом, см. ниже
     return { ok: true };
   }
 }

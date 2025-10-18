@@ -55,7 +55,6 @@ export default function TemplateEdit() {
     location.href = '/admin/templates';
   }
 
-  // хелпер для частичных апдейтов допусков/цен (allowed + extras)
   async function patchAllowed(payload: any) {
     await api(`/api/admin/templates/${id}/allowed`, {
       method: 'PATCH',
@@ -213,11 +212,9 @@ export default function TemplateEdit() {
         />{' '}
         Активен
       </label>
-      {/* ======= СЕКЦИЯ ЦЕН ======= */}
       <div className="mt-4 border rounded-2xl p-4">
         <h2 className="font-semibold text-lg mb-3">Цены</h2>
 
-        {/* Базовая цена (minor). Сохраняем через PATCH /:id/allowed */}
         <div className="mb-4">
           <label className="text-sm">
             Базовая цена (minor)
@@ -236,7 +233,6 @@ export default function TemplateEdit() {
           </label>
         </div>
 
-        {/* Надбавки по размерам */}
         <div className="mt-2">
           <h3 className="font-medium">Надбавки по размерам</h3>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-2">
@@ -257,7 +253,6 @@ export default function TemplateEdit() {
           </div>
         </div>
 
-        {/* Надбавки по рамкам */}
         <div className="mt-4">
           <h3 className="font-medium">Надбавки по рамкам</h3>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-2">
@@ -280,7 +275,6 @@ export default function TemplateEdit() {
           </div>
         </div>
 
-        {/* Надбавки по фонам */}
         <div className="mt-4">
           <h3 className="font-medium">Надбавки по фонам</h3>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-2">
@@ -303,7 +297,6 @@ export default function TemplateEdit() {
           </div>
         </div>
 
-        {/* Надбавки по финишам */}
         <div className="mt-4">
           <h3 className="font-medium">Надбавки по финишам</h3>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-2">
@@ -324,7 +317,6 @@ export default function TemplateEdit() {
           </div>
         </div>
 
-        {/* Надбавки по отверстиям */}
         <div className="mt-4">
           <h3 className="font-medium">Надбавки по отверстиям</h3>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-2">
@@ -345,7 +337,7 @@ export default function TemplateEdit() {
           </div>
         </div>
       </div>
-      {/* ======= /СЕКЦИЯ ЦЕН ======= */}
+
       <div className="flex items-center gap-4">
         {tpl.previewPath && (
           <img src={tpl.previewPath} alt="" className="h-24 object-contain" />

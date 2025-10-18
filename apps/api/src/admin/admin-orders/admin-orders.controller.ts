@@ -10,6 +10,7 @@ import {
 import { AdminGuard } from '../../common/admin.guard';
 import { PrismaService } from '../../prisma/prisma.service';
 import { OrderStatus } from '@prisma/client';
+import { AdminOrdersService } from './admin-orders.service';
 
 @Controller('admin/orders')
 export class AdminOrdersPingController {
@@ -22,7 +23,10 @@ export class AdminOrdersPingController {
 @UseGuards(AdminGuard)
 @Controller('admin/orders')
 export class AdminOrdersController {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private readonly adminOrdersService: AdminOrdersService,
+  ) {}
   @Get('_ping')
   ping() {
     return { ok: true, ts: Date.now() };
@@ -34,35 +38,12 @@ export class AdminOrdersController {
     @Query('q') q?: string,
     @Query('page') page = '1',
   ) {
-    // фильтры + пагинация (пример)
-    const where: any = {};
-    if (status) where.status = status;
-    // q можно применить к humanNumber/клиенту и т.д.
-    const take = 25,
-      skip = (parseInt(page) - 1) * take;
-    const [items, total] = await Promise.all([
-      this.prisma.order.findMany({
-        where,
-        orderBy: { createdAt: 'desc' },
-        take,
-        skip,
-        include: { items: { include: { assets: true } } },
-      }),
-      this.prisma.order.count({ where }),
-    ]);
-    console.log('items', items);
-    return { items, total, page: +page };
+    return await this.adminOrdersService.getList(page, status, q);
   }
 
   @Get(':id')
   async one(@Param('id') id: string) {
-    return this.prisma.order.findUnique({
-      where: { id },
-      include: {
-        items: { include: { assets: true } },
-        customer: true,
-      },
-    });
+    return this.adminOrdersService.getById(id);
   }
 
   @Patch(':id/status')
@@ -70,9 +51,6 @@ export class AdminOrdersController {
     @Param('id') id: string,
     @Body() dto: { orderStatus: OrderStatus },
   ) {
-    return this.prisma.order.update({
-      where: { id },
-      data: { orderStatus: dto.orderStatus },
-    });
+    return this.adminOrdersService.updateStatus(id, dto.orderStatus);
   }
 }

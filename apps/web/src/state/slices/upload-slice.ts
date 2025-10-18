@@ -12,7 +12,7 @@ export type UploadState =
 export type UploadJob = {
   id: string;
   orderId: Id;
-  itemId?: Id | null; // ← стало опциональным
+  itemId?: Id | null;
   file: File;
 
   state: UploadState;
@@ -47,7 +47,7 @@ export const createUploadsSlice = (set: any, get: any): UploadsSlice => ({
     const jobs: UploadJob[] = files.map((f) => ({
       id: rid(),
       orderId,
-      itemId: itemId || null, // можно null → загрузим как staged
+      itemId: itemId || null,
       file: f,
       state: 'queued',
       error: null,
@@ -56,13 +56,12 @@ export const createUploadsSlice = (set: any, get: any): UploadsSlice => ({
     get()._pump();
   },
 
-  /** Привязать все ранее загруженные (uploaded) staged файлы к только что созданной позиции */
   attachPendingToItem: (orderId, itemId) => {
     set((s: any) => {
       s.queue.forEach((j: UploadJob) => {
         if (j.orderId === orderId && j.state === 'uploaded' && !j.itemId) {
           j.itemId = itemId;
-          j.state = 'queued'; // вернём в очередь, но регистрация пойдёт без повторного PUT
+          j.state = 'queued';
         }
       });
     });
@@ -90,14 +89,12 @@ export const createUploadsSlice = (set: any, get: any): UploadsSlice => ({
     // пометили как занятый
     set((s: any) => {
       const j = s.queue.find((x: UploadJob) => x.id === job.id)!;
-      j.state = j.key ? 'registering' : 'uploading'; // если key уже есть — значит это стадия регистрации
+      j.state = j.key ? 'registering' : 'uploading';
       s.running += 1;
     });
 
     try {
-      // Если key уже есть — мы пропускаем PUT и идём регистрировать
       if (!job.key) {
-        // 1) presign (itemId может быть пуст → ключ уйдёт в staged/)
         const presign = await api<PresignResp>('/uploads/presign', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -109,7 +106,6 @@ export const createUploadsSlice = (set: any, get: any): UploadsSlice => ({
           }),
         });
 
-        // 2) PUT в S3
         const res = await fetch(presign.url, {
           method: 'PUT',
           headers: presign.requiredHeaders ?? {},
@@ -121,7 +117,6 @@ export const createUploadsSlice = (set: any, get: any): UploadsSlice => ({
         }
         const etag = res.headers.get('ETag')?.replace(/"/g, '') ?? null;
 
-        // сохраним результат загрузки
         set((s: any) => {
           const j = s.queue.find((x: UploadJob) => x.id === job.id)!;
           j.bucket = presign.bucket;
@@ -130,7 +125,6 @@ export const createUploadsSlice = (set: any, get: any): UploadsSlice => ({
         });
       }
 
-      // 3) Регистрация метаданных — только если у нас уже есть itemId
       const current = (get() as UploadsSlice).queue.find(
         (x) => x.id === job.id,
       )!;
@@ -149,14 +143,12 @@ export const createUploadsSlice = (set: any, get: any): UploadsSlice => ({
           }),
         });
 
-        // Готово
         set((s: any) => {
           const j = s.queue.find((x: UploadJob) => x.id === job.id)!;
           j.state = 'done';
           s.running -= 1;
         });
       } else {
-        // itemId ещё нет — остаёмся в состоянии uploaded (ждём привязки)
         set((s: any) => {
           const j = s.queue.find((x: UploadJob) => x.id === job.id)!;
           j.state = 'uploaded';

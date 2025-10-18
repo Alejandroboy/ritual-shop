@@ -10,12 +10,6 @@ import * as argon2 from 'argon2';
 @Injectable()
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
-
-  /**
-   * Детали пользователя для админки:
-   * - скалярные поля (без passwordHash)
-   * - счётчики связей (без тяжёлых списков)
-   */
   async findByIdAdmin(id: string) {
     const user = await this.prisma.user.findUnique({
       where: { id },
@@ -27,7 +21,6 @@ export class UsersService {
         role: true,
         createdAt: true,
         updatedAt: true,
-        // связи по необходимости:
         _count: {
           select: {
             customerOrders: true,
@@ -40,7 +33,9 @@ export class UsersService {
             orderStatus: true,
             createdAt: true,
             totalMinor: true,
-            items: true,
+            items: {
+              include: { assets: true },
+            },
           },
           take: 10,
           orderBy: { createdAt: 'desc' },
@@ -78,7 +73,9 @@ export class UsersService {
             orderStatus: true,
             createdAt: true,
             totalMinor: true,
-            items: true,
+            items: {
+              include: { assets: true },
+            },
           },
           take: 10,
           orderBy: { createdAt: 'desc' },

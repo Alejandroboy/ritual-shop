@@ -17,7 +17,6 @@ export class AuthService {
     private readonly jwt: JwtService,
   ) {}
 
-  // Регистрация нового пользователя
   async register(dto: {
     email: string;
     password: string;
@@ -46,7 +45,6 @@ export class AuthService {
     return { user, accessToken, refreshToken };
   }
 
-  // Валидация логина/пароля
   async validateUser(email: string, password: string): Promise<User | null> {
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (!user) return null;
@@ -54,7 +52,6 @@ export class AuthService {
     return ok ? user : null;
   }
 
-  // Подписание токенов
   private signTokens(user: Pick<User, 'id' | 'email' | 'role'>) {
     const payload: JwtPayload = {
       sub: user.id,
@@ -66,7 +63,6 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
-  // Выдача пары токенов + запись refresh-сессии
   async issueTokens(user: Pick<User, 'id' | 'email' | 'role'>) {
     const { accessToken, refreshToken } = this.signTokens(user);
 
@@ -85,8 +81,6 @@ export class AuthService {
 
     return { accessToken, refreshToken };
   }
-
-  // Ротация refresh-токена (удаляем использованный, выдаём новую пару)
   async rotateRefreshToken(userId: string, rawRefreshToken: string) {
     if (!rawRefreshToken)
       throw new UnauthorizedException('Missing refresh token');
@@ -111,14 +105,12 @@ export class AuthService {
       throw new UnauthorizedException('Invalid refresh token');
     }
     if (matchedSession.expiresAt.getTime() < Date.now()) {
-      // просрочен — чистим и ругаемся
       await this.prisma.refreshSession.delete({
         where: { id: matchedSession.id },
       });
       throw new UnauthorizedException('Refresh token expired');
     }
 
-    // ротация: удаляем найденную сессию
     await this.prisma.refreshSession.delete({
       where: { id: matchedSession.id },
     });
@@ -129,7 +121,6 @@ export class AuthService {
     return this.issueTokens(user);
   }
 
-  // Отозвать все refresh-сессии пользователя (logout со всех устройств)
   async revokeAll(userId: string) {
     await this.prisma.refreshSession.deleteMany({ where: { userId } });
   }

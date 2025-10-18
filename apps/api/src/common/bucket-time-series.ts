@@ -1,13 +1,5 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
-import { Prisma, OrderStatus, Finish } from '@prisma/client';
-import { PrismaService } from '../../prisma/prisma.service';
-import { AdminGuard } from '../../common/admin.guard';
-import { AdminStatsService } from './admin-stats.service';
-
 type Grain = 'day' | 'week' | 'month';
-
 function step(d: Date, g: Grain): void {
-  // двигаем курсор к следующему ведру
   if (g === 'day') {
     d.setDate(d.getDate() + 1);
     return;
@@ -18,23 +10,7 @@ function step(d: Date, g: Grain): void {
   }
   /* g === 'month' */ d.setMonth(d.getMonth() + 1);
 }
-@UseGuards(AdminGuard)
-@Controller('admin/stats')
-export class AdminStatsController {
-  constructor(private adminStatsService: AdminStatsService) {}
-
-  @Get()
-  async get(
-    @Query('from') from?: string,
-    @Query('to') to?: string,
-    @Query('grain') grain: 'day' | 'week' | 'month' = 'day',
-  ) {
-    return this.adminStatsService.getStats(from, to, grain);
-  }
-}
-
-/** агрегатор по день/неделя/месяц в JS */
-function bucketTimeSeries(
+export function bucketTimeSeries(
   dates: Date[],
   from: Date,
   to: Date,

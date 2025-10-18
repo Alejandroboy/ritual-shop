@@ -11,12 +11,10 @@ import {
   ParseIntPipe,
   NotFoundException,
   BadRequestException,
-  UseInterceptors,
 } from '@nestjs/common';
 import { UsersService } from '../../users/users.service';
 import { AdminCreateUserDto } from '../../users/dto/admin-create-user.dto';
 import { AdminUpdateUserDto } from '../../users/dto/admin-update-user.dto';
-// Используем твой готовый гард админки
 import { AdminGuard } from '../../common/admin.guard';
 
 @UseGuards(AdminGuard)

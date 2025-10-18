@@ -19,7 +19,27 @@ import { UpdateOrderDto } from './dto/update-order.dto';
 import { UpdateOrderItemDto } from './dto/update-item.dto';
 import { MailerService } from '../common/mailer.service';
 import { CheckoutDto } from './dto/checkout.dto';
-import { log } from '@adminjs/express';
+import { AssetsService } from '../assets/assets.service';
+
+type OrderDto = {
+  id: string;
+  items: Array<{
+    id: string;
+    templateLabel: string;
+    size?: { label?: string } | null;
+    comment?: string | null;
+    assets: Array<{
+      id: string;
+      kind: string;
+      originalName?: string | null;
+      contentType?: string | null;
+      size?: number | null;
+      viewUrl: string;
+      downloadUrl: string;
+      expiresIn: number;
+    }>;
+  }>;
+};
 
 function pad(n: number, len: number) {
   return n.toString().padStart(len, '0');
@@ -34,6 +54,7 @@ export class OrdersService {
   constructor(
     private readonly prisma: PrismaService,
     private mailer: MailerService,
+    private readonly assets: AssetsService,
   ) {}
 
   // ===== Orders =====
@@ -96,35 +117,70 @@ export class OrdersService {
     return { total, page, pageSize: take, items };
   }
 
-  async getOrder(id: string) {
+  async getOrder(id: string): Promise<OrderDto> {
     const order = await this.prisma.order.findUnique({
       where: { id },
       include: {
         items: {
           include: {
-            size: true,
-            frame: true,
-            background: true,
-            persons: true,
-            assets: true,
+            size: true, // если есть связка size; иначе убери
+            assets: { orderBy: { createdAt: 'asc' } },
           },
         },
       },
     });
-    if (!order) throw new NotFoundException('Order not found 1');
-    return order;
+
+    if (!order) throw new NotFoundException('Order not found');
+
+    const items = await Promise.all(
+      order.items.map(async (it) => ({
+        id: it.id,
+        templateLabel: (it as any).templateLabel, // подставь реальное поле
+        size: (it as any).size ? { label: (it as any).size.label } : null,
+        comment: (it as any).comment ?? null,
+        assets: await Promise.all(
+          it.assets.map((a) => this.assets.toDtoWithUrls(a)),
+        ),
+      })),
+    );
+
+    return { id: order.id, items };
+  }
+  async getOrdersForUser(userId: string): Promise<OrderDto[]> {
+    const orders = await this.prisma.order.findMany({
+      where: { customerId: userId },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        items: {
+          include: { size: true, assets: { orderBy: { createdAt: 'asc' } } },
+        },
+      },
+    });
+
+    return Promise.all(
+      orders.map(async (o) => ({
+        id: o.id,
+        items: await Promise.all(
+          o.items.map(async (it) => ({
+            id: it.id,
+            templateLabel: (it as any).templateLabel,
+            size: (it as any).size ? { label: (it as any).size.label } : null,
+            comment: (it as any).comment ?? null,
+            assets: await Promise.all(
+              it.assets.map((a) => this.assets.toDtoWithUrls(a)),
+            ),
+          })),
+        ),
+      })),
+    );
   }
 
-  // ===== Items =====
-
   async addItem(orderId: string, dto: AddOrderItemDto) {
-    // 1) проверим заказ
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },
     });
     if (!order) throw new NotFoundException('Order not found 2');
 
-    // 2) найдём шаблон и его разрешённые опции
     const tpl = await this.prisma.template.findUnique({
       where: { code: dto.templateCode },
       include: {
@@ -159,7 +215,6 @@ export class OrdersService {
     const holeAllowed = (p?: HolePattern) =>
       !p || tpl.allowedHoles.some((h) => h.pattern === p);
 
-    // 3) вычислим требование финиша
     const variant = dto.holePattern
       ? tpl.variants.find((v) => v.holePattern === dto.holePattern)
       : undefined;
@@ -167,16 +222,13 @@ export class OrdersService {
     const finishRequired =
       tpl.requiresFinish || variant?.finishRequired || false;
 
-    // список разрешённых финишей (из шаблона + из варианта, если есть)
     const allowedFinishes = new Set<Finish>();
     tpl.allowedFinishes.forEach((f) => allowedFinishes.add(f.finish));
     variant?.allowedFinishes.forEach((vf) => {
-      // у варианта finish — это FinishVariant, у которого code = 'MATTE'|'GLOSS'
       const code = vf.finish.code as unknown as Finish;
       if (code === 'MATTE' || code === 'GLOSS') allowedFinishes.add(code);
     });
 
-    // 4) валидация входных опций
     if (!sizeAllowed(dto.sizeId)) {
       throw new BadRequestException('Size is not allowed for this template');
     }
@@ -213,7 +265,6 @@ export class OrdersService {
       );
     }
 
-    // 5) создаём позицию
     const item = await this.prisma.orderItem.create({
       data: {
         orderId,
@@ -244,21 +295,18 @@ export class OrdersService {
     });
     if (!item) throw new NotFoundException('Order item not found');
 
-    const asset = await this.prisma.asset.create({
+    const asset = await this.prisma.orderItemAsset.create({
       data: {
-        itemId,
+        orderItemId: itemId,
         kind: dto.kind,
-        filename: dto.filename,
-        url: dto.url,
+        originalName: dto.filename,
         primary: dto.primary ?? false,
-        note: dto.note,
       },
     });
     return asset;
   }
 
   async updateOrder(orderId: string, dto: UpdateOrderDto) {
-    // бросит NotFound, если нет
     await this.ensureOrder(orderId);
 
     return this.prisma.order.update({
@@ -274,7 +322,6 @@ export class OrdersService {
     });
   }
 
-  // --- ITEM ---
   async updateItem(orderId: string, itemId: string, dto: UpdateOrderItemDto) {
     const item = await this.prisma.orderItem.findFirst({
       where: { id: itemId, orderId },
@@ -282,7 +329,6 @@ export class OrdersService {
     });
     if (!item) throw new NotFoundException('Order item not found');
 
-    // возможно сменить шаблон по коду
     let templateId = item.templateId;
     let templateCode = item.templateCode;
     let templateLabel = item.templateLabel;
@@ -297,7 +343,6 @@ export class OrdersService {
       templateLabel = tpl.label;
     }
 
-    // собрать «кандидат» из текущего состояния + патча
     const candidate = {
       templateId,
       sizeId: dto.sizeId ?? item.sizeId ?? undefined,
@@ -307,7 +352,6 @@ export class OrdersService {
       finish: dto.finish ?? item.finish ?? undefined,
     };
 
-    // доменная валидация (разрешённые опции для шаблона)
     await this.validateItemOptions(candidate);
 
     const data: Prisma.OrderItemUpdateInput = {
@@ -333,7 +377,6 @@ export class OrdersService {
     return this.prisma.orderItem.update({ where: { id: itemId }, data });
   }
 
-  // --- ASSET ---
   async updateAsset(
     orderId: string,
     itemId: string,
@@ -341,25 +384,22 @@ export class OrdersService {
     dto: UpdateAssetDto,
   ) {
     await this.ensureItem(orderId, itemId);
-    const asset = await this.prisma.asset.findFirst({
-      where: { id: assetId, itemId },
+    const asset = await this.prisma.orderItemAsset.findFirst({
+      where: { id: assetId, orderItemId: itemId },
     });
     if (!asset) throw new NotFoundException('Asset not found');
 
     if (dto.primary === true) {
-      // снимаем primary у остальных
-      await this.prisma.asset.updateMany({
-        where: { itemId, NOT: { id: assetId } },
+      await this.prisma.orderItemAsset.updateMany({
+        where: { orderItemId: itemId, NOT: { id: assetId } },
         data: { primary: false },
       });
     }
 
-    return this.prisma.asset.update({
+    return this.prisma.orderItemAsset.update({
       where: { id: assetId },
       data: {
-        filename: dto.filename,
-        url: dto.url,
-        note: dto.note,
+        originalName: dto.filename,
         primary: dto.primary,
       },
     });
@@ -367,15 +407,14 @@ export class OrdersService {
 
   async removeAsset(orderId: string, itemId: string, assetId: string) {
     await this.ensureItem(orderId, itemId);
-    const asset = await this.prisma.asset.findFirst({
-      where: { id: assetId, itemId },
+    const asset = await this.prisma.orderItemAsset.findFirst({
+      where: { id: assetId, orderItemId: itemId },
     });
     if (!asset) throw new NotFoundException('Asset not found');
-    await this.prisma.asset.delete({ where: { id: assetId } });
+    await this.prisma.orderItemAsset.delete({ where: { id: assetId } });
     return { ok: true };
   }
 
-  // --- DELETE ITEM ---
   async removeItem(orderId: string, itemId: string) {
     await this.ensureItem(orderId, itemId);
     await this.prisma.orderItem.delete({ where: { id: itemId } });
@@ -396,9 +435,6 @@ export class OrdersService {
     if (!exists) throw new NotFoundException('Order item not found');
   }
 
-  /**
-   * Проверяем, что size/frame/background/finish/holePattern разрешены данным шаблоном
-   */
   private async validateItemOptions(input: {
     templateId: string;
     sizeId?: number | null;
@@ -457,8 +493,6 @@ export class OrdersService {
       if (!ok)
         throw new BadRequestException('Background is not allowed for template');
     } else if (tpl.requiresBackground) {
-      // если фон обязателен — либо его задаём, либо запрещаем убрать
-      // (для PATCH — отсутствие поля значит «не меняем», это ок; но явный null/удаление запрещаем)
     }
 
     // finish
@@ -466,7 +500,6 @@ export class OrdersService {
       const ok = tpl.allowedFinishes.some((f) => f.finish === input.finish);
       if (!ok)
         throw new BadRequestException('Finish is not allowed for template');
-      // если у шаблона есть вариант с обязательным финишем (finishRequired) — можно дополнительно проверять
       const variant = tpl.variants.find(
         (v) => v.holePattern === (input.holePattern ?? null),
       );
@@ -485,7 +518,6 @@ export class OrdersService {
     if (!order.items.length)
       throw new BadRequestException('Order has no items');
 
-    // Генерация номера (безопасно в транзакции)
     const datePrefix = todayPrefix();
     const result = await this.prisma.$transaction(async (tx) => {
       const countToday = await tx.order.count({
@@ -497,8 +529,8 @@ export class OrdersService {
       const updated = await tx.order.update({
         where: { id },
         data: {
-          orderStatus: OrderStatus.ACCEPTED, // предполагается, что enum уже существует согласно ТЗ
-          orderNumber: number, // если поля нет — добавьте его в Prisma schema как String @unique?
+          orderStatus: OrderStatus.ACCEPTED,
+          orderNumber: number,
           customerName: dto.name,
           customerPhone: dto.phone,
           customerEmail: dto.email ?? null,
@@ -523,20 +555,5 @@ export class OrdersService {
     }
 
     return result;
-  }
-
-  async attachAssets(id: string, files: Express.Multer.File[]) {
-    const order = await this.prisma.order.findUnique({ where: { id } });
-    if (!order) throw new NotFoundException('Order not found 5');
-    const toCreate = files.map((f) => ({
-      itemId: id,
-      kind: AssetKind.PHOTO, // предполагаемое поле kind в таблице ассетов
-      filename: f.filename,
-      url: `/uploads/orders/${f.filename}`,
-      mime: f.mimetype,
-      size: f.size,
-    }));
-    await this.prisma.asset.createMany({ data: toCreate });
-    return { ok: true, count: files.length };
   }
 }

@@ -17,16 +17,11 @@ export async function getJsonAsset<T>(url: string): Promise<T> {
   return r.json();
 }
 
-/**
- * Загружает файл в S3 по пресайн-URL и регистрирует метаданные ассета в БД.
- * Возвращает сохранённый ассет (как отдаёт твой API).
- */
 export async function uploadOrderItemAsset(
   orderId: string,
   itemId: string,
   file: File,
 ) {
-  // 1) запросить пресайн у API
   const presign = await postJsonAsset<{
     url: string;
     bucket: string;
@@ -41,7 +36,7 @@ export async function uploadOrderItemAsset(
   if (!presign?.url || typeof presign.url !== 'string') {
     throw new Error('No presigned URL returned');
   }
-  // 2) PUT напрямую в S3
+
   const putRes = await fetch(presign.url, {
     method: 'PUT',
     headers: { 'Content-Type': file.type || 'application/octet-stream' },
@@ -54,7 +49,6 @@ export async function uploadOrderItemAsset(
   }
   const etag = putRes.headers.get('ETag')?.replace(/"/g, '') ?? null;
 
-  // 3) зарегистрировать ассет в БД
   const saved = await postJsonAsset(
     `/api/orders/${orderId}/items/${itemId}/assets`,
     {

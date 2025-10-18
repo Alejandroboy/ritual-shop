@@ -42,7 +42,6 @@ export function UploadAsset({ orderId, itemId }: Props) {
     }
     setError(null);
 
-    // Автосоздание чернового заказа при первой загрузке
     const ensuredOrderId = orderId ?? (await ensureOrder());
 
     enqueueFiles(ensuredOrderId, itemId || null, arr.slice(0, MAX_FILES));
@@ -56,9 +55,7 @@ export function UploadAsset({ orderId, itemId }: Props) {
 
   return (
     <div className="border rounded p-3 space-y-2">
-      <div className="text-sm text-neutral-700">
-        Загрузите файлы (можно до создания позиции).
-      </div>
+      <div className="text-sm text-neutral-700">Загрузите файлы</div>
       <input type="file" multiple onChange={onSelect} />
       {error && <div className="text-sm text-red-600">{error}</div>}
 

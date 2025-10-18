@@ -7,7 +7,6 @@ export type OrderDetails = {
     id: Id;
     templateLabel: string;
     size?: { label?: string } | null;
-    // если на бэке уже добавлены presigned URL — можно сразу расширить типом assets тут
   }>;
 };
 

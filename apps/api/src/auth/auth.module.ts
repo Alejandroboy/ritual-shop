@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { JwtModule } from '@nestjs/jwt';
+import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 
 import { AuthService } from './auth.service';
@@ -8,14 +8,18 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { RefreshStrategy } from './strategies/refresh.strategy';
 
 import { PrismaService } from '../prisma/prisma.service';
+import { ConfigurationService } from '../config/configuration.service';
+import { ConfigurationModule } from '../config/configuration.module';
 
 @Module({
   imports: [
+    ConfigurationModule,
     PassportModule.register({ session: false }),
     JwtModule.registerAsync({
-      useFactory: () => ({
-        secret: process.env.JWT_SECRET || 'dev_secret_change_me',
-        // не задаём глобальный expiresIn — управляем сроками в сервисе
+      imports: [ConfigurationModule],
+      inject: [ConfigurationService],
+      useFactory: (cfg: ConfigurationService): JwtModuleOptions => ({
+        secret: cfg.get('JWT_SECRET') || 'dev_secret_change_me',
       }),
     }),
   ],

@@ -28,7 +28,7 @@ export class PricingController {
     dto: {
       filter?: {
         ids?: string[];
-        q?: string; // ищем в code/label
+        q?: string;
         material?: Material;
         shape?: Shape;
         colorMode?: ColorMode;
@@ -36,7 +36,7 @@ export class PricingController {
         requiresBackground?: boolean;
         requiresFinish?: boolean;
       };
-      set?: { basePriceMinor?: number }; // установить базовую цену
+      set?: { basePriceMinor?: number };
       sizeExtra?: {
         sizeId: number;
         extraPriceMinor: number;
@@ -64,7 +64,6 @@ export class PricingController {
       };
     },
   ) {
-    // 1) подбираем шаблоны по фильтру
     const where: Prisma.TemplateWhereInput = {};
     const f = dto.filter ?? {};
     if (f.ids?.length) where.id = { in: f.ids };
@@ -88,7 +87,6 @@ export class PricingController {
     const ids = templates.map((t) => t.id);
     const ops: Prisma.PrismaPromise<any>[] = [];
 
-    // 2) базовая цена
     if (dto.set?.basePriceMinor !== undefined) {
       const val = Math.max(0, Math.trunc(dto.set.basePriceMinor));
       ops.push(
@@ -99,7 +97,6 @@ export class PricingController {
       );
     }
 
-    // helper для инкремента/установки
     const applyExtra = (
       mode: 'set' | 'inc',
       current: number | undefined,
@@ -109,11 +106,9 @@ export class PricingController {
         ? Math.max(0, (current ?? 0) + incoming)
         : Math.max(0, incoming);
 
-    // 3) размер
     if (dto.sizeExtra) {
       const { sizeId, extraPriceMinor, mode = 'set' } = dto.sizeExtra;
       for (const id of ids) {
-        // upsert + возможный инкремент (держим одну доп. выборку — дешево)
         const curr = await this.prisma.templateSize.findUnique({
           where: {
             templateId_sizeId: { templateId: id, sizeId: Number(sizeId) },
@@ -141,7 +136,6 @@ export class PricingController {
       }
     }
 
-    // 4) рамка
     if (dto.frameExtra) {
       const { frameId, extraPriceMinor, mode = 'set' } = dto.frameExtra;
       for (const id of ids) {
@@ -172,7 +166,6 @@ export class PricingController {
       }
     }
 
-    // 5) фон
     if (dto.backgroundExtra) {
       const {
         backgroundId,
@@ -213,7 +206,6 @@ export class PricingController {
       }
     }
 
-    // 6) финиш
     if (dto.finishExtra) {
       const { finish, extraPriceMinor, mode = 'set' } = dto.finishExtra;
       for (const id of ids) {
@@ -236,7 +228,6 @@ export class PricingController {
       }
     }
 
-    // 7) отверстия
     if (dto.holeExtra) {
       const { pattern, extraPriceMinor, mode = 'set' } = dto.holeExtra;
       for (const id of ids) {
@@ -259,7 +250,6 @@ export class PricingController {
       }
     }
 
-    // Важно: одной транзакцией
     await this.prisma.$transaction(ops);
     return { ok: true, affected: ids.length };
   }
@@ -276,8 +266,6 @@ export class PricingController {
     const [header, ...data] = rows;
     const cols = header.split(/[,;\t]/).map((c) => c.trim().toLowerCase());
 
-    // Поддерживаем колонки:
-    // code, basePriceMinor, size:<id>, frame:<id>, background:<id>, finish:MATTE|GLOSS, hole:NONE|...
     const ops: Prisma.PrismaPromise<any>[] = [];
     for (const line of data) {
       const parts = line.split(/[,;\t]/);
@@ -293,7 +281,6 @@ export class PricingController {
       if (!tpl) continue;
       const id = tpl.id;
 
-      // base
       if (rec['basepriceminor']) {
         const v = Math.max(0, Math.trunc(Number(rec['basepriceminor'])));
         ops.push(
@@ -304,7 +291,6 @@ export class PricingController {
         );
       }
 
-      // остальные колонки
       for (const [k, vRaw] of Object.entries(rec)) {
         const v = Math.max(0, Math.trunc(Number(vRaw)));
         if (!Number.isFinite(v) || v <= 0) continue;
