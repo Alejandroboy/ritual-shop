@@ -9,7 +9,6 @@ export function UploadAsset({ orderId, itemId }: Props) {
   const enqueueFiles = useAppStore((s) => s.enqueueFiles);
   const ensureOrder = useAppStore((s) => s.ensureOrder);
   const queue = useAppStore((s) => s.queue);
-  // а вот фильтрацию выполняем уже в компоненте — мемоизируем результат
   const jobs = useMemo(
     () =>
       queue.filter(
@@ -56,7 +55,12 @@ export function UploadAsset({ orderId, itemId }: Props) {
   return (
     <div className="border rounded p-3 space-y-2">
       <div className="text-sm text-neutral-700">Загрузите файлы</div>
-      <input type="file" multiple onChange={onSelect} />
+      <input
+        className="cursor-pointer"
+        type="file"
+        multiple
+        onChange={onSelect}
+      />
       {error && <div className="text-sm text-red-600">{error}</div>}
 
       {!!jobs.length && (

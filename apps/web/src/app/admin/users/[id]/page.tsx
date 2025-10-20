@@ -6,11 +6,9 @@ import { adminApiFetch } from '@utils';
 
 export default function UserDetails() {
   const { id } = useParams<{ id: string }>();
-  console.log('id', id);
   const { data } = useSWR(`/api/admin/users/${id}`, (u) =>
     adminApiFetch(u).then((r) => r.json()),
   );
-  console.log('data', data);
 
   if (data && data.user) {
     const createdAt = new Date(data.user.createdAt);
@@ -45,6 +43,44 @@ export default function UserDetails() {
           <div className="w-1/2">Изменен</div>
           <div className="w-1/2">{updatedAt.toLocaleString('ru-RU')}</div>
         </div>
+        {data?.user?.customerOrders.length && (
+          <div>
+            Заказы:
+            {data?.user?.customerOrders.map((order) => {
+              const createdAt = new Date(order.createdAt);
+              return (
+                <div key={order.id}>
+                  <div className="flex w-96">
+                    <div className="w-1/2 text-right">Статус:</div>
+                    <div className="w-1/2 text-right">{order.orderStatus}</div>
+                  </div>
+                  <div className="flex w-96">
+                    <div className="w-1/2 text-right">Создан:</div>
+                    <div className="w-1/2 text-right">
+                      {createdAt.toLocaleString('ru-RU')}
+                    </div>
+                  </div>
+                  <div className="flex w-96">
+                    <div className="w-1/2 text-right">Позиции:</div>
+                    <div className="w-1/2 text-right">
+                      {order.items.map((item) => {
+                        return (
+                          <div>
+                            <p>{item.templateLabel}</p>
+                            <p>Размер: {item.sizeId}</p>
+                            <p>Вид рамки:{item.frameId}</p>
+                            <p>Вид фона: {item.backgroundId}</p>
+                            <p>Отверстия: {item.holePattern}</p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     );
   }

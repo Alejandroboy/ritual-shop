@@ -50,6 +50,7 @@ export const useAppStore = create<AppState>()(
                 id: s.me.id,
                 email: (s.me as any).email,
                 name: (s.me as any).name,
+                phone: (s.me as any).phone,
               }
             : null,
           draftOrderId: s.draftOrderId,

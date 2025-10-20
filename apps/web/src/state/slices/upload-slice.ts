@@ -140,6 +140,7 @@ export const createUploadsSlice = (set: any, get: any): UploadsSlice => ({
             size: current.file.size,
             etag: current.etag,
             originalName: current.file.name,
+            filename: current.file.name,
           }),
         });
 

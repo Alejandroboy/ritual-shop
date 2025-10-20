@@ -23,7 +23,6 @@ export default function LoginPage() {
       });
       if (data.user) {
         window.localStorage.setItem('userId', data.user.id);
-        console.log('data', data);
         window.location.href = '/account';
       } else {
         setError(data?.message || 'Неверный email или пароль');

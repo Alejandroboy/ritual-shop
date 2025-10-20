@@ -1,4 +1,3 @@
-import { join, resolve } from 'path';
 import { Module } from '@nestjs/common';
 import { EmailModule } from './email/email.module';
 import { ConfigurationModule } from './config/configuration.module';
@@ -6,9 +5,7 @@ import { HealthModule } from './health/health.module';
 import { CatalogModule } from './catalog/catalog.module';
 import { OrdersModule } from './orders/orders.module';
 import { PrismaModule } from './prisma/prisma.module';
-import { OrderItemsModule } from './order-items/order-items.module';
 import { MailerService } from './common/mailer.service';
-import { ServeStaticModule } from '@nestjs/serve-static';
 import { AdminAuthModule } from './admin/admin-auth/admin-auth.module';
 import { AdminOrdersModule } from './admin/admin-orders/admin-orders.module';
 import { AdminTemplatesModule } from './admin/admin-templates/admin-templates.module';
@@ -36,13 +33,6 @@ import { AssetsModule } from './assets/assets.module';
     HealthModule,
     OrdersModule,
     PrismaModule,
-    ServeStaticModule.forRoot({
-      rootPath: process.env.UPLOADS_DIR
-        ? resolve(process.env.UPLOADS_DIR)
-        : join(process.cwd(), 'uploads'),
-      serveRoot: '/uploads',
-    }),
-    OrderItemsModule,
   ],
   providers: [MailerService],
 })

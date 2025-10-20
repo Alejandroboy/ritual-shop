@@ -21,13 +21,8 @@ type ListResponse = {
 };
 
 export default function AdminUsersListPage() {
-  // const [data, setData] = useState<ListResponse | null>(null);
   const [q, setQ] = useState('');
   const [error, setError] = useState<string | null>(null);
-  // const params = new URLSearchParams();
-  // if (qStr) params.set('q', qStr);
-  // params.set('skip', String(skip));
-  // params.set('take', String(take));
   const { data } = useSWR(`/api/admin/users/list`, (u) =>
     adminApiFetch(u).then((r) => r.json()),
   );
@@ -44,22 +39,11 @@ export default function AdminUsersListPage() {
         (u) => adminApiFetch(u).then((r) => r.json()),
       );
 
-      // const res = await adminApiFetch(`/api/users/list?${params.toString()}`, {
-      //   method: 'GET',
-      // });
-      // const json = await res.json();
-      // if (!res.ok)
-      //   throw new Error(json?.message || 'Не удалось получить список');
-
       setData(data);
     } catch (e: any) {
       setError(String(e.message || e));
     }
   }
-
-  // useEffect(() => {
-  //   load(); /* eslint-disable-next-line */
-  // }, []);
 
   return (
     <div>
@@ -77,12 +61,7 @@ export default function AdminUsersListPage() {
           value={q}
           onChange={(e) => setQ(e.target.value)}
         />
-        <button
-          className="rounded-xl border px-4"
-          // onClick={() => load(0, 20, q)}
-        >
-          Найти
-        </button>
+        <button className="rounded-xl border px-4">Найти</button>
       </div>
 
       {error && <p className="text-sm text-red-600 mt-3">{error}</p>}
@@ -93,12 +72,14 @@ export default function AdminUsersListPage() {
             <div key={u.id} className="rounded-xl border p-4">
               <div className="font-medium">{u.email}</div>
               <div className="text-sm text-gray-500">
-                <span>{u.name || '—'}</span>
-                <span>{u.phone || '—'}</span>
-                <span>{u.role}</span>
-                <Link className="underline" href={`/admin/users/${u.id}`}>
-                  Открыть
-                </Link>
+                <p>{u.name || '—'}</p>
+                <p>{u.phone || '—'}</p>
+                <p>{u.role}</p>
+              </div>
+              <div className="mt-[10px]">
+                <button className="rounded-xl border px-4">
+                  <Link href={`/admin/users/${u.id}`}>Открыть</Link>
+                </button>
               </div>
             </div>
           ))

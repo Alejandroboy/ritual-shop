@@ -1,16 +1,12 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
   Get,
   Param,
-  ParseIntPipe,
   Patch,
   Post,
   Query,
-  UploadedFiles,
-  UseInterceptors,
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -19,10 +15,7 @@ import { AddAssetDto } from './dto/add-asset.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { UpdateOrderItemDto } from './dto/update-item.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
-import { FilesInterceptor } from '@nestjs/platform-express';
 import { CheckoutDto } from './dto/checkout.dto';
-import { diskStorage } from 'multer';
-import { extname, join } from 'path';
 
 @Controller('orders')
 export class OrdersController {
@@ -103,12 +96,6 @@ export class OrdersController {
 
   @Post(':id/checkout')
   async checkout(@Param('id') id: string, @Body() dto: CheckoutDto) {
-    console.log('dto', dto);
     return this.ordersService.checkout(id, dto);
-  }
-
-  @Post(':id/assets')
-  badUploadRoute() {
-    throw new BadRequestException('Use /order-items/:itemId/assets');
   }
 }

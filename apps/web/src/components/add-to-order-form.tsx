@@ -1,7 +1,7 @@
 'use client';
 import React, { useMemo, useState } from 'react';
 import type { Finish, TemplateDetails } from '@utils';
-import { UploadAsset } from './upload-assets'; // если default export — замени на: import UploadAsset from './upload-assets'
+import { UploadAsset } from './upload-assets';
 import { useAppStore } from '../state/app-store';
 
 type Props = { tpl: TemplateDetails };
@@ -9,7 +9,6 @@ type Props = { tpl: TemplateDetails };
 export default function AddToOrderForm({ tpl }: Props) {
   const attachPendingToItem = useAppStore((s) => s.attachPendingToItem);
   const draftOrderId = useAppStore((s) => s.draftOrderId);
-  console.log('draftOrderId', draftOrderId);
   const ensureOrder = useAppStore((s) => s.ensureOrder);
   const addItem = useAppStore((s) => s.addItem);
 
