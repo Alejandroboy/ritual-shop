@@ -13,7 +13,6 @@ export const createUserSlice = (set: any): UserSlice => ({
   fetchMe: async () => {
     try {
       const data = await api<Me>('/users/me', { method: 'GET' });
-      console.log('me', data);
       if (!data?.user) {
         set({ me: null });
         throw new Error('Unauthenticated');

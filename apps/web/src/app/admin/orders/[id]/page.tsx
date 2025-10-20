@@ -1,8 +1,9 @@
 'use client';
 import { useParams } from 'next/navigation';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import useSWR from 'swr';
-import { adminApiFetch } from '@utils';
+import { adminApiFetch, bytesToSize } from '@utils';
+import AssetThumb from '../../../../components/asset-thumb';
 
 export default function OrderDetail() {
   const { id } = useParams<{ id: string }>();
@@ -10,7 +11,6 @@ export default function OrderDetail() {
     adminApiFetch(u).then((r) => r.json()),
   );
   const [busy, setBusy] = useState(false);
-  console.log('data', data);
 
   async function setStatus(status: string) {
     setBusy(true);
@@ -62,9 +62,20 @@ export default function OrderDetail() {
         {data.items.map((it: any) => (
           <div key={it.id} className="border rounded-xl p-3 my-2">
             <div className="text-sm">{it.templateCode}</div>
+            <div className="text-sm">{it.templateLabel}</div>
+            <div className="text-sm">Вид фона: {it.backgroundId}</div>
+            <div className="text-sm">Вид рамки: {it.frameId}</div>
             <ul className="text-sm mt-2">
-              {it.assets?.map((a: any) => (
-                <li key={a.id}>{a.filename}</li>
+              {it.assets.map((a) => (
+                <div key={a.id} className="text-xs">
+                  <AssetThumb asset={a} size={120} />
+                  <div className="mt-1 truncate max-w-[120px]">
+                    {a.originalName || 'файл'}
+                  </div>
+                  <div className="text-gray-500">
+                    {bytesToSize(a.size || 0)}
+                  </div>
+                </div>
               ))}
             </ul>
           </div>

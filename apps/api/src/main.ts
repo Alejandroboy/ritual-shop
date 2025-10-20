@@ -6,21 +6,6 @@ import cookieParser from 'cookie-parser';
 import { ValidationPipe } from '@nestjs/common';
 import { v4 as uuid } from 'uuid';
 
-function ensureUploadsDirs() {
-  // Лучше абсолютный путь: либо из ENV, либо из cwd
-  const root = process.env.UPLOADS_DIR
-    ? resolve(process.env.UPLOADS_DIR)
-    : join(process.cwd(), 'uploads');
-
-  // создаём uploads и uploads/orders
-  mkdirSync(root, { recursive: true });
-  mkdirSync(join(root, 'orders'), { recursive: true });
-
-  process.env.UPLOADS_DIR = root; // чтобы везде был один и тот же путь
-  // короткий лог для контроля
-  console.log('[UPLOADS] root:', root);
-}
-
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const expressApp = app.getHttpAdapter().getInstance();

@@ -32,7 +32,6 @@ export async function uploadOrderItemAsset(
     filename: file.name,
     contentType: file.type || undefined,
   });
-  console.log('[presign]', presign);
   if (!presign?.url || typeof presign.url !== 'string') {
     throw new Error('No presigned URL returned');
   }

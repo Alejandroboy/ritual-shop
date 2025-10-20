@@ -115,6 +115,7 @@ export class AssetsService {
     const a = await this.prisma.orderItemAsset.findUniqueOrThrow({
       where: { id },
     });
+
     const dto = await this.toDtoWithUrls(a);
     return dl
       ? { url: dto.downloadUrl, expiresIn: dto.expiresIn }

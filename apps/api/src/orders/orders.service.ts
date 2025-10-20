@@ -123,7 +123,7 @@ export class OrdersService {
       include: {
         items: {
           include: {
-            size: true, // если есть связка size; иначе убери
+            size: true,
             assets: { orderBy: { createdAt: 'asc' } },
           },
         },
@@ -295,15 +295,18 @@ export class OrdersService {
     });
     if (!item) throw new NotFoundException('Order item not found');
 
-    const asset = await this.prisma.orderItemAsset.create({
+    return await this.prisma.orderItemAsset.create({
       data: {
         orderItemId: itemId,
-        kind: dto.kind,
-        originalName: dto.filename,
-        primary: dto.primary ?? false,
+        originalName: dto.originalName,
+        size: dto.size,
+        bucket: dto.bucket,
+        key: dto.key,
+        storage: dto.storage,
+        contentType: dto.contentType,
+        etag: dto.etag,
       },
     });
-    return asset;
   }
 
   async updateOrder(orderId: string, dto: UpdateOrderDto) {

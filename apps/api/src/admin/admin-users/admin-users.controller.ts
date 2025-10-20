@@ -34,11 +34,9 @@ export class AdminUsersController {
 
   @Get(':id')
   async byId(@Param('id') id: string) {
-    console.log('id', id);
     try {
       if (!id) throw new BadRequestException('id required');
       const user = await this.usersService.findByIdAdmin(id);
-      console.log('user', user);
       if (!user) throw new NotFoundException('User not found');
       return { user };
     } catch (e) {

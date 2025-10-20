@@ -67,7 +67,6 @@ export default function TemplateEdit() {
 
   if (err) return <div className="text-red-600">{err}</div>;
   if (!tpl) return <div>Загрузка…</div>;
-  console.log('tpl', tpl);
 
   const {
     sizes = [],

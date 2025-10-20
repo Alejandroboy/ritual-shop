@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useAppStore } from '../../state/app-store';
 import AssetThumb from '../../components/asset-thumb';
 import { LogoutButton } from '../../components/logout-button';
+import { bytesToSize } from '@utils';
 
 function useHydrated() {
   const [hydrated, setHydrated] = useState(false);
@@ -15,13 +16,6 @@ function useHydrated() {
     return () => unsub();
   }, []);
   return hydrated;
-}
-
-function bytesToSize(bytes: number, precision = 2) {
-  if (!bytes) return '—';
-  const units = ['Байт', 'КБ', 'МБ', 'ГБ', 'ТБ'];
-  const i = Math.floor(Math.log(bytes) / Math.log(1024));
-  return `${(bytes / Math.pow(1024, i)).toFixed(precision)} ${units[i]}`;
 }
 
 export default function AccountPage() {

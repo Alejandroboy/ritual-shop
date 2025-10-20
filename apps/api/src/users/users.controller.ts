@@ -47,7 +47,6 @@ export class UsersController {
   @Roles('ADMIN', 'MANAGER')
   @Get('list')
   async list(@Query() query: ListUsersQueryDto) {
-    console.log(45);
     return this.users.list(query);
   }
 

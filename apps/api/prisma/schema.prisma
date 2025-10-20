@@ -417,7 +417,6 @@ model OrderItemAsset {
   id           String        @id @default(cuid())
   orderItemId  String
 
-  // Прямая сторона связи (+ onDelete: Cascade — когда позицию удаляют, ассеты чистятся)
   orderItem    OrderItem     @relation("OrderItemToAssets", fields: [orderItemId], references: [id], onDelete: Cascade)
 
   storage      StorageType   @default(s3)

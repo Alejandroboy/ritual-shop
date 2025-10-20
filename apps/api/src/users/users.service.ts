@@ -82,7 +82,6 @@ export class UsersService {
         },
       },
     });
-    console.log('findById user', user);
     if (!user) throw new NotFoundException('User not found');
     return user;
   }
