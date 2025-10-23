@@ -3,7 +3,6 @@ import React, { useMemo, useState } from 'react';
 import type { Finish, TemplateDetails } from '@utils';
 import { UploadAsset } from './upload-assets';
 import { useAppStore } from '../state/app-store';
-import { FinishOption } from '@utils';
 
 type Props = { tpl: TemplateDetails };
 
@@ -33,8 +32,8 @@ export default function AddToOrderForm({ tpl }: Props) {
     tpl.variants.some((v) => v.holePattern === holePattern && v.finishRequired);
 
   const finishOptions = useMemo(() => {
-    const byVariant = tpl.variants.find((v) => v.holePattern === holePattern);
-    return byVariant?.finishes?.map((f) => f as FinishOption) ?? [];
+    const byVariant = tpl.variants.find((v) => v.finishRequired);
+    return byVariant?.finishes?.map((f) => f) ?? [];
   }, [holePattern, tpl.variants]);
 
   async function submit() {
