@@ -1,5 +1,32 @@
 ritual.alejandrogroup.org {
   encode zstd gzip
-  tls shepardhero@gmail.com          # ваш email для Let's Encrypt (необязательно, но полезно)
-  reverse_proxy web:3000       # весь трафик на Next.js
+
+  # API только по /api/*
+  @api path /api/*
+  handle @api {
+    reverse_proxy api:3001
+  }
+
+  # Админка Next.js
+  @admin path /admin*
+  handle @admin {
+    reverse_proxy web:3000
+  }
+
+  # Остальное — фронт
+  handle {
+    reverse_proxy web:3000
+  }
+
+  header {
+    Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+    X-Content-Type-Options "nosniff"
+    X-Frame-Options "DENY"
+    Referrer-Policy "no-referrer-when-downgrade"
+  }
+
+  log {
+    output stdout
+    format console
+  }
 }
