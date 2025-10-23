@@ -17,6 +17,11 @@ export type HolePattern =
   | 'TWO_VERTICAL'
   | 'FOUR_CORNERS';
 export type Finish = 'MATTE' | 'GLOSS';
+export type FinishOption = {
+  id: string;
+  code: Finish;
+  label: string;
+};
 
 export type TemplateListItem = {
   id: string;
