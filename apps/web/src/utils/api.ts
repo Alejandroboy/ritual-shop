@@ -48,7 +48,7 @@ export type TemplateDetails = TemplateListItem & {
   variants: {
     holePattern: HolePattern;
     finishRequired: boolean;
-    finishes: Finish[];
+    finishes: FinishOption[];
   }[];
   basePriceMinor: string;
   defaults: {
