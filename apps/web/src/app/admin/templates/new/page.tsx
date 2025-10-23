@@ -1,5 +1,7 @@
 'use client';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { Refs } from '../../../../types';
 
 async function api(url: string, init?: RequestInit) {
   const r = await fetch(url, {
@@ -13,22 +15,32 @@ async function api(url: string, init?: RequestInit) {
 }
 
 export default function NewTemplate() {
-  const [refs, setRefs] = useState<any>({});
-  const [form, setForm] = useState<any>({
+  const [refs, setRefs] = useState<Refs>({
+    sizes: [],
+    frames: [],
+    backgrounds: [],
+    finishes: [],
+    holePatterns: [],
+  });
+  const [form, setForm] = useState({
     code: '',
     title: '',
     isActive: true,
+    frameId: '',
+    backgroundId: '',
+    finishId: '',
+    sizeId: '',
   });
 
   useEffect(() => {
     api('/api/admin/templates/refs').then(setRefs);
   }, []);
 
-  function ch(k: string, v: any) {
-    setForm((s: any) => ({ ...s, [k]: v }));
+  function ch(k: string, v: string | boolean) {
+    setForm((s) => ({ ...s, [k]: v }));
   }
 
-  async function submit(e: any) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
     await api('/api/admin/templates', {
       method: 'POST',
@@ -61,7 +73,7 @@ export default function NewTemplate() {
           onChange={(e) => ch('sizeId', e.target.value)}
         >
           <option value="">Размер</option>
-          {sizes.map((s: any) => (
+          {sizes.map((s) => (
             <option key={s.id} value={s.id}>
               {s.name}
             </option>
@@ -73,7 +85,7 @@ export default function NewTemplate() {
           onChange={(e) => ch('frameId', e.target.value)}
         >
           <option value="">Рамка</option>
-          {frames.map((s: any) => (
+          {frames.map((s) => (
             <option key={s.id} value={s.id}>
               {s.name}
             </option>
@@ -85,7 +97,7 @@ export default function NewTemplate() {
           onChange={(e) => ch('backgroundId', e.target.value)}
         >
           <option value="">Фон</option>
-          {backgrounds.map((s: any) => (
+          {backgrounds.map((s) => (
             <option key={s.id} value={s.id}>
               {s.name}
             </option>
@@ -97,9 +109,9 @@ export default function NewTemplate() {
           onChange={(e) => ch('finishId', e.target.value)}
         >
           <option value="">Финиш</option>
-          {finishes.map((s: any) => (
-            <option key={s.id} value={s.id}>
-              {s.name}
+          {finishes.map((s: string) => (
+            <option key={s} value={s}>
+              {s}
             </option>
           ))}
         </select>
@@ -107,18 +119,18 @@ export default function NewTemplate() {
       <label className="flex items-center gap-2 text-sm">
         <input
           type="checkbox"
-          checked={!!form.isActive}
+          checked={form.isActive}
           onChange={(e) => ch('isActive', e.target.checked)}
-        />{' '}
+        />
         Активен
       </label>
       <div className="flex gap-2">
         <button className="px-4 py-2 rounded-xl bg-black text-white">
           Создать
         </button>
-        <a className="px-4 py-2 rounded-xl border" href="/admin/templates">
+        <Link className="px-4 py-2 rounded-xl border" href="/admin/templates">
           Отмена
-        </a>
+        </Link>
       </div>
     </form>
   );

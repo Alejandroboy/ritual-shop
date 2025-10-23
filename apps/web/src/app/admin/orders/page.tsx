@@ -2,6 +2,7 @@
 import useSWR from 'swr';
 import Link from 'next/link';
 import { adminApiFetch } from '@utils';
+import { Order } from '../../../types';
 
 export default function Orders() {
   const { data } = useSWR('/api/admin/orders', (u) =>
@@ -12,7 +13,7 @@ export default function Orders() {
     <div>
       <h1 className="text-2xl font-semibold mb-4">Заказы</h1>
       <ul className="space-y-2">
-        {items.map((o: any) => {
+        {items.map((o: Order) => {
           return (
             <li key={o.id} className="p-3 border rounded-xl">
               <div className="font-mono">{o.number}</div>

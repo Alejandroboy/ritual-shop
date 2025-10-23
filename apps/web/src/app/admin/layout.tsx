@@ -1,6 +1,8 @@
 'use client';
 import { adminApiFetch } from '@utils';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import React, { MouseEventHandler } from 'react';
 
 export default function AdminLayout({
   children,
@@ -8,16 +10,17 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const handleExit = async (e) => {
-    e.preventDefault();
+  const handleExit: MouseEventHandler<HTMLDivElement> = async () => {
+    // e.preventDefault();
     try {
       const res = await adminApiFetch('/api/admin/auth/logout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
       if (res.ok) router.push('/admin/login');
-    } catch (e: any) {
-      console.log('Ошибка выхода', e.message);
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : '';
+      console.log('Ошибка выхода', message);
     }
   };
   return (
@@ -25,17 +28,17 @@ export default function AdminLayout({
       <aside className="border-r p-4">
         <div className="font-semibold mb-4">Ritual Admin</div>
         <nav className="space-y-2">
-          <a href="/admin">Дашборд</a>
+          <Link href="/admin">Дашборд</Link>
           <br />
-          <a href="/admin/orders">Заказы</a>
+          <Link href="/admin/orders">Заказы</Link>
           <br />
-          <a href="/admin/templates">Шаблоны</a>
+          <Link href="/admin/templates">Шаблоны</Link>
           <br />
-          <a href="/admin/templates/pricing">Смена цен</a>
+          <Link href="/admin/templates/pricing">Смена цен</Link>
           <br />
-          <a href="/admin/users">Пользователи</a>
+          <Link href="/admin/users">Пользователи</Link>
           <br />
-          <a href="/admin/users/new">Создать пользователя</a>
+          <Link href="/admin/users/new">Создать пользователя</Link>
         </nav>
         <div className="cursor-pointer" onClick={handleExit}>
           Exit

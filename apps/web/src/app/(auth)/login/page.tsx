@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { api } from '@utils';
+import { User } from '../../../types';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -10,25 +11,28 @@ export default function LoginPage() {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  type UserData = {
+    user: User;
+  };
+
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
     setPending(true);
     try {
-      const data = await api('/auth/login', {
+      const data: UserData = await api('/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include', // важно для httpOnly-куки
         body: JSON.stringify({ email: email.trim(), password }),
       });
-      if (data.user) {
+      if (data?.user) {
         window.localStorage.setItem('userId', data.user.id);
         window.location.href = '/account';
-      } else {
-        setError(data?.message || 'Неверный email или пароль');
       }
     } catch (err) {
       setError('Ошибка сети. Попробуйте ещё раз.');
+      console.log(err);
     } finally {
       setPending(false);
     }

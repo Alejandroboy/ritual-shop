@@ -1,5 +1,8 @@
+import type { Draft } from 'immer';
 import type { Template, TemplateFilter } from '../../types';
 import { api } from '@utils';
+import { AppState } from '../app-store';
+import { StateCreator } from 'zustand/vanilla';
 
 export type CatalogSlice = {
   templatesByKey: Record<string, Template[] | undefined>;
@@ -10,6 +13,15 @@ export type CatalogSlice = {
   invalidateTemplates: (filter?: TemplateFilter) => void;
 };
 
+type MW = [
+  ['zustand/devtools', never],
+  ['zustand/persist', unknown],
+  ['zustand/subscribeWithSelector', never],
+  ['zustand/immer', never],
+];
+
+type CatalogCreator = StateCreator<AppState, MW, [], CatalogSlice>;
+
 const keyOf = (f: TemplateFilter) =>
   JSON.stringify({
     q: f.q || '',
@@ -19,7 +31,11 @@ const keyOf = (f: TemplateFilter) =>
     holePattern: f.holePattern || null,
   });
 
-export const createCatalogSlice = (set: any, get: any): CatalogSlice => ({
+export const createCatalogSlice: CatalogCreator = (
+  set,
+  get,
+  _api,
+): CatalogSlice => ({
   templatesByKey: {},
   staleAtByKey: {},
   ttlMs: 10 * 60 * 1000,
@@ -27,7 +43,7 @@ export const createCatalogSlice = (set: any, get: any): CatalogSlice => ({
   getTemplates: async (filter) => {
     const k = keyOf(filter);
     const now = Date.now();
-    const { templatesByKey, staleAtByKey, ttlMs } = get() as CatalogSlice;
+    const { templatesByKey, staleAtByKey, ttlMs } = get();
 
     if (templatesByKey[k] && (staleAtByKey[k] || 0) > now) {
       return templatesByKey[k]!;
@@ -44,7 +60,7 @@ export const createCatalogSlice = (set: any, get: any): CatalogSlice => ({
       method: 'GET',
     });
 
-    set((s: any) => {
+    set((s) => {
       s.templatesByKey[k] = list;
       s.staleAtByKey[k] = now + ttlMs;
     });
@@ -58,7 +74,7 @@ export const createCatalogSlice = (set: any, get: any): CatalogSlice => ({
       return;
     }
     const k = keyOf(filter);
-    set((s: any) => {
+    set((s) => {
       delete s.templatesByKey[k];
       delete s.staleAtByKey[k];
     });

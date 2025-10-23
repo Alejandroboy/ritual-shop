@@ -2,7 +2,9 @@ FROM node:22-alpine AS build
 WORKDIR /app
 COPY package.json yarn.lock ./
 
-RUN yarn install
+RUN yarn install --non-interactive
+
+RUN test -x node_modules/.bin/next || (ls -la node_modules/.bin; echo "NO next" && exit 1)
 
 COPY . .
 
@@ -14,10 +16,6 @@ RUN yarn install --production --ignore-scripts --prefer-offline
 FROM node:22-alpine
 WORKDIR /app
 
-#COPY --from=build /app/package.json ./package.json
-#COPY --from=build /app/node_modules ./node_modules
-#COPY --from=build /app/.next ./.next
-#COPY --from=build /app/public ./public
 WORKDIR /app
 ENV NODE_ENV=production
 ENV HOSTNAME=0.0.0.0

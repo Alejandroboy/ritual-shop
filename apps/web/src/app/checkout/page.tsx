@@ -1,52 +1,17 @@
 'use client';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getApiBase } from '@utils';
 import { api } from '@utils';
 import { useAppStore } from '../../state/app-store';
 import AssetThumb from '../../components/asset-thumb';
 import { bytesToSize } from '@utils';
-
-type FilesByItem = Record<string, File[]>;
-type ProgressByItem = Record<string, number>;
-type ErrorsByItem = Record<string, string | null>;
-
-function useHydrated() {
-  const [hydrated, setHydrated] = useState(false);
-  useEffect(() => {
-    setHydrated(useAppStore.persist.hasHydrated());
-    const unsub = useAppStore.persist.onFinishHydration(() =>
-      setHydrated(true),
-    );
-    return () => unsub();
-  }, []);
-  return hydrated;
-}
-
-type Order = {
-  id: string;
-};
+import { OrderItemDetails } from '../../types';
+import { useHydrated } from '../../utils/use-hydrated';
 
 type OrderDetails = {
-  id: string;
-  templateLabel: string;
-  templateCode: string;
-  size: {
-    label: string;
-  };
-  assets: {
-    id: string;
-    originalName: string;
-    size: number;
-  }[];
+  items: OrderItemDetails[];
 };
 
-type User = {
-  userId: string;
-  email: string;
-  name: string;
-  phone: string;
-};
 export default function CheckoutPage() {
   const router = useRouter();
   const draftOrderId = useAppStore((s) => s.draftOrderId);
@@ -54,7 +19,7 @@ export default function CheckoutPage() {
   const me = useAppStore((s) => s.me);
   const fetchMe = useAppStore((s) => s.fetchMe);
   const hydrated = useHydrated();
-  const [orderItems, setOrderItems] = useState<OrderDetails[] | null>(null);
+  const [orderItems, setOrderItems] = useState<OrderItemDetails[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [ignore, setIgnore] = useState(false);
   const [form, setForm] = useState({
@@ -63,8 +28,6 @@ export default function CheckoutPage() {
     name: '',
     phone: '',
   });
-  const [files, setFiles] = useState<FileList | null>(null);
-  const API_BASE = getApiBase();
 
   useEffect(() => {
     if (!hydrated) return;
@@ -87,8 +50,9 @@ export default function CheckoutPage() {
     });
     try {
       const data = await api<OrderDetails>(`/orders/${draftOrderId}`);
-      if (!ignore) setOrderItems(data?.items ? data?.items : null);
-    } catch (e) {
+      if (!ignore) setOrderItems(data.items ? data.items : null);
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : '';
       console.warn('getOrderDetails error', e);
       clearDraft();
       router.replace('/catalog');
@@ -108,7 +72,7 @@ export default function CheckoutPage() {
   async function deleteItem(orderId: string, itemId: string) {
     setIgnore(false);
     try {
-      const data = await api<{ id: string }>(
+      const data = await api<{ ok: boolean }>(
         `/orders/${orderId}/items/${itemId}`,
         {
           method: 'DELETE',
@@ -119,7 +83,7 @@ export default function CheckoutPage() {
         load();
         setIgnore(true);
       }
-    } catch (e) {
+    } catch (e: unknown) {
       alert(`Ошибка удаления позиции`);
       console.log('e', e);
     }
@@ -150,10 +114,10 @@ export default function CheckoutPage() {
         localStorage.removeItem('orderId');
       }
       router.push(`/order/${data.id}`);
-    } catch (e) {
-      const msg = e?.message || '';
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : '';
       console.error('checkout error', e);
-      alert(`Ошибка оформления заказа${msg ? `: ${msg}` : ''}`);
+      alert(`Ошибка оформления заказа${message ? `: ${message}` : ''}`);
     } finally {
       alert('Заказ оформлен');
       setLoading(false);

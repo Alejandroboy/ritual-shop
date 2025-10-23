@@ -1,3 +1,5 @@
+import { HttpError } from './http-error';
+
 export type Material =
   | 'CERMET'
   | 'WHITE_CERAMIC_GRANITE'
@@ -43,6 +45,7 @@ export type TemplateDetails = TemplateListItem & {
     finishRequired: boolean;
     finishes: Finish[];
   }[];
+  basePriceMinor: string;
   defaults: {
     sizeId: number | null;
     holePattern: HolePattern | null;
@@ -52,12 +55,23 @@ export type TemplateDetails = TemplateListItem & {
   };
 };
 
+type RetryInit = RequestInit & { __retry?: boolean };
+
 const isServer = typeof window === 'undefined';
 
 function toApiPath(path: string) {
   return path.startsWith('/api')
     ? path
     : `/api${path.startsWith('/') ? path : `/${path}`}`;
+}
+
+function extractMessage(data: unknown, fallback: string) {
+  if (data && typeof data === 'object' && 'message' in data) {
+    const m = (data as { message?: unknown }).message;
+    if (Array.isArray(m)) return m.join('; ');
+    if (typeof m === 'string') return m;
+  }
+  return fallback;
 }
 
 function joinBase(base: string, apiPath: string) {
@@ -95,17 +109,9 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
     });
 
     if (!res.ok) {
-      let data: any = null;
-      try {
-        data = await res.json();
-      } catch {}
-      const msg = Array.isArray(data?.message)
-        ? data.message.join('; ')
-        : data?.message || res.statusText;
-      const err: any = new Error(msg);
-      err.status = res.status;
-      // throw err;
-      return err;
+      const data = await res.json().catch(() => ({}));
+      const msg = extractMessage(data, res.statusText || 'Request failed');
+      throw new HttpError(msg, res.status, data);
     }
     return res.json() as Promise<T>;
   }
@@ -135,20 +141,14 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
     return __refreshing;
   }
 
-  async function doFetch(
-    u: string,
-    init: RequestInit & { __retry?: boolean } = {},
-  ) {
-    const res = await fetch(u, { credentials: 'include', ...init });
+  async function doFetch(u: string, init: RetryInit = {}) {
+    const { __retry, ...rest } = init;
+    const res = await fetch(u, { credentials: 'include', ...rest });
 
-    if (res.status === 401 && !init.__retry) {
+    if (res.status === 401 && !__retry) {
       try {
         await ensureRefreshed();
-        return await fetch(u, {
-          credentials: 'include',
-          ...init,
-          __retry: true,
-        });
+        return doFetch(u, { ...rest, __retry: true });
       } catch {
         return res;
       }
@@ -156,16 +156,12 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
     return res;
   }
 
-  const res = await doFetch(url, init as any);
+  const res = await doFetch(url, init);
 
   if (!res.ok) {
     const data = await res.json().catch(() => ({}));
-    const msg = Array.isArray(data?.message)
-      ? data.message.join('; ')
-      : data?.message || res.statusText;
-    const err: any = new Error(msg);
-    err.status = res.status;
-    return err;
+    const msg = extractMessage(data, res.statusText || 'Request failed');
+    throw new HttpError(msg, res.status, data);
   }
   return res.json() as Promise<T>;
 }
@@ -176,7 +172,7 @@ export async function getJSON<T>(url: string): Promise<T> {
   return r.json();
 }
 
-export async function postJSON<T>(url: string, body: any): Promise<T> {
+export async function postJSON<T>(url: string, body: Body): Promise<T> {
   const r = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

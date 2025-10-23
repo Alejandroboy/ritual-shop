@@ -1,6 +1,8 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import Image from 'next/image';
+import { Refs, Template } from '../../../../types';
 
 async function api(url: string, init?: RequestInit) {
   const r = await fetch(url, {
@@ -15,8 +17,14 @@ async function api(url: string, init?: RequestInit) {
 
 export default function TemplateEdit() {
   const { id } = useParams<{ id: string }>();
-  const [refs, setRefs] = useState<any>({});
-  const [tpl, setTpl] = useState<any>(null);
+  const [refs, setRefs] = useState<Refs>({
+    sizes: [],
+    frames: [],
+    backgrounds: [],
+    finishes: [],
+    holePatterns: [],
+  });
+  const [tpl, setTpl] = useState<Template | null>(null);
   const [err, setErr] = useState<string>('');
 
   useEffect(() => {
@@ -28,8 +36,12 @@ export default function TemplateEdit() {
       .catch((e) => setErr(String(e)));
   }, [id]);
 
-  async function save(e: any) {
+  async function save(e: React.FormEvent) {
     e.preventDefault();
+    if (!tpl) {
+      console.error('Нет шаблона для сохранения');
+      return;
+    }
     const { id: _, ...dto } = tpl;
     await api(`/api/admin/templates/${id}`, {
       method: 'PATCH',
@@ -55,7 +67,14 @@ export default function TemplateEdit() {
     location.href = '/admin/templates';
   }
 
-  async function patchAllowed(payload: any) {
+  async function patchAllowed(payload: {
+    backgroundExtras?: { [id: number]: number };
+    frameExtras?: { [id: number]: number };
+    sizeExtras?: { [id: number]: number };
+    basePriceMinor?: number;
+    holeExtras?: { [id: string]: number };
+    finishExtras?: { [id: string]: number };
+  }) {
     await api(`/api/admin/templates/${id}/allowed`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -75,7 +94,9 @@ export default function TemplateEdit() {
     finishes = [],
     holePatterns = [],
   } = refs;
-  const ch = (k: string, v: any) => setTpl((s: any) => ({ ...s, [k]: v }));
+  const ch = <K extends keyof Template>(k: K, v: Template[K]) => {
+    setTpl((prev) => (prev ? { ...prev, [k]: v } : prev));
+  };
 
   const renderFinishes = () => {
     if (tpl.allowedFinishes.length)
@@ -86,7 +107,7 @@ export default function TemplateEdit() {
           onChange={(e) => ch('finishId', e.target.value)}
         >
           <option value="">Финиш</option>
-          {finishes.map((x: any) => (
+          {finishes.map((x) => (
             <option key={x} value={x}>
               {x}
             </option>
@@ -104,7 +125,7 @@ export default function TemplateEdit() {
           onChange={(e) => ch('holeId', e.target.value)}
         >
           <option value="">Отверстия</option>
-          {holePatterns.map((x: any) => (
+          {holePatterns.map((x) => (
             <option key={x} value={x}>
               {x}
             </option>
@@ -114,34 +135,22 @@ export default function TemplateEdit() {
   };
 
   const sizeExtraMap: Record<number, number> = Object.fromEntries(
-    (tpl.allowedSizes ?? []).map((x: any) => [
-      x.sizeId,
-      x.extraPriceMinor ?? 0,
-    ]),
+    (tpl.allowedSizes ?? []).map((x) => [x.sizeId, x.extraPriceMinor ?? 0]),
   );
   const frameExtraMap: Record<number, number> = Object.fromEntries(
-    (tpl.allowedFrames ?? []).map((x: any) => [
-      x.frameId,
-      x.extraPriceMinor ?? 0,
-    ]),
+    (tpl.allowedFrames ?? []).map((x) => [x.frameId, x.extraPriceMinor ?? 0]),
   );
   const bgExtraMap: Record<number, number> = Object.fromEntries(
-    (tpl.allowedBackgrounds ?? []).map((x: any) => [
+    (tpl.allowedBackgrounds ?? []).map((x) => [
       x.backgroundId,
       x.extraPriceMinor ?? 0,
     ]),
   );
-  const finishExtraMap: Record<string, number> = Object.fromEntries(
-    (tpl.allowedFinishes ?? []).map((x: any) => [
-      x.finish,
-      x.extraPriceMinor ?? 0,
-    ]),
+  const finishExtraMap: { [p: string]: number | string } = Object.fromEntries(
+    (tpl.allowedFinishes ?? []).map((x) => [x.finish, x.extraPriceMinor ?? 0]),
   );
-  const holeExtraMap: Record<string, number> = Object.fromEntries(
-    (tpl.allowedHoles ?? []).map((x: any) => [
-      x.pattern,
-      x.extraPriceMinor ?? 0,
-    ]),
+  const holeExtraMap: { [p: string]: number | string } = Object.fromEntries(
+    (tpl.allowedHoles ?? []).map((x) => [x.pattern, x.extraPriceMinor ?? 0]),
   );
 
   return (
@@ -182,7 +191,7 @@ export default function TemplateEdit() {
           onChange={(e) => ch('frameId', e.target.value)}
         >
           <option value="">Рамка</option>
-          {frames.map((x: any) => (
+          {frames.map((x) => (
             <option key={x.id} value={x.id}>
               {x.name}
             </option>
@@ -194,7 +203,7 @@ export default function TemplateEdit() {
           onChange={(e) => ch('backgroundId', e.target.value)}
         >
           <option value="">Фон</option>
-          {backgrounds.map((x: any) => (
+          {backgrounds.map((x) => (
             <option key={x.id} value={x.id}>
               {x.name}
             </option>
@@ -206,7 +215,7 @@ export default function TemplateEdit() {
       <label className="flex items-center gap-2 text-sm">
         <input
           type="checkbox"
-          checked={!!tpl.isActive}
+          checked={tpl.isActive}
           onChange={(e) => ch('isActive', e.target.checked)}
         />{' '}
         Активен
@@ -235,7 +244,7 @@ export default function TemplateEdit() {
         <div className="mt-2">
           <h3 className="font-medium">Надбавки по размерам</h3>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-2">
-            {sizes.map((s: any) => (
+            {sizes.map((s) => (
               <label key={s.id} className="text-sm flex items-center gap-2">
                 <span className="w-28">{s.label}</span>
                 <input
@@ -255,7 +264,7 @@ export default function TemplateEdit() {
         <div className="mt-4">
           <h3 className="font-medium">Надбавки по рамкам</h3>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-2">
-            {frames.map((f: any) => (
+            {frames.map((f) => (
               <label key={f.id} className="text-sm flex items-center gap-2">
                 <span className="w-28">
                   #{f.code} {f.name}
@@ -277,7 +286,7 @@ export default function TemplateEdit() {
         <div className="mt-4">
           <h3 className="font-medium">Надбавки по фонам</h3>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-2">
-            {backgrounds.map((b: any) => (
+            {backgrounds.map((b) => (
               <label key={b.id} className="text-sm flex items-center gap-2">
                 <span className="w-28">
                   #{b.code} {b.name}
@@ -339,7 +348,7 @@ export default function TemplateEdit() {
 
       <div className="flex items-center gap-4">
         {tpl.previewPath && (
-          <img src={tpl.previewPath} alt="" className="h-24 object-contain" />
+          <Image src={tpl.previewPath} alt="" className="h-24 object-contain" />
         )}
         <input
           type="file"

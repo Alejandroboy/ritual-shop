@@ -56,8 +56,9 @@ export default function CreateUserForm() {
       });
       // по желанию — сразу уходим в список
       // router.push('/admin/users');
-    } catch (err: any) {
-      setError(String(err.message || err));
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : '';
+      setError(message);
     } finally {
       setPending(false);
     }

@@ -1,18 +1,18 @@
 name: ritual-production
 services:
-  caddy:
-    image: caddy:2.8
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
-    depends_on:
-      web:
-        condition: service_started
+#  caddy:
+#    image: caddy:2.8
+#    restart: unless-stopped
+#    ports:
+#      - "80:80"
+#      - "443:443"
+#    volumes:
+#      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+#      - caddy_data:/data
+#      - caddy_config:/config
+#    depends_on:
+#      web:
+#        condition: service_started
 
   db:
     image: postgres:16-alpine
@@ -64,19 +64,19 @@ services:
       retries: 20
 #    networks: [ stack ]
 
-  migrator:
-    image: ritual_api
-    depends_on:
-      db:
-        condition: service_healthy
-    environment:
-      DATABASE_URL: ${DATABASE_URL}
-      SEED_ENABLED: "true"              # можно выключить, когда не нужен
-    entrypoint: [ "sh", "-lc" ]
-    command:  >
-      npx prisma migrate deploy
-      && node prisma/seed-once.js
-    restart: "no"
+#  migrator:
+#    image: ritual_api
+#    depends_on:
+#      db:
+#        condition: service_healthy
+#    environment:
+#      DATABASE_URL: ${DATABASE_URL}
+#      SEED_ENABLED: "true"              # можно выключить, когда не нужен
+#    entrypoint: [ "sh", "-lc" ]
+#    command:  >
+#      npx prisma migrate deploy
+#      && node prisma/seed-once.js
+#    restart: "no"
 
   api:
     container_name: ritual_api

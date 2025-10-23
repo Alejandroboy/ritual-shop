@@ -1,5 +1,7 @@
 import type { Id, OrderItem } from '../../types';
 import { api } from '@utils';
+import { StateCreator } from 'zustand/vanilla';
+import { AppState } from '../app-store';
 
 export type OrderDetails = {
   id: Id;
@@ -39,7 +41,16 @@ export type OrderSlice = {
   }) => Promise<{ id: Id }>;
 };
 
-export const createOrderSlice = (set: any, get: any): OrderSlice => ({
+type MW = [
+  ['zustand/devtools', never],
+  ['zustand/persist', unknown],
+  ['zustand/subscribeWithSelector', never],
+  ['zustand/immer', never],
+];
+
+type OrderCreator = StateCreator<AppState, MW, [], OrderSlice>;
+
+export const createOrderSlice: OrderCreator = (set, get, _api): OrderSlice => ({
   draftOrderId: null,
 
   setDraft: (id) => set({ draftOrderId: id }),

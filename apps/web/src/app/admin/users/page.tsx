@@ -1,10 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { adminApiFetch } from '@utils';
 import useSWR from 'swr';
-import UserDetails from './[id]/page';
 
 type User = {
   id: string;
@@ -13,12 +12,6 @@ type User = {
   phone?: string | null;
   role: 'ADMIN' | 'MANAGER' | 'CUSTOMER';
 };
-type ListResponse = {
-  items: User[];
-  total: number;
-  skip: number;
-  take: number;
-};
 
 export default function AdminUsersListPage() {
   const [q, setQ] = useState('');
@@ -26,24 +19,6 @@ export default function AdminUsersListPage() {
   const { data } = useSWR(`/api/admin/users/list`, (u) =>
     adminApiFetch(u).then((r) => r.json()),
   );
-
-  async function load(skip = 0, take = 20, qStr = q) {
-    setError(null);
-    try {
-      const params = new URLSearchParams();
-      if (qStr) params.set('q', qStr);
-      params.set('skip', String(skip));
-      params.set('take', String(take));
-      const { data } = useSWR(
-        `/api/admin/users/list?${params.toString()}`,
-        (u) => adminApiFetch(u).then((r) => r.json()),
-      );
-
-      setData(data);
-    } catch (e: any) {
-      setError(String(e.message || e));
-    }
-  }
 
   return (
     <div>
@@ -68,7 +43,7 @@ export default function AdminUsersListPage() {
 
       <div className="mt-6 space-y-2">
         {data?.items?.length ? (
-          data.items.map((u) => (
+          data.items.map((u: User) => (
             <div key={u.id} className="rounded-xl border p-4">
               <div className="font-medium">{u.email}</div>
               <div className="text-sm text-gray-500">

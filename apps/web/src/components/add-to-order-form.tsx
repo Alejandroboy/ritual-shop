@@ -33,7 +33,7 @@ export default function AddToOrderForm({ tpl }: Props) {
 
   const finishOptions = useMemo(() => {
     const byVariant = tpl.variants.find((v) => v.holePattern === holePattern);
-    return byVariant?.finishes?.map((f) => f.code as Finish) ?? [];
+    return byVariant?.finishes?.map((f) => f as Finish) ?? [];
   }, [holePattern, tpl.variants]);
 
   async function submit() {

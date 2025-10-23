@@ -1,21 +1,22 @@
 export type User = {
+  id: string;
   userId: string;
   email: string;
   name: string;
   phone: string;
-  customerOrders: customerOrder[] | [];
+  customerOrders: CustomerOrder[] | [];
 };
 
-type customerOrder = {
+export type CustomerOrder = {
   createdAt: string;
   id: string;
   orderStatus: string;
   totalMinor: number;
-  items: customerOrderItem[] | [];
+  items: CustomerOrderItem[] | [];
 };
 
-type customerOrderItem = {
-  assets: customerOrderItemAsset[] | [];
+export type CustomerOrderItem = {
+  assets: CustomerOrderItemAsset[] | [];
   backgroundId: number;
   comment: string | null;
   createdAt: string;
@@ -31,7 +32,8 @@ type customerOrderItem = {
   unitPriceMinor: number;
   updatedAt: string;
 };
-type customerOrderItemAsset = {
+
+export type CustomerOrderItemAsset = {
   createdAt: string;
   filename: string;
   id: string;
