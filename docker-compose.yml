@@ -16,7 +16,6 @@ services:
 
   db:
     image: postgres:16-alpine
-    container_name: ritual_postgres
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
@@ -36,7 +35,6 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: ritual_redis
     command: [ "redis-server", "--appendonly", "yes" ]
     restart: unless-stopped
     ports:
@@ -52,7 +50,6 @@ services:
 
   mailhog:
     image: mailhog/mailhog:latest
-    container_name: ritual_mailhog
     restart: unless-stopped
     ports:
       - "${MAILHOG_SMTP_PORT}:1025"  # SMTP
@@ -83,7 +80,6 @@ services:
     restart: "no"
 
   api:
-    container_name: ritual_api
     build:
       context: ./apps/api
       dockerfile: Dockerfile
@@ -101,7 +97,6 @@ services:
       - "3001:3001"
 #    networks: [ stack ]
   web:
-    container_name: ritual_web
     build:
       context: ./apps/web
       dockerfile: Dockerfile
@@ -110,7 +105,7 @@ services:
       NODE_ENV: production
       PORT: "3000"
       API_BASE: "http://api:3001/api"
-      NEXT_PUBLIC_API_BASE: ""
+      NEXT_PUBLIC_API_BASE: "/api"
     depends_on:
       - api
     ports:
