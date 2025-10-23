@@ -1,5 +1,8 @@
 import type { Id, PresignResp } from '../../types';
 import { api } from '@utils';
+import { StateCreator } from 'zustand/vanilla';
+import { AppState } from '../app-store';
+import { OrdersSlice } from './orders-slice';
 
 export type UploadState =
   | 'queued'
@@ -35,9 +38,22 @@ export type UploadsSlice = {
   _pump: () => void;
 };
 
+type MW = [
+  ['zustand/devtools', never],
+  ['zustand/persist', unknown],
+  ['zustand/subscribeWithSelector', never],
+  ['zustand/immer', never],
+];
+
+type UploadsCreator = StateCreator<AppState, MW, [], UploadsSlice>;
+
 const rid = () => Math.random().toString(36).slice(2, 10);
 
-export const createUploadsSlice = (set: any, get: any): UploadsSlice => ({
+export const createUploadsSlice: UploadsCreator = (
+  set,
+  get,
+  _api,
+): UploadsSlice => ({
   queue: [],
   concurrency: 2,
   running: 0,
@@ -52,12 +68,12 @@ export const createUploadsSlice = (set: any, get: any): UploadsSlice => ({
       state: 'queued',
       error: null,
     }));
-    set((s: any) => ({ queue: [...s.queue, ...jobs] }));
+    set((s) => ({ queue: [...s.queue, ...jobs] }));
     get()._pump();
   },
 
   attachPendingToItem: (orderId, itemId) => {
-    set((s: any) => {
+    set((s) => {
       s.queue.forEach((j: UploadJob) => {
         if (j.orderId === orderId && j.state === 'uploaded' && !j.itemId) {
           j.itemId = itemId;
@@ -69,7 +85,7 @@ export const createUploadsSlice = (set: any, get: any): UploadsSlice => ({
   },
 
   clearFinished: () =>
-    set((s: any) => ({
+    set((s) => ({
       queue: s.queue.filter(
         (j: UploadJob) =>
           j.state === 'uploading' ||
@@ -87,7 +103,7 @@ export const createUploadsSlice = (set: any, get: any): UploadsSlice => ({
     if (!job) return;
 
     // пометили как занятый
-    set((s: any) => {
+    set((s) => {
       const j = s.queue.find((x: UploadJob) => x.id === job.id)!;
       j.state = j.key ? 'registering' : 'uploading';
       s.running += 1;
@@ -117,7 +133,7 @@ export const createUploadsSlice = (set: any, get: any): UploadsSlice => ({
         }
         const etag = res.headers.get('ETag')?.replace(/"/g, '') ?? null;
 
-        set((s: any) => {
+        set((s) => {
           const j = s.queue.find((x: UploadJob) => x.id === job.id)!;
           j.bucket = presign.bucket;
           j.key = presign.key;
@@ -144,23 +160,24 @@ export const createUploadsSlice = (set: any, get: any): UploadsSlice => ({
           }),
         });
 
-        set((s: any) => {
+        set((s) => {
           const j = s.queue.find((x: UploadJob) => x.id === job.id)!;
           j.state = 'done';
           s.running -= 1;
         });
       } else {
-        set((s: any) => {
+        set((s) => {
           const j = s.queue.find((x: UploadJob) => x.id === job.id)!;
           j.state = 'uploaded';
           s.running -= 1;
         });
       }
-    } catch (e: any) {
-      set((s: any) => {
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : '';
+      set((s) => {
         const j = s.queue.find((x: UploadJob) => x.id === job.id)!;
         j.state = 'error';
-        j.error = e?.message || 'Ошибка загрузки';
+        j.error = message || 'Ошибка загрузки';
         s.running -= 1;
       });
     } finally {

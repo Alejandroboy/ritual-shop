@@ -71,12 +71,20 @@ export default function AdminStats() {
         </ResponsiveContainer>
         <div className="mt-3 text-sm text-gray-600">
           Топ просрочек:
-          {data.sla.topBreaches.map((b: any) => (
-            <div key={b.id}>
-              #{b.number ?? b.id.slice(0, 6)} — {b.status}: {b.ageHours}ч / SLA{' '}
-              {b.thresholdHours}ч
-            </div>
-          ))}
+          {data.sla.topBreaches.map(
+            (b: {
+              id: string;
+              number: string;
+              status: string;
+              ageHours: string;
+              thresholdHours: string;
+            }) => (
+              <div key={b.id}>
+                #{b.number ?? b.id.slice(0, 6)} — {b.status}: {b.ageHours}ч /
+                SLA {b.thresholdHours}ч
+              </div>
+            ),
+          )}
         </div>
       </div>
     </div>

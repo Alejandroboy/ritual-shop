@@ -3,6 +3,7 @@
 import { useParams } from 'next/navigation';
 import useSWR from 'swr';
 import { adminApiFetch } from '@utils';
+import { CustomerOrder } from '../../../../types';
 
 export default function UserDetails() {
   const { id } = useParams<{ id: string }>();
@@ -46,7 +47,7 @@ export default function UserDetails() {
         {data?.user?.customerOrders.length && (
           <div>
             Заказы:
-            {data?.user?.customerOrders.map((order) => {
+            {data?.user?.customerOrders.map((order: CustomerOrder) => {
               const createdAt = new Date(order.createdAt);
               return (
                 <div key={order.id}>
@@ -65,7 +66,7 @@ export default function UserDetails() {
                     <div className="w-1/2 text-right">
                       {order.items.map((item) => {
                         return (
-                          <div>
+                          <div key={item.id}>
                             <p>{item.templateLabel}</p>
                             <p>Размер: {item.sizeId}</p>
                             <p>Вид рамки:{item.frameId}</p>

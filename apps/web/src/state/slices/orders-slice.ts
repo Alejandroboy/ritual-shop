@@ -1,4 +1,13 @@
 import { api } from '@utils';
+import { StateCreator } from 'zustand/vanilla';
+import { AppState } from '../app-store';
+import { access } from 'node:fs';
+import {
+  CustomerOrder,
+  CustomerOrderItem,
+  CustomerOrderItemAsset,
+  User,
+} from '../../types';
 
 export type MyAsset = {
   id: string;
@@ -11,7 +20,7 @@ export type MyOrderItem = {
   id: string;
   templateLabel: string;
   comment?: string | null;
-  sizeLabel?: string | null;
+  sizeId?: string | null;
   assets: MyAsset[];
 };
 
@@ -30,22 +39,31 @@ export type OrdersSlice = {
   clearOrders: () => void;
 };
 
-const mapAsset = (a: any): MyAsset => ({
+type MW = [
+  ['zustand/devtools', never],
+  ['zustand/persist', unknown],
+  ['zustand/subscribeWithSelector', never],
+  ['zustand/immer', never],
+];
+
+type OrdersCreator = StateCreator<AppState, MW, [], OrdersSlice>;
+
+const mapAsset = (a: CustomerOrderItemAsset): MyAsset => ({
   id: a.id,
-  originalName: a.originalName ?? a.filename ?? null,
-  contentType: a.contentType ?? a.mime ?? null,
+  originalName: a.filename ?? null,
+  contentType: a.mime ?? null,
   size: a.size ?? null,
 });
 
-const mapItem = (i: any): MyOrderItem => ({
+const mapItem = (i: CustomerOrderItem): MyOrderItem => ({
   id: i.id,
   templateLabel: i.templateLabel,
   comment: i.comment,
-  sizeLabel: i.size?.label ?? null,
+  sizeId: i.sizeId ?? null,
   assets: Array.isArray(i.assets) ? i.assets.map(mapAsset) : [],
 });
 
-const mapOrder = (o: any): MyOrder => ({
+const mapOrder = (o: CustomerOrder): MyOrder => ({
   id: o.id,
   createdAt: o.createdAt,
   orderStatus: o.orderStatus,
@@ -53,14 +71,22 @@ const mapOrder = (o: any): MyOrder => ({
   items: Array.isArray(o.items) ? o.items.map(mapItem) : [],
 });
 
-export const createOrdersSlice = (set: any): OrdersSlice => ({
+type UserResponse = {
+  user: User;
+};
+
+export const createOrdersSlice: OrdersCreator = (
+  set,
+  _get,
+  _api,
+): OrdersSlice => ({
   myOrders: null,
   isLoadingOrders: false,
 
   loadMyOrders: async () => {
     set({ isLoadingOrders: true });
     try {
-      const resp = await api<any>('/users/me', {
+      const resp = await api<UserResponse>('/users/me', {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

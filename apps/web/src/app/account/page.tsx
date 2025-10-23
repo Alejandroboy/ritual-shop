@@ -5,18 +5,8 @@ import { useAppStore } from '../../state/app-store';
 import AssetThumb from '../../components/asset-thumb';
 import { LogoutButton } from '../../components/logout-button';
 import { bytesToSize } from '@utils';
-
-function useHydrated() {
-  const [hydrated, setHydrated] = useState(false);
-  useEffect(() => {
-    setHydrated(useAppStore.persist.hasHydrated());
-    const unsub = useAppStore.persist.onFinishHydration(() =>
-      setHydrated(true),
-    );
-    return () => unsub();
-  }, []);
-  return hydrated;
-}
+import { isExtendError } from '../../utils/is-extended-error';
+import { useHydrated } from '../../utils/use-hydrated';
 
 export default function AccountPage() {
   const router = useRouter();
@@ -35,17 +25,26 @@ export default function AccountPage() {
       try {
         await fetchMe();
         await loadMyOrders();
-      } catch (e: any) {
-        const status =
-          e?.status ?? (/\b401\b|\bunauth/i.test(e?.message) ? 401 : 0);
+      } catch (e: unknown) {
+        const message = e instanceof Error ? e.message : '';
+
+        const status: number = isExtendError(e)
+          ? typeof e.status === 'string'
+            ? Number.parseInt(e.status, 10) || 0
+            : (e.status ?? 0)
+          : /\b401\b|\bunauth/i.test(message)
+            ? 401
+            : 0;
+
         if (status === 401 || status === 403) {
-          router.replace('/login');
-        } else {
-          console.error('AccountPage error:', e);
+          router.replace('/login'); // для app router: строкой, не объектом
+          return;
         }
+
+        console.error('AccountPage error:', e);
       }
     })();
-  }, [hydrated]);
+  }, [hydrated, fetchMe, router, loadMyOrders]);
 
   if (!hydrated || isLoading || !me || !myOrders) {
     return <div className="max-w-3xl mx-auto p-6">Загрузка…</div>;

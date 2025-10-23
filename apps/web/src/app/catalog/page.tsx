@@ -11,11 +11,7 @@ type ListResp = {
 
 export const dynamic = 'force-dynamic'; // на всякий
 
-export default async function CatalogPage({
-  searchParams,
-}: {
-  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
-}) {
+export default async function CatalogPage() {
   const q = new URLSearchParams();
   if (!q.has('pageSize')) q.set('pageSize', '24');
 

@@ -1,45 +1,48 @@
 'use client';
-import { useState } from 'react';
-import { adminApiFetch } from '@utils';
+import React, { ChangeEvent, useState } from 'react';
+import { adminApiFetch, api } from '@utils';
 
 export default function PricingTools() {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string>('');
 
-  async function applyBulk(e: any) {
+  async function applyBulk(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
     setMsg('');
-    const form = new FormData(e.currentTarget);
-    const payload: any = { filter: {}, set: {} };
-    if (form.get('material')) payload.filter.material = form.get('material');
-    if (form.get('shape')) payload.filter.shape = form.get('shape');
-    if (form.get('q')) payload.filter.q = form.get('q');
-    if (form.get('base')) payload.set.basePriceMinor = Number(form.get('base'));
-    // пример: size extra
-    if (form.get('sizeId') && form.get('sizeExtra')) {
-      payload.sizeExtra = {
-        sizeId: Number(form.get('sizeId')),
-        extraPriceMinor: Number(form.get('sizeExtra')),
-        mode: form.get('mode') || 'set',
-      };
-    }
+    const form = new FormData();
+    const payload = { filter: {}, set: {} };
+    // if (form.get('material')) payload.filter.material = form.get('material');
+    // if (form.get('shape')) payload.filter.shape = form.get('shape');
+    // if (form.get('q')) payload.filter.q = form.get('q');
+    // if (form.get('base')) payload.set.basePriceMinor = Number(form.get('base'));
+    // // пример: size extra
+    // if (form.get('sizeId') && form.get('sizeExtra')) {
+    //   payload.sizeExtra = {
+    //     sizeId: Number(form.get('sizeId')),
+    //     extraPriceMinor: Number(form.get('sizeExtra')),
+    //     mode: form.get('mode') || 'set',
+    //   };
+    // }
     try {
       const res = await api('/api/admin/templates/pricing/bulk', {
         method: 'PATCH',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      setMsg(`OK: affected ${res.affected}`);
-    } catch (e: any) {
-      setMsg(`Ошибка: ${e.message}`);
+      setMsg(`OK: affected`);
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : '';
+      setMsg(`Ошибка: ${message}`);
     } finally {
       setBusy(false);
     }
   }
 
-  async function uploadCSV(e: any) {
-    const file = (e.target.files && e.target.files[0]) as File | undefined;
+  async function uploadCSV(e: ChangeEvent) {
+    if (!e.target) return;
+    const file = ((e.target as HTMLInputElement).files &&
+      (e.target as HTMLInputElement).files?.[0]) as File | undefined;
     if (!file) return;
     setBusy(true);
     setMsg('');
@@ -50,9 +53,10 @@ export default function PricingTools() {
         method: 'POST',
         body: fd,
       });
-      setMsg(`Импорт выполнен, апдейтов: ${res.updated}`);
-    } catch (e: any) {
-      setMsg(`Ошибка импорта: ${e.message}`);
+      setMsg(`Импорт выполнен, апдейтов:`);
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : '';
+      setMsg(`Ошибка импорта: ${message}`);
     } finally {
       setBusy(false);
     }

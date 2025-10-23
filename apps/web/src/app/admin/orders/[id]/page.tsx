@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import useSWR from 'swr';
 import { adminApiFetch, bytesToSize } from '@utils';
 import AssetThumb from '../../../../components/asset-thumb';
+import { OrderItemDetails } from '../../../../types';
 
 export default function OrderDetail() {
   const { id } = useParams<{ id: string }>();
@@ -20,16 +21,6 @@ export default function OrderDetail() {
       body: JSON.stringify({ status }),
     });
     setBusy(false);
-    mutate();
-  }
-
-  async function upload(itemId: string, file: File) {
-    const form = new FormData();
-    form.append('file', file);
-    await adminApiFetch(`/api/orders/${id}/items/${itemId}/assets`, {
-      method: 'POST',
-      body: form,
-    });
     mutate();
   }
 
@@ -59,7 +50,7 @@ export default function OrderDetail() {
       </div>
       <div>
         <h2 className="font-semibold">Позиции</h2>
-        {data.items.map((it: any) => (
+        {data.items.map((it: OrderItemDetails) => (
           <div key={it.id} className="border rounded-xl p-3 my-2">
             <div className="text-sm">{it.templateCode}</div>
             <div className="text-sm">{it.templateLabel}</div>

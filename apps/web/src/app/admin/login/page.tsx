@@ -1,15 +1,13 @@
 'use client';
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { adminApiFetch } from '@utils';
-
-export default function AdminLogin() {
+function AdminLoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [err, setErr] = useState('');
   const router = useRouter();
   const next = useSearchParams().get('next') || '/admin';
-
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErr('');
@@ -20,11 +18,11 @@ export default function AdminLogin() {
         body: JSON.stringify({ email, password }),
       });
       if (res.ok) router.push(next);
-    } catch (e: any) {
-      setErr(e.message || 'Ошибка входа');
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : '';
+      setErr(message || 'Ошибка входа');
     }
   };
-
   return (
     <div className="min-h-screen flex items-center justify-center p-6">
       <form
@@ -51,5 +49,15 @@ export default function AdminLogin() {
         </button>
       </form>
     </div>
+  );
+}
+
+export default function AdminLogin() {
+  return (
+    <main>
+      <Suspense fallback={<div>Loading ...</div>}>
+        <AdminLoginPage />
+      </Suspense>
+    </main>
   );
 }
