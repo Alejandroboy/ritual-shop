@@ -64,19 +64,23 @@ services:
       retries: 20
 #    networks: [ stack ]
 
-#  migrator:
-#    image: ritual_api
-#    depends_on:
-#      db:
-#        condition: service_healthy
-#    environment:
-#      DATABASE_URL: ${DATABASE_URL}
-#      SEED_ENABLED: "true"              # можно выключить, когда не нужен
-#    entrypoint: [ "sh", "-lc" ]
-#    command:  >
-#      npx prisma migrate deploy
-#      && node prisma/seed-once.js
-#    restart: "no"z
+  migrator:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    env_file: .env
+    environment:
+      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?schema=public"
+      NODE_ENV: production
+      SEED_ENABLED: "true"
+    depends_on:
+      db:
+        condition: service_healthy
+    entrypoint: [ "sh", "-lc" ]
+    command: >
+      npx prisma migrate deploy
+      && (npx prisma db seed || node prisma/seed-once.js)
+    restart: "no"
 
   api:
     container_name: ritual_api
