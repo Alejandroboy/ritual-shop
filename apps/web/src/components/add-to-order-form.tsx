@@ -1,6 +1,6 @@
 'use client';
 import React, { useMemo, useState } from 'react';
-import type { Finish, TemplateDetails } from '@utils';
+import type { Finish, TemplateDetails } from '@types';
 import { UploadAsset } from './upload-assets';
 import { useAppStore } from '../state/app-store';
 

@@ -1,6 +1,7 @@
 import FilterBar from '../../components/filter-bar';
 import TemplateCard from '../../components/template-card';
-import { api, type TemplateListItem } from '@utils';
+import { api } from '@utils';
+import { type TemplateListItem } from '@types';
 
 type ListResp = {
   total: number;
@@ -13,7 +14,7 @@ export const dynamic = 'force-dynamic'; // на всякий
 
 export default async function CatalogPage() {
   const q = new URLSearchParams();
-  if (!q.has('pageSize')) q.set('pageSize', '24');
+  if (!q.has('pageSize')) q.set('pageSize', '38');
 
   const data = await api<ListResp>(`/catalog/templates?${q.toString()}`);
 

@@ -1,4 +1,4 @@
-import type { Me } from '../../types';
+import type { Me } from '@types';
 import { api } from '@utils';
 import { StateCreator } from 'zustand/vanilla';
 import { AppState } from '../app-store';

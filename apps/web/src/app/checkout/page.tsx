@@ -5,7 +5,7 @@ import { api } from '@utils';
 import { useAppStore } from '../../state/app-store';
 import AssetThumb from '../../components/asset-thumb';
 import { bytesToSize } from '@utils';
-import { OrderItemDetails } from '../../types';
+import { OrderItemDetails } from '@types';
 import { useHydrated } from '../../utils/use-hydrated';
 
 type OrderDetails = {
