@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { adminApiFetch } from '@utils';
 import useSWR from 'swr';
+import { useAppStore } from '../../../state/app-store';
 
 type User = {
   id: string;
@@ -14,12 +15,19 @@ type User = {
 };
 
 export default function AdminUsersListPage() {
+  const me = useAppStore((s) => s.me);
+  const fetchMe = useAppStore((s) => s.fetchMe);
   const [q, setQ] = useState('');
   const [error, setError] = useState<string | null>(null);
   const { data } = useSWR(`/api/admin/users/list`, (u) =>
     adminApiFetch(u).then((r) => r.json()),
   );
 
+  useEffect(() => {
+    fetchMe();
+  }, []);
+
+  console.log('me', me);
   return (
     <div>
       <div className="flex items-center justify-between">
