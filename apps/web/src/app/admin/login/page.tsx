@@ -1,5 +1,5 @@
 'use client';
-import { Suspense, useState } from 'react';
+import React, { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { adminApiFetch } from '@utils';
 function AdminLoginPage() {

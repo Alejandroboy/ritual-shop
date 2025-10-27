@@ -1,27 +1,30 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
+import * as argon2 from 'argon2';
+import { PrismaService } from '../../prisma/prisma.service';
+import { User } from '@prisma/client';
 
-type AdminPayload = { id: string; email: string; role: 'admin' };
 const ACCESS_TTL = Number(process.env.JWT_ACCESS_EXPIRES) ?? 3600;
 const REFRESH_TTL = Number(process.env.JWT_REFRESH_EXPIRES) ?? 2592000;
 
 @Injectable()
 export class AdminAuthService {
-  constructor(private jwtService: JwtService) {}
+  constructor(
+    private jwtService: JwtService,
+    private prisma: PrismaService,
+  ) {}
 
-  async validate(email: string, password: string): Promise<AdminPayload> {
-    // простая проверка на env (можно заменить на БД)
-    const okEmail = process.env.ADMIN_EMAIL;
-    const okPass = process.env.ADMIN_PASSWORD;
-    if (!okEmail || !okPass) throw new UnauthorizedException('Auth disabled');
-    const passOk = okPass.startsWith('$2b$')
-      ? await bcrypt.compare(password, okPass)
-      : password === okPass;
-    if (email !== okEmail || !passOk)
-      throw new UnauthorizedException('Invalid credentials');
-    return { id: 'admin-env', email, role: 'admin' };
+  async validate(email: string, password: string): Promise<User | null> {
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    if (!user) return null;
+    console.log('user', user);
+    const ok = await argon2.verify(user.passwordHash, password);
+    return ok ? user : null;
   }
 
   sign({ id, email, role }: { id: string; email: string; role: string }) {
@@ -30,14 +33,14 @@ export class AdminAuthService {
     }
   }
 
-  async signAccess(admin: AdminPayload) {
+  async signAccess(admin: User) {
     return this.jwtService.signAsync(
       { sub: admin.id, email: admin.email, role: admin.role },
       { expiresIn: ACCESS_TTL },
     );
   }
 
-  async signRefresh(admin: AdminPayload, jti: string) {
+  async signRefresh(admin: User, jti: string) {
     // (опционально) сохрани jti в Redis с TTL=7d и проверяй при refresh (ротация)
     return this.jwtService.signAsync(
       { sub: admin.id, jti },
@@ -45,7 +48,7 @@ export class AdminAuthService {
     );
   }
 
-  async signTokens(admin: AdminPayload) {
+  async signTokens(admin: User) {
     const [access, refresh] = await Promise.all([
       this.signAccess(admin),
       this.signRefresh(admin, randomUUID()),
@@ -53,11 +56,23 @@ export class AdminAuthService {
     return { access, refresh };
   }
 
-  async verifyRefresh(token: string): Promise<AdminPayload> {
-    const p = await this.jwtService.verifyAsync<{ sub: string; jti: string }>(
-      token,
-    );
-    // (опционально) проверь jti в Redis, затем сгенерируй новую пару (ротация)
-    return { id: p.sub, email: process.env.ADMIN_EMAIL!, role: 'admin' };
+  async verifyRefresh(token: string): Promise<User> {
+    const p = await this.jwtService.verifyAsync<{
+      sub: string;
+      jti?: string;
+      type?: string;
+    }>(token);
+
+    if (p.type && p.type !== 'refresh') {
+      throw new UnauthorizedException('Invalid token type');
+    }
+    const user = await this.prisma.user.findUnique({ where: { id: p.sub } });
+    if (!user) throw new UnauthorizedException('User not found');
+
+    if (user.role !== 'ADMIN') {
+      throw new ForbiddenException('Not an admin');
+    }
+
+    return user;
   }
 }

@@ -32,6 +32,7 @@ export class AdminAuthController {
     @Res() res: Response,
   ) {
     const admin = await this.adminAuthService.validate(dto.email, dto.password);
+    if (!admin) throw new UnauthorizedException('Invalid credentials');
     const token = this.adminAuthService.sign(admin);
     const { access, refresh } = await this.adminAuthService.signTokens(admin);
     const secure = req.secure;
