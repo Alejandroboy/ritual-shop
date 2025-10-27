@@ -1,10 +1,4 @@
-import {
-  IsEmail,
-  IsOptional,
-  IsPhoneNumber,
-  IsString,
-  MaxLength,
-} from 'class-validator';
+import { IsEmail, IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class CheckoutDto {
   @IsString()
@@ -14,7 +8,7 @@ export class CheckoutDto {
   @IsString()
   userId: string;
 
-  @IsPhoneNumber('RU')
+  @IsString()
   phone: string;
 
   @IsEmail()

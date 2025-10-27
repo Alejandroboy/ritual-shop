@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import type { TemplateListItem } from '@utils';
+import type { TemplateListItem } from '@types';
 
 export default function TemplateCard({ t }: { t: TemplateListItem }) {
   return (
