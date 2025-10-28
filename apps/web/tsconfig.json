@@ -12,6 +12,7 @@
       "@repo/types": ["../../packages/types/src/index.ts"],
       "@repo/config": ["../../packages/config/src/index.ts"],
       "@utils": ["./src/utils/index.ts"],
+      "@state": ["./src/state/index.ts"],
       "@types": ["./src/types/index.ts"]
     },
     "jsx": "preserve",

@@ -10,10 +10,30 @@ type ListResp = {
   items: TemplateListItem[];
 };
 
-export const dynamic = 'force-dynamic'; // на всякий
+export const dynamic = 'force-dynamic';
 
-export default async function CatalogPage() {
+export default async function CatalogPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const q = new URLSearchParams();
+  const allow = [
+    'material',
+    'shape',
+    'orientation',
+    'colorMode',
+    'q',
+    'page',
+    'pageSize',
+  ] as const;
+  const awaitedSearchParams = await searchParams;
+
+  for (const k of allow) {
+    const v = awaitedSearchParams[k];
+    if (Array.isArray(v)) v.forEach((x) => q.append(k, x));
+    else if (v) q.set(k, v);
+  }
   if (!q.has('pageSize')) q.set('pageSize', '38');
 
   const data = await api<ListResp>(`/catalog/templates?${q.toString()}`);
