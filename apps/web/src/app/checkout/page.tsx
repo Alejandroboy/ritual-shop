@@ -2,7 +2,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@utils';
-import { useAppStore } from '../../state/app-store';
+import { useAppStore } from '@state';
 import AssetThumb from '../../components/asset-thumb';
 import { bytesToSize } from '@utils';
 import { OrderItemDetails } from '@types';
@@ -179,6 +179,8 @@ export default function CheckoutPage() {
                   ))}
                 </div>
               )}
+              {!!item.retouchNeeded && <p>Нужна ретушь</p>}
+              {!!item.approveNeeded && <p>Нужно согласование</p>}
             </div>
           ))}
         </div>

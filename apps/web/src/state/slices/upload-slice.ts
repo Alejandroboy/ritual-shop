@@ -1,8 +1,7 @@
-import type { Id, PresignResp } from '../../types';
+import type { Id, PresignResp } from '@types';
 import { api } from '@utils';
 import { StateCreator } from 'zustand/vanilla';
 import { AppState } from '../app-store';
-import { OrdersSlice } from './orders-slice';
 
 export type UploadState =
   | 'queued'

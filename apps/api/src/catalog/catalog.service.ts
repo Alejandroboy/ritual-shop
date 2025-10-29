@@ -120,9 +120,10 @@ export class CatalogService {
         personsMin: true,
         personsMax: true,
         notes: true,
-        basePriceMinor: true,
+        perHolePrice: true,
         allowedSizes: {
           select: {
+            price: true,
             size: {
               select: { id: true, label: true, widthCm: true, heightCm: true },
             },

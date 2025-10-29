@@ -1,7 +1,6 @@
 'use client';
 import React, { useMemo, useState } from 'react';
-import { useAppStore } from '../state/app-store';
-import { shallow } from 'zustand/shallow';
+import { useAppStore } from '@state';
 
 type Props = { orderId: string | null; itemId: string | null };
 

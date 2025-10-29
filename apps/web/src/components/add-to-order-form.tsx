@@ -1,8 +1,8 @@
 'use client';
-import React, { useMemo, useState } from 'react';
-import type { Finish, TemplateDetails } from '@types';
+import React, { SyntheticEvent, useMemo, useState } from 'react';
+import type { TemplateDetails } from '@types';
 import { UploadAsset } from './upload-assets';
-import { useAppStore } from '../state/app-store';
+import { useAppStore } from '@state';
 
 type Props = { tpl: TemplateDetails };
 
@@ -11,13 +11,40 @@ export default function AddToOrderForm({ tpl }: Props) {
   const draftOrderId = useAppStore((s) => s.draftOrderId);
   const ensureOrder = useAppStore((s) => s.ensureOrder);
   const addItem = useAppStore((s) => s.addItem);
+  const queue = useAppStore((s) => s.queue);
+  const assetUploaded = queue.filter(
+    (item) => item.state === 'uploaded' || item.state === 'done',
+  );
+  const assetError = queue.filter((item) => item.state === 'error');
+  const assetLoading = queue.filter(
+    (item) =>
+      item.state === 'uploading' ||
+      item.state === 'queued' ||
+      item.state === 'registering',
+  );
 
   const [itemId, setItemId] = useState<string | null>(null);
+  const [approveNeeded, setApproveNeeded] = useState<boolean>(false);
+  const [retouchNeeded, setRetouchNeeded] = useState<boolean>(false);
 
   const [sizeId, setSizeId] = useState<number | ''>(tpl.defaults.sizeId ?? '');
+  //В коде расчёта цены: total = size.priceMinor + holesCount(material) * perHoleMinor.
+  let price = tpl.allowedSizes.filter((item) => item.size.id === sizeId)[0]
+    ?.price;
   const [holePattern, setHolePattern] = useState<string | ''>(
     tpl.defaults.holePattern ?? '',
   );
+
+  const [holesPrice, setHolesPrices] = useState<boolean>(false);
+  if (tpl.perHolePrice && holePattern) {
+    const firstFour = holePattern.slice(0, 4);
+    if (firstFour.includes('TWO') && price) {
+      price += tpl.perHolePrice * 2;
+    }
+    if (firstFour.includes('FOUR') && price) {
+      price += tpl.perHolePrice * 4;
+    }
+  }
   const [frameId, setFrameId] = useState<number | ''>(
     tpl.defaults.frameId ?? '',
   );
@@ -46,6 +73,8 @@ export default function AddToOrderForm({ tpl }: Props) {
       backgroundId: backgroundId || undefined,
       finish: finish || undefined,
       comment: comment || undefined,
+      approveNeeded: approveNeeded,
+      retouchNeeded: retouchNeeded,
     };
     try {
       const item = await addItem(payload);
@@ -57,6 +86,65 @@ export default function AddToOrderForm({ tpl }: Props) {
       console.log('Ошибка добавления заказа', e);
     }
   }
+
+  function handleApproveClick(event: SyntheticEvent) {
+    event.preventDefault();
+    setApproveNeeded((prevState) => !prevState);
+  }
+  function handleRetouchClick(event: SyntheticEvent) {
+    event.preventDefault();
+    setRetouchNeeded((prevState) => !prevState);
+  }
+
+  const renderCheckboxes = () => {
+    if (assetUploaded.length) {
+      return (
+        <div className="mb-[15px]">
+          <label
+            className="mr-[15px] cursor-pointer"
+            onClick={handleRetouchClick}
+          >
+            <input type="checkbox" checked={retouchNeeded} /> Нужна ретушь
+          </label>
+          <label className="cursor-pointer" onClick={handleApproveClick}>
+            <input type="checkbox" checked={approveNeeded} /> Нужно согласование
+          </label>
+        </div>
+      );
+    }
+  };
+
+  const renderButtons = () => {
+    if (
+      (assetUploaded.length && !assetLoading.length && !assetError.length) ||
+      (!assetLoading.length && !assetError.length)
+    ) {
+      return (
+        <div>
+          {renderCheckboxes()}
+          <div className="flex gap-2">
+            <button
+              onClick={submit}
+              className="px-4 py-2 rounded-md bg-neutral-900 text-white"
+            >
+              Добавить в заказ
+            </button>
+            {draftOrderId && (
+              <a href="/checkout" className="px-4 py-2 rounded-md border">
+                Перейти в заказ
+              </a>
+            )}
+          </div>
+        </div>
+      );
+    }
+    if (assetLoading.length) {
+      return <div>Загрузка...</div>;
+    }
+    if (assetError.length) {
+      return <div>Пожалуйста загрузите другое изображение</div>;
+    }
+  };
 
   return (
     <div className="border rounded-xl p-4 bg-white space-y-3">
@@ -170,19 +258,12 @@ export default function AddToOrderForm({ tpl }: Props) {
         <UploadAsset orderId={draftOrderId} itemId={itemId} />
       </div>
 
-      <div className="flex gap-2">
-        <button
-          onClick={submit}
-          className="px-4 py-2 rounded-md bg-neutral-900 text-white"
-        >
-          Добавить в заказ
-        </button>
-        {draftOrderId && (
-          <a href="/checkout" className="px-4 py-2 rounded-md border">
-            Перейти в заказ
-          </a>
-        )}
+      <div className="flex justify-between">
+        <div>
+          Итоговая цена: {Number.isFinite(price) ? price : 0}&nbsp;&#8381;
+        </div>
       </div>
+      {renderButtons()}
     </div>
   );
 }

@@ -3,13 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import {
-  Finish,
-  HolePattern,
-  Prisma,
-  OrderStatus,
-  AssetKind,
-} from '@prisma/client';
+import { Finish, HolePattern, Prisma, OrderStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { AddOrderItemDto } from './dto/add-item.dto';
@@ -71,7 +65,7 @@ export class OrdersService {
     let number = dto?.number?.trim();
     for (let i = 0; i < 3 && !number; i++) number = this.genNumber();
     try {
-      const order = await this.prisma.order.create({
+      return this.prisma.order.create({
         data: {
           number: dto?.number ?? this.genNumber(),
           customerName: dto?.customerName || '',
@@ -82,7 +76,6 @@ export class OrdersService {
           approveNeeded: dto?.approveNeeded ?? false,
         },
       });
-      return order;
     } catch (e: any) {
       console.log('createOrder error', e);
       if ((e as Prisma.PrismaClientKnownRequestError)?.code === 'P2002') {
@@ -137,6 +130,10 @@ export class OrdersService {
         id: it.id,
         templateLabel: (it as any).templateLabel, // подставь реальное поле
         size: (it as any).size ? { label: (it as any).size.label } : null,
+        approveNeeded: (it as any).approveNeeded
+          ? (it as any).approveNeeded
+          : null,
+        retouchNeeded: (it as any).size ? (it as any).retouchNeeded : null,
         comment: (it as any).comment ?? null,
         assets: await Promise.all(
           it.assets.map((a) => this.assets.toDtoWithUrls(a)),
@@ -278,6 +275,8 @@ export class OrdersService {
         backgroundId: dto.backgroundId,
         finish: dto.finish,
         comment: dto.comment ?? null,
+        approveNeeded: dto.approveNeeded,
+        retouchNeeded: dto.retouchNeeded,
       },
       include: {
         size: true,
@@ -353,6 +352,8 @@ export class OrdersService {
       frameId: dto.frameId ?? item.frameId ?? undefined,
       backgroundId: dto.backgroundId ?? item.backgroundId ?? undefined,
       finish: dto.finish ?? item.finish ?? undefined,
+      approveNeeded: dto.approveNeeded ?? item.approveNeeded ?? undefined,
+      retouchNeeded: dto.retouchNeeded ?? item.retouchNeeded ?? undefined,
     };
 
     await this.validateItemOptions(candidate);
@@ -373,6 +374,8 @@ export class OrdersService {
       holePattern: dto.holePattern,
       finish: dto.finish,
       template: dto.templateCode ? { connect: { id: templateId } } : undefined,
+      approveNeeded: dto.approveNeeded ? dto.approveNeeded : false,
+      retouchNeeded: dto.retouchNeeded ? dto.retouchNeeded : false,
       templateCode,
       templateLabel,
     };
@@ -529,7 +532,7 @@ export class OrdersService {
         },
       });
       const number = `RS-${datePrefix}-${pad(countToday + 1, 4)}`;
-      const updated = await tx.order.update({
+      return tx.order.update({
         where: { id },
         data: {
           orderStatus: OrderStatus.ACCEPTED,
@@ -544,7 +547,6 @@ export class OrdersService {
           customer: true,
         },
       });
-      return updated;
     });
 
     // Письма

@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import useSWR from 'swr';
 import { adminApiFetch, bytesToSize } from '@utils';
 import AssetThumb from '../../../../components/asset-thumb';
-import { OrderItemDetails } from '../../../../types';
+import { OrderItemDetails } from '@types';
 
 export default function OrderDetail() {
   const { id } = useParams<{ id: string }>();
@@ -69,6 +69,16 @@ export default function OrderDetail() {
                 </div>
               ))}
             </ul>
+            {!!it.retouchNeeded && (
+              <p>
+                <b> Нужна ретушь!</b>
+              </p>
+            )}
+            {!!it.approveNeeded && (
+              <p>
+                <b>Нужно согласование!</b>
+              </p>
+            )}
           </div>
         ))}
       </div>

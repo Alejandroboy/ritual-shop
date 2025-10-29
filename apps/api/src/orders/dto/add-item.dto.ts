@@ -1,6 +1,7 @@
-import { AssetKind, Finish, HolePattern } from '@prisma/client';
+import { Finish, HolePattern } from '@prisma/client';
 import { Transform } from 'class-transformer';
 import {
+  IsBoolean,
   IsEnum,
   IsInt,
   IsOptional,
@@ -48,4 +49,7 @@ export class AddOrderItemDto {
   @IsOptional()
   @MaxLength(500)
   comment?: string;
+
+  @IsOptional() @IsBoolean() approveNeeded?: boolean;
+  @IsOptional() @IsBoolean() retouchNeeded?: boolean;
 }

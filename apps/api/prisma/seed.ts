@@ -20,12 +20,46 @@ const parseSize = (s: string) => {
   return { widthCm: w, heightCm: h, label: toLabel(w, h) };
 };
 
+const PRICE_RUB_BY_SIZE: Record<string, number> = {
+  '9x12': 1200,
+  '11x15': 1500,
+  '13x18': 1900,
+  '15x20': 2300,
+  '18x24': 2900,
+  '20x25': 3200,
+  '20x30': 3500,
+  '25x30': 4200,
+  '30x40': 5500,
+  '30x60': 8900,
+  '40x60': 11900,
+  '50x70': 15900,
+  '50x80': 17900,
+  '55x80': 18900,
+  '50x100': 21900,
+  '60x100': 25900,
+  '60x120': 29900,
+  '13x19': 2000,
+  '17x22': 2600,
+};
+
+const priceKey = (w: number, h: number) =>
+  `${Math.min(w, h)}x${Math.max(w, h)}`;
+
+function calcSizePriceMinor(widthCm: number, heightCm: number): number {
+  const key = priceKey(widthCm, heightCm);
+  const rub = PRICE_RUB_BY_SIZE[key];
+  return rub;
+}
+
 async function upsertSize(code: string) {
   const s = parseSize(code);
   await prisma.size.upsert({
     where: { widthCm_heightCm: { widthCm: s.widthCm, heightCm: s.heightCm } },
-    update: { label: s.label },
-    create: s,
+    update: {
+      label: s.label,
+      priceMinor: calcSizePriceMinor(s.widthCm, s.heightCm),
+    },
+    create: { ...s, priceMinor: calcSizePriceMinor(s.widthCm, s.heightCm) },
   });
 }
 
@@ -690,6 +724,34 @@ async function seedCatalog() {
   console.log('✓ Templates seeded');
 }
 
+async function seedHolePrices() {
+  // Требуется модель MaterialHolePrice (material, perHoleMinor)
+  await prisma.materialHolePrice.upsert({
+    where: { material: Material.WHITE_CERAMIC_GRANITE },
+    update: { perHoleMinor: 350 },
+    create: { material: Material.WHITE_CERAMIC_GRANITE, perHoleMinor: 350 },
+  });
+  await prisma.materialHolePrice.upsert({
+    where: { material: Material.BLACK_CERAMIC_GRANITE },
+    update: { perHoleMinor: 350 },
+    create: { material: Material.BLACK_CERAMIC_GRANITE, perHoleMinor: 350 },
+  });
+  // Остальным материалам — 0 (опционально)
+  for (const m of [
+    Material.CERMET,
+    Material.GLASS,
+    Material.GROWTH_PHOTOCERAMICS,
+    Material.ENGRAVING,
+  ]) {
+    await prisma.materialHolePrice.upsert({
+      where: { material: m },
+      update: { perHoleMinor: 0 },
+      create: { material: m, perHoleMinor: 0 },
+    });
+  }
+  console.log('✓ Hole prices (per material)');
+}
+
 // ========= main
 
 async function main() {
@@ -698,6 +760,7 @@ async function main() {
   await seedBackgrounds();
   await seedFinishVariants();
   await seedCatalog();
+  await seedHolePrices();
 }
 
 main()
