@@ -20,21 +20,21 @@ export type Template = {
   holePattern: string[];
   finishes: string[];
   isActive: boolean;
-  allowedHoles: { pattern: string; extraPriceMinor: number }[];
-  allowedFinishes: { finish: string; extraPriceMinor: number }[];
+  allowedHoles: { pattern: string }[];
+  allowedFinishes: { finish: string }[];
   previewPath: string;
   allowedSizes: {
     sizeId: number;
-    extraPriceMinor: number;
+    price: number;
   }[];
   allowedFrames: {
     frameId: number;
-    extraPriceMinor: number;
   }[];
   allowedBackgrounds: {
     backgroundId: number;
-    extraPriceMinor: number;
   }[];
+  perHolePrice: number;
+  material: string;
 };
 
 export type Material =
@@ -87,7 +87,10 @@ export type TemplateDetails = TemplateListItem & {
     finishRequired: boolean;
     finishes: FinishOption[];
   }[];
-  basePriceMinor: string;
+  allowedSizes: {
+    size: { id: number; label: string; widthCm: number; heightCm: number };
+    price: number;
+  }[];
   defaults: {
     sizeId: number | null;
     holePattern: HolePattern | null;
@@ -95,4 +98,5 @@ export type TemplateDetails = TemplateListItem & {
     frameId: number | null;
     backgroundId: number | null;
   };
+  perHolePrice: number;
 };

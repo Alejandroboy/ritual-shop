@@ -11,6 +11,7 @@ export default async function TemplatePage({
   const tpl = await api<TemplateDetails>(
     `/catalog/templates/${encodeURIComponent((await params).code)}`,
   );
+
   return (
     <div className="space-y-6" data-qa="template-page">
       <div>
@@ -24,11 +25,6 @@ export default async function TemplatePage({
       </div>
 
       <AddToOrderForm tpl={tpl} />
-
-      <div className="flex justify-between">
-        <div>Итоговая цена:</div>
-        <div>{tpl.basePriceMinor}</div>
-      </div>
       <section className="text-sm text-neutral-700">
         <h2 className="font-medium mb-2">Доступные опции</h2>
         <ul className="list-disc ml-5 space-y-1">

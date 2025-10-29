@@ -8,10 +8,11 @@ import {
   Param,
   Query,
   UseGuards,
+  ValidationPipe,
 } from '@nestjs/common';
-import { Finish as FinishEnum, HolePattern as HoleEnum } from '@prisma/client';
 import { AdminGuard } from '../../common/admin.guard';
 import { AdminTemplatesService } from './admin-templates.service';
+import { UpdateTemplateDto } from './update-template.dto';
 
 @UseGuards(AdminGuard)
 @Controller('admin/templates')
@@ -29,7 +30,7 @@ export class AdminTemplatesController {
     @Query('sizeId') sizeId?: string,
     @Query('frameId') frameId?: string,
     @Query('backgroundId') backgroundId?: string,
-    @Query('finish') finish?: string, // MATTE/GLOSS
+    @Query('finish') finish?: string,
     @Query('page') page = '1',
   ) {
     return this.adminTemplatesService.getList(
@@ -53,33 +54,16 @@ export class AdminTemplatesController {
   }
 
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() dto: any) {
+  async update(
+    @Param('id') id: string,
+    @Body(new ValidationPipe({ whitelist: true, transform: true }))
+    dto: UpdateTemplateDto,
+  ) {
     return this.adminTemplatesService.updateTemplate(id, dto);
   }
 
   @Delete(':id')
   async remove(@Param('id') id: string) {
     return this.adminTemplatesService.deleteTemplate(id);
-  }
-
-  @Patch(':id/allowed')
-  async updateAllowed(
-    @Param('id') id: string,
-    @Body()
-    dto: {
-      basePriceMinor?: number;
-      sizeIds?: number[];
-      frameIds?: number[];
-      backgroundIds?: number[];
-      finishes?: FinishEnum[];
-      holePatterns?: HoleEnum[];
-      sizeExtras?: Record<number, number>;
-      frameExtras?: Record<number, number>;
-      backgroundExtras?: Record<number, number>;
-      finishExtras?: Partial<Record<FinishEnum, number>>;
-      holeExtras?: Partial<Record<HoleEnum, number>>;
-    },
-  ) {
-    return this.adminTemplatesService.updateAllowedTemplateFields(id, dto);
   }
 }

@@ -1,10 +1,11 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
-import { Refs, Template } from '../../../../types';
+import type { Refs, Template } from '@types';
 
-async function api(url: string, init?: RequestInit) {
+// ---------- utils ----------
+async function api<T>(url: string, init?: RequestInit): Promise<T> {
   const r = await fetch(url, {
     credentials: 'include',
     cache: 'no-store',
@@ -12,11 +13,26 @@ async function api(url: string, init?: RequestInit) {
   });
   const t = await r.text();
   if (!r.ok) throw new Error(t || r.statusText);
-  return t ? JSON.parse(t) : null;
+  return t ? (JSON.parse(t) as T) : (null as unknown as T);
 }
 
+type Size = Refs['sizes'][number];
+type AllowedSize = NonNullable<Template['allowedSizes']>[number];
+
+function errMessage(e: unknown): string {
+  return e instanceof Error ? e.message : String(e);
+}
+
+function hasPreview(t: Template): t is Template & { previewPath: string } {
+  const p = (t as unknown as { previewPath?: unknown }).previewPath;
+  return typeof p === 'string' && p.length > 0;
+}
+
+// ---------- component ----------
 export default function TemplateEdit() {
   const { id } = useParams<{ id: string }>();
+
+  // ---------- state ----------
   const [refs, setRefs] = useState<Refs>({
     sizes: [],
     frames: [],
@@ -26,347 +42,260 @@ export default function TemplateEdit() {
   });
   const [tpl, setTpl] = useState<Template | null>(null);
   const [err, setErr] = useState<string>('');
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
+  const [code, setCode] = useState('');
+  const [label, setLabel] = useState('');
+
+  const [perHolePrice, setPerHolePrice] = useState<number>(0);
+
+  const [sizePrices, setSizePrices] = useState<Record<number, number>>({});
+
+  const sizeById = useMemo(() => {
+    const m = new Map<number, Size>();
+    for (const s of refs.sizes) m.set(s.id, s);
+    return m;
+  }, [refs.sizes]);
+
+  // ---------- data load ----------
   useEffect(() => {
-    api('/api/admin/templates/refs').then(setRefs);
-  }, []);
-  useEffect(() => {
-    api(`/api/admin/templates/${id}`)
-      .then(setTpl)
-      .catch((e) => setErr(String(e)));
+    let cancelled = false;
+    (async () => {
+      try {
+        setLoading(true);
+        const [fetchedRefs, fetchedTpl] = await Promise.all([
+          api<Refs>('/api/admin/templates/refs'),
+          api<Template>(`/api/admin/templates/${id}`),
+        ]);
+        if (cancelled) return;
+
+        setRefs(fetchedRefs);
+        setTpl(fetchedTpl);
+
+        setCode(fetchedTpl?.code ?? '');
+        setLabel(fetchedTpl?.label ?? '');
+        setPerHolePrice(Number(fetchedTpl?.perHolePrice ?? 0));
+
+        const prices: Record<number, number> = {};
+        for (const row of fetchedTpl?.allowedSizes ?? []) {
+          prices[Number(row.sizeId)] = Number(row.price ?? 0);
+        }
+        setSizePrices(prices);
+      } catch (e: unknown) {
+        setErr(errMessage(e));
+      } finally {
+        setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
-  async function save(e: React.FormEvent) {
-    e.preventDefault();
-    if (!tpl) {
-      console.error('Нет шаблона для сохранения');
-      return;
+  // ---------- actions ----------
+  async function saveAll(e?: React.FormEvent) {
+    e?.preventDefault();
+    if (!tpl) return;
+    setSaving(true);
+    try {
+      const dto: {
+        code: string;
+        label: string;
+        perHolePrice: number;
+        sizePrices: Record<number, number>;
+      } = {
+        code,
+        label,
+        perHolePrice: Number.isFinite(perHolePrice) ? perHolePrice : 0,
+        sizePrices: Object.fromEntries(
+          Object.entries(sizePrices)
+            .filter(
+              ([, v]) => Number.isFinite(v as number) && (v as number) >= 0,
+            )
+            .map(([k, v]) => [Number(k), Number(v)]),
+        ),
+      };
+
+      await api<void>(`/api/admin/templates/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dto),
+      });
+
+      const fresh = await api<Template>(`/api/admin/templates/${id}`);
+      setTpl(fresh);
+      setCode(fresh?.code ?? '');
+      setLabel(fresh?.label ?? '');
+      setPerHolePrice(Number(fresh?.perHolePrice ?? 0));
+
+      const freshPrices: Record<number, number> = {};
+      for (const row of fresh?.allowedSizes ?? []) {
+        freshPrices[Number(row.sizeId)] = Number(row.price ?? 0);
+      }
+      setSizePrices(freshPrices);
+
+      alert('Сохранено');
+    } catch (e: unknown) {
+      alert(`Ошибка сохранения: ${errMessage(e)}`);
+    } finally {
+      setSaving(false);
     }
-    const { id: _, ...dto } = tpl;
-    await api(`/api/admin/templates/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(dto),
-    });
-    alert('Сохранено');
   }
+
   async function uploadPreview(f: File) {
-    const fd = new FormData();
-    fd.append('file', f);
-    await fetch(`/api/admin/templates/${id}/preview`, {
-      method: 'POST',
-      body: fd,
-      credentials: 'include',
-    });
-    const fresh = await api(`/api/admin/templates/${id}`);
-    setTpl(fresh);
+    try {
+      const fd = new FormData();
+      fd.append('file', f);
+      await fetch(`/api/admin/templates/${id}/preview`, {
+        method: 'POST',
+        body: fd,
+        credentials: 'include',
+      });
+      const fresh = await api<Template>(`/api/admin/templates/${id}`);
+      setTpl(fresh);
+    } catch (e: unknown) {
+      alert(`Ошибка загрузки превью: ${errMessage(e)}`);
+    }
   }
+
   async function remove() {
     if (!confirm('Удалить шаблон?')) return;
-    await api(`/api/admin/templates/${id}`, { method: 'DELETE' });
-    location.href = '/admin/templates';
+    setDeleting(true);
+    try {
+      await api<void>(`/api/admin/templates/${id}`, { method: 'DELETE' });
+      location.href = '/admin/templates';
+    } catch (e: unknown) {
+      alert(`Ошибка удаления: ${errMessage(e)}`);
+    } finally {
+      setDeleting(false);
+    }
   }
 
-  async function patchAllowed(payload: {
-    backgroundExtras?: { [id: number]: number };
-    frameExtras?: { [id: number]: number };
-    sizeExtras?: { [id: number]: number };
-    basePriceMinor?: number;
-    holeExtras?: { [id: string]: number };
-    finishExtras?: { [id: string]: number };
-  }) {
-    await api(`/api/admin/templates/${id}/allowed`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    const fresh = await api(`/api/admin/templates/${id}`);
-    setTpl(fresh);
-  }
-
+  // ---------- render ----------
   if (err) return <div className="text-red-600">{err}</div>;
-  if (!tpl) return <div>Загрузка…</div>;
+  if (loading || !tpl) return <div>Загрузка…</div>;
 
-  const {
-    sizes = [],
-    frames = [],
-    backgrounds = [],
-    finishes = [],
-    holePatterns = [],
-  } = refs;
-  const ch = <K extends keyof Template>(k: K, v: Template[K]) => {
-    setTpl((prev) => (prev ? { ...prev, [k]: v } : prev));
-  };
-
-  const renderFinishes = () => {
-    if (tpl.allowedFinishes.length)
-      return (
-        <select
-          className="border rounded p-2"
-          value={tpl.finishes || ''}
-          onChange={(e) => ch('finishId', e.target.value)}
-        >
-          <option value="">Финиш</option>
-          {finishes.map((x) => (
-            <option key={x} value={x}>
-              {x}
-            </option>
-          ))}
-        </select>
-      );
-  };
-
-  const renderHoles = () => {
-    if (tpl.allowedHoles.length)
-      return (
-        <select
-          className="border rounded p-2"
-          value={tpl.holePattern || ''}
-          onChange={(e) => ch('holeId', e.target.value)}
-        >
-          <option value="">Отверстия</option>
-          {holePatterns.map((x) => (
-            <option key={x} value={x}>
-              {x}
-            </option>
-          ))}
-        </select>
-      );
-  };
-
-  const sizeExtraMap: Record<number, number> = Object.fromEntries(
-    (tpl.allowedSizes ?? []).map((x) => [x.sizeId, x.extraPriceMinor ?? 0]),
-  );
-  const frameExtraMap: Record<number, number> = Object.fromEntries(
-    (tpl.allowedFrames ?? []).map((x) => [x.frameId, x.extraPriceMinor ?? 0]),
-  );
-  const bgExtraMap: Record<number, number> = Object.fromEntries(
-    (tpl.allowedBackgrounds ?? []).map((x) => [
-      x.backgroundId,
-      x.extraPriceMinor ?? 0,
-    ]),
-  );
-  const finishExtraMap: { [p: string]: number | string } = Object.fromEntries(
-    (tpl.allowedFinishes ?? []).map((x) => [x.finish, x.extraPriceMinor ?? 0]),
-  );
-  const holeExtraMap: { [p: string]: number | string } = Object.fromEntries(
-    (tpl.allowedHoles ?? []).map((x) => [x.pattern, x.extraPriceMinor ?? 0]),
-  );
+  const rows: AllowedSize[] = (tpl.allowedSizes ?? []) as AllowedSize[];
 
   return (
-    <form onSubmit={save} className="space-y-3 max-w-2xl">
+    <form onSubmit={saveAll} className="space-y-4 max-w-2xl">
       <h1 className="text-2xl font-semibold">Шаблон {tpl.label}</h1>
+
       <div className="grid grid-cols-2 gap-3">
         <label className="text-sm">
           Код
           <input
             className="border rounded p-2 w-full"
-            value={tpl.code || ''}
-            onChange={(e) => ch('code', e.target.value)}
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
           />
         </label>
         <label className="text-sm">
           Название
           <input
             className="border rounded p-2 w-full"
-            value={tpl.title || ''}
-            onChange={(e) => ch('title', e.target.value)}
+            value={label}
+            onChange={(e) => setLabel(e.target.value)}
           />
         </label>
-        <select
-          className="border rounded p-2"
-          value={tpl.sizeId || ''}
-          onChange={(e) => ch('sizeId', e.target.value)}
-        >
-          <option value="">Размер</option>
-          {sizes.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.label}
-            </option>
-          ))}
-        </select>
-        <select
-          className="border rounded p-2"
-          value={tpl.frameId || ''}
-          onChange={(e) => ch('frameId', e.target.value)}
-        >
-          <option value="">Рамка</option>
-          {frames.map((x) => (
-            <option key={x.id} value={x.id}>
-              {x.name}
-            </option>
-          ))}
-        </select>
-        <select
-          className="border rounded p-2"
-          value={tpl.backgroundId || ''}
-          onChange={(e) => ch('backgroundId', e.target.value)}
-        >
-          <option value="">Фон</option>
-          {backgrounds.map((x) => (
-            <option key={x.id} value={x.id}>
-              {x.name}
-            </option>
-          ))}
-        </select>
-        {renderFinishes()}
-        {renderHoles()}
       </div>
-      <label className="flex items-center gap-2 text-sm">
-        <input
-          type="checkbox"
-          checked={tpl.isActive}
-          onChange={(e) => ch('isActive', e.target.checked)}
-        />{' '}
-        Активен
-      </label>
-      <div className="mt-4 border rounded-2xl p-4">
-        <h2 className="font-semibold text-lg mb-3">Цены</h2>
 
-        <div className="mb-4">
-          <label className="text-sm">
-            Базовая цена (minor)
-            <input
-              type="number"
-              className="border rounded p-2 w-48 ml-2"
-              value={tpl.basePriceMinor ?? 0}
-              onChange={(e) =>
-                ch('basePriceMinor', Number(e.target.value || 0))
-              }
-              onBlur={async (e) => {
-                const val = Number(e.currentTarget.value || 0);
-                await patchAllowed({ basePriceMinor: val });
-              }}
-            />
-          </label>
-        </div>
+      <div className="mt-2 border rounded-2xl p-4 space-y-4">
+        <h2 className="font-semibold text-lg">Цены</h2>
 
-        <div className="mt-2">
-          <h3 className="font-medium">Надбавки по размерам</h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-2">
-            {sizes.map((s) => (
-              <label key={s.id} className="text-sm flex items-center gap-2">
-                <span className="w-28">{s.label}</span>
-                <input
-                  type="number"
-                  className="border rounded p-2 w-32"
-                  defaultValue={sizeExtraMap[s.id] ?? 0}
-                  onBlur={async (e) => {
-                    const val = Number(e.currentTarget.value || 0);
-                    await patchAllowed({ sizeExtras: { [s.id]: val } });
-                  }}
-                />
-              </label>
-            ))}
+        {(tpl.material === 'WHITE_CERAMIC_GRANITE' ||
+          tpl.material === 'BLACK_CERAMIC_GRANITE') && (
+          <div>
+            <div className="text-sm text-neutral-600 mb-1">
+              Материал шаблона: <b>{tpl.material}</b>
+            </div>
+            <label className="text-sm">
+              Цена за отверстие
+              <input
+                type="number"
+                className="border rounded p-2 w-48 ml-2"
+                value={perHolePrice}
+                onChange={(e) => setPerHolePrice(Number(e.target.value || 0))}
+                min={0}
+              />
+            </label>
           </div>
-        </div>
+        )}
 
-        <div className="mt-4">
-          <h3 className="font-medium">Надбавки по рамкам</h3>
+        <div>
+          <h3 className="font-medium">Цены по размерам</h3>
+          <p className="text-xs text-neutral-500 mb-2">
+            Видны только разрешённые размеры этого шаблона.
+          </p>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-2">
-            {frames.map((f) => (
-              <label key={f.id} className="text-sm flex items-center gap-2">
-                <span className="w-28">
-                  #{f.code} {f.name}
-                </span>
-                <input
-                  type="number"
-                  className="border rounded p-2 w-32"
-                  defaultValue={frameExtraMap[f.id] ?? 0}
-                  onBlur={async (e) => {
-                    const val = Number(e.currentTarget.value || 0);
-                    await patchAllowed({ frameExtras: { [f.id]: val } });
-                  }}
-                />
-              </label>
-            ))}
-          </div>
-        </div>
-
-        <div className="mt-4">
-          <h3 className="font-medium">Надбавки по фонам</h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-2">
-            {backgrounds.map((b) => (
-              <label key={b.id} className="text-sm flex items-center gap-2">
-                <span className="w-28">
-                  #{b.code} {b.name}
-                </span>
-                <input
-                  type="number"
-                  className="border rounded p-2 w-32"
-                  defaultValue={bgExtraMap[b.id] ?? 0}
-                  onBlur={async (e) => {
-                    const val = Number(e.currentTarget.value || 0);
-                    await patchAllowed({ backgroundExtras: { [b.id]: val } });
-                  }}
-                />
-              </label>
-            ))}
-          </div>
-        </div>
-
-        <div className="mt-4">
-          <h3 className="font-medium">Надбавки по финишам</h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-2">
-            {finishes.map((f: string) => (
-              <label key={f} className="text-sm flex items-center gap-2">
-                <span className="w-28">{f}</span>
-                <input
-                  type="number"
-                  className="border rounded p-2 w-32"
-                  defaultValue={finishExtraMap[f] ?? 0}
-                  onBlur={async (e) => {
-                    const val = Number(e.currentTarget.value || 0);
-                    await patchAllowed({ finishExtras: { [f]: val } });
-                  }}
-                />
-              </label>
-            ))}
-          </div>
-        </div>
-
-        <div className="mt-4">
-          <h3 className="font-medium">Надбавки по отверстиям</h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-2">
-            {holePatterns.map((p: string) => (
-              <label key={p} className="text-sm flex items-center gap-2">
-                <span className="w-28">{p}</span>
-                <input
-                  type="number"
-                  className="border rounded p-2 w-32"
-                  defaultValue={holeExtraMap[p] ?? 0}
-                  onBlur={async (e) => {
-                    const val = Number(e.currentTarget.value || 0);
-                    await patchAllowed({ holeExtras: { [p]: val } });
-                  }}
-                />
-              </label>
-            ))}
+            {rows.map((row) => {
+              const sizeId = Number(row.sizeId);
+              const s = sizeById.get(sizeId);
+              const value = Number(sizePrices[sizeId] ?? 0);
+              return (
+                <label key={sizeId} className="text-sm flex items-center gap-2">
+                  <span
+                    className="w-32 truncate"
+                    title={s?.label ?? `Размер #${sizeId}`}
+                  >
+                    {s?.label ?? `ID: ${sizeId}`}
+                  </span>
+                  <input
+                    type="number"
+                    className="border rounded p-2 w-36"
+                    value={value}
+                    min={0}
+                    onChange={(e) => {
+                      const v = Number(e.target.value || 0);
+                      setSizePrices((prev) => ({ ...prev, [sizeId]: v }));
+                    }}
+                  />
+                </label>
+              );
+            })}
+            {rows.length === 0 && (
+              <div className="text-sm text-neutral-500">
+                Для этого шаблона пока не выбраны разрешённые размеры.
+              </div>
+            )}
           </div>
         </div>
       </div>
 
       <div className="flex items-center gap-4">
-        {tpl.previewPath && (
-          <Image src={tpl.previewPath} alt="" className="h-24 object-contain" />
+        {hasPreview(tpl) && (
+          <Image
+            src={tpl.previewPath}
+            alt=""
+            width={160}
+            height={96}
+            className="h-24 w-auto object-contain"
+          />
         )}
         <input
           type="file"
-          onChange={(e) =>
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             e.target.files?.[0] && uploadPreview(e.target.files[0])
           }
         />
       </div>
       <div className="flex gap-2">
-        <button className="px-4 py-2 rounded-xl bg-black text-white">
-          Сохранить
+        <button
+          type="submit"
+          disabled={saving}
+          className="px-4 py-2 rounded-xl bg-black text-white disabled:opacity-60"
+        >
+          {saving ? 'Сохранение…' : 'Сохранить'}
         </button>
         <button
           type="button"
           onClick={remove}
-          className="px-4 py-2 rounded-xl border"
+          disabled={deleting}
+          className="px-4 py-2 rounded-xl border disabled:opacity-60"
         >
-          Удалить
+          {deleting ? 'Удаление…' : 'Удалить'}
         </button>
       </div>
     </form>

@@ -103,12 +103,14 @@ enum StorageType {
 
 // ====== СПРАВОЧНИКИ ======
 
+
 /// Размеры изделий в сантиметрах (целые, как в каталоге)
 model Size {
   id       Int    @id @default(autoincrement())
   widthCm  Int
   heightCm Int
   label    String // "13×19", "20×30" и т.д.
+  priceMinor Int  @default(0)
 
   // связи
   allowedForTemplates TemplateSize[]
@@ -153,8 +155,7 @@ model Template {
   orientation Orientation? // для форм, где есть ориентация
   colorMode   ColorMode
   coverage    Coverage     @default(NORMAL)
-
-  basePriceMinor Int @default(0)
+  perHolePrice Int @default(0)
 
   // Поведенческие флаги
   supportsFrame      Boolean @default(false)
@@ -193,9 +194,9 @@ model TemplateSize {
   templateId String
   sizeId     Int
 
+  price Int @default(0)
   template Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
   size     Size     @relation(fields: [sizeId], references: [id], onDelete: Restrict)
-  extraPriceMinor Int @default(0)
   @@id([templateId, sizeId])
 }
 
@@ -205,7 +206,6 @@ model TemplateHole {
   pattern    HolePattern
 
   template Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
-  extraPriceMinor Int @default(0)
   @@id([templateId, pattern])
 }
 
@@ -216,7 +216,6 @@ model TemplateFrame {
 
   template Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
   frame    Frame    @relation(fields: [frameId], references: [id], onDelete: Restrict)
-  extraPriceMinor Int @default(0)
 
   @@id([templateId, frameId])
 }
@@ -228,7 +227,6 @@ model TemplateBackground {
 
   template   Template   @relation(fields: [templateId], references: [id], onDelete: Cascade)
   background Background @relation(fields: [backgroundId], references: [id], onDelete: Restrict)
-  extraPriceMinor Int @default(0)
 
   @@id([templateId, backgroundId])
 }
@@ -239,7 +237,6 @@ model TemplateFinish {
   finish     Finish
 
   template Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
-  extraPriceMinor Int @default(0) // MATTE/GLOSS
 
   @@id([templateId, finish])
 }
@@ -293,7 +290,6 @@ model Order {
   orderStatus   OrderStatus @default(DRAFT)
   orderNumber   String? @unique
   currency   Currency @default(RUB)
-  totalMinor Int      @default(0)
 
   items OrderItem[]
 
@@ -321,6 +317,8 @@ model OrderItem {
   backgroundId Int?
   finish       Finish?
   comment      String?
+  approveNeeded Boolean   @default(false)
+  retouchNeeded Boolean   @default(false)
 
   // для внутренней валидации можно хранить слепок кода/лейбла (на случай изменения справочников)
   templateCode  String
@@ -332,7 +330,6 @@ model OrderItem {
   size       Size?       @relation(fields: [sizeId], references: [id], onDelete: Restrict)
   frame      Frame?      @relation(fields: [frameId], references: [id], onDelete: Restrict)
   background Background? @relation(fields: [backgroundId], references: [id], onDelete: Restrict)
-  unitPriceMinor Int @default(0)
 
   persons OrderItemPerson[]
   assets    OrderItemAsset[]   @relation("OrderItemToAssets")
@@ -438,4 +435,9 @@ model OrderItemAsset {
   createdAt    DateTime      @default(now())
 
   @@index([orderItemId, createdAt])
+}
+
+model MaterialHolePrice {
+  material     Material @id
+  perHoleMinor Int      @default(0)
 }

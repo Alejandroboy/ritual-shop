@@ -32,7 +32,6 @@ export class UsersService {
             id: true,
             orderStatus: true,
             createdAt: true,
-            totalMinor: true,
             items: {
               include: { assets: true },
             },
@@ -72,7 +71,6 @@ export class UsersService {
             id: true,
             orderStatus: true,
             createdAt: true,
-            totalMinor: true,
             items: {
               include: { assets: true },
             },

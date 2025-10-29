@@ -298,31 +298,6 @@ export class AdminStatsService {
     topBreaches.sort((a, b) => b.ageHours - a.ageHours);
     const topBreaches5 = topBreaches.slice(0, 5);
 
-    const revenueAgg = await this.prisma.orderItem.aggregate({
-      _sum: { unitPriceMinor: true },
-      where: {
-        createdAt: { gte: fromDate, lte: toDate },
-        order: { orderStatus: { not: 'DRAFT' } },
-      },
-    });
-    const revenuePeriodMinor = revenueAgg._sum.unitPriceMinor ?? 0;
-
-    // GMV и AOV по READY
-    const readyOrders = await this.prisma.order.findMany({
-      where: {
-        orderStatus: 'READY',
-        createdAt: { gte: fromDate, lte: toDate },
-      },
-      select: { totalMinor: true },
-    });
-    const revenueReadyMinor = readyOrders.reduce(
-      (s, o) => s + (o.totalMinor ?? 0),
-      0,
-    );
-    const aovReadyMinor = readyOrders.length
-      ? Math.round(revenueReadyMinor / readyOrders.length)
-      : 0;
-
     return {
       range: { from: fromDate.toISOString(), to: toDate.toISOString(), grain },
       ordersByStatus,
@@ -337,12 +312,6 @@ export class AdminStatsService {
         thresholds: slaCfg,
         breachesByStatus,
         topBreaches: topBreaches5,
-      },
-      money: {
-        currency: 'RUB',
-        revenuePeriodMinor,
-        revenueReadyMinor,
-        aovReadyMinor,
       },
     };
   }

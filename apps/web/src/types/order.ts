@@ -9,6 +9,8 @@ export type OrderItemDetails = {
     label: string;
   };
   assets: OrderItemAsset[];
+  retouchNeeded: boolean;
+  approveNeeded: boolean;
 };
 
 export type OrderItemAsset = {

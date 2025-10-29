@@ -2,12 +2,13 @@
 import useSWR from 'swr';
 import Link from 'next/link';
 import { adminApiFetch } from '@utils';
-import { Order } from '../../../types';
+import { Order } from '@types';
 
 export default function Orders() {
   const { data } = useSWR('/api/admin/orders', (u) =>
     adminApiFetch(u).then((r) => r.json()),
   );
+
   const items = data?.items ?? [];
   return (
     <div>

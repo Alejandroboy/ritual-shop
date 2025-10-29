@@ -1,4 +1,11 @@
-import { IsEnum, IsInt, IsOptional, IsString, Min } from 'class-validator';
+import {
+  IsBoolean,
+  IsEnum,
+  IsInt,
+  IsOptional,
+  IsString,
+  Min,
+} from 'class-validator';
 import { Finish, HolePattern } from '@prisma/client';
 
 export class UpdateOrderItemDto {
@@ -10,4 +17,6 @@ export class UpdateOrderItemDto {
   @IsOptional() @IsInt() @Min(1) backgroundId?: number;
   @IsOptional() @IsEnum(Finish) finish?: Finish;
   @IsOptional() @IsString() comment?: string;
+  @IsOptional() @IsBoolean() approveNeeded?: boolean;
+  @IsOptional() @IsBoolean() retouchNeeded?: boolean;
 }

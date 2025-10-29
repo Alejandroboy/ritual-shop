@@ -29,6 +29,8 @@ export type OrderSlice = {
     holePattern?: string;
     finish?: string;
     comment?: string;
+    approveNeeded: boolean;
+    retouchNeeded: boolean;
   }) => Promise<OrderItem>;
 
   // вспомогательные действия страницы чекаута
