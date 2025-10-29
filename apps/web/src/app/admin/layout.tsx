@@ -11,7 +11,6 @@ export default function AdminLayout({
 }) {
   const router = useRouter();
   const handleExit: MouseEventHandler<HTMLDivElement> = async () => {
-    // e.preventDefault();
     try {
       const res = await adminApiFetch('/api/admin/auth/logout', {
         method: 'POST',
@@ -33,8 +32,6 @@ export default function AdminLayout({
           <Link href="/admin/orders">Заказы</Link>
           <br />
           <Link href="/admin/templates">Шаблоны</Link>
-          <br />
-          <Link href="/admin/templates/pricing">Смена цен</Link>
           <br />
           <Link href="/admin/users">Пользователи</Link>
           <br />
