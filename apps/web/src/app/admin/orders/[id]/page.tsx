@@ -12,10 +12,8 @@ export default function OrderDetail() {
     adminApiFetch(u).then((r) => r.json()),
   );
   const [busy, setBusy] = useState(false);
-  const [orderStatus, setOrderStatus] = useState<OrderStatus>(
-    data?.orderStatus,
-  );
-  const [updatedOrderStatus, setUpdatedOrderStatus] = useState<OrderStatus>(
+  const [orderStatus, setOrderStatus] = useState<string>(data?.orderStatus);
+  const [updatedOrderStatus, setUpdatedOrderStatus] = useState<string>(
     data?.orderStatus,
   );
   useEffect(() => {
@@ -28,7 +26,7 @@ export default function OrderDetail() {
     (item) => typeof item === 'string',
   );
 
-  async function setStatus(status: OrderStatus) {
+  async function setStatus(status: string) {
     setBusy(true);
     await adminApiFetch(`/api/admin/orders/${id}/status`, {
       method: 'PATCH',

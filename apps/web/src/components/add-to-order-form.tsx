@@ -103,7 +103,10 @@ export default function AddToOrderForm({ tpl }: Props) {
     if (assetUploaded.length) {
       return (
         <div className="mb-[15px]">
-          <label className="mr-[15px] cursor-pointer" for="checkbox-retouch">
+          <label
+            className="mr-[15px] cursor-pointer"
+            htmlFor="checkbox-retouch"
+          >
             <input
               type="checkbox"
               id="checkbox-retouch"
@@ -112,7 +115,7 @@ export default function AddToOrderForm({ tpl }: Props) {
             />{' '}
             Нужна ретушь
           </label>
-          <label className="cursor-pointer" for="checkbox-approve">
+          <label className="cursor-pointer" htmlFor="checkbox-approve">
             <input
               type="checkbox"
               id="checkbox-approve"
