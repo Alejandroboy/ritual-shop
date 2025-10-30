@@ -3,10 +3,12 @@ import React, { SyntheticEvent, useMemo, useState } from 'react';
 import type { TemplateDetails } from '@types';
 import { UploadAsset } from './upload-assets';
 import { useAppStore } from '@state';
+import { useRouter } from 'next/navigation';
 
 type Props = { tpl: TemplateDetails };
 
 export default function AddToOrderForm({ tpl }: Props) {
+  const router = useRouter();
   const attachPendingToItem = useAppStore((s) => s.attachPendingToItem);
   const draftOrderId = useAppStore((s) => s.draftOrderId);
   const ensureOrder = useAppStore((s) => s.ensureOrder);
@@ -81,6 +83,7 @@ export default function AddToOrderForm({ tpl }: Props) {
       setItemId(item.id);
       attachPendingToItem(orderId, item.id);
       alert('Позиция добавлена в заказ');
+      router.push('/checkout');
     } catch (e) {
       alert('Ошибка добавления заказа');
       console.log('Ошибка добавления заказа', e);
@@ -100,14 +103,23 @@ export default function AddToOrderForm({ tpl }: Props) {
     if (assetUploaded.length) {
       return (
         <div className="mb-[15px]">
-          <label
-            className="mr-[15px] cursor-pointer"
-            onClick={handleRetouchClick}
-          >
-            <input type="checkbox" checked={retouchNeeded} /> Нужна ретушь
+          <label className="mr-[15px] cursor-pointer" for="checkbox-retouch">
+            <input
+              type="checkbox"
+              id="checkbox-retouch"
+              checked={retouchNeeded}
+              onChange={handleRetouchClick}
+            />{' '}
+            Нужна ретушь
           </label>
-          <label className="cursor-pointer" onClick={handleApproveClick}>
-            <input type="checkbox" checked={approveNeeded} /> Нужно согласование
+          <label className="cursor-pointer" for="checkbox-approve">
+            <input
+              type="checkbox"
+              id="checkbox-approve"
+              checked={approveNeeded}
+              onChange={handleApproveClick}
+            />{' '}
+            Нужно согласование
           </label>
         </div>
       );
@@ -129,11 +141,6 @@ export default function AddToOrderForm({ tpl }: Props) {
             >
               Добавить в заказ
             </button>
-            {draftOrderId && (
-              <a href="/checkout" className="px-4 py-2 rounded-md border">
-                Перейти в заказ
-              </a>
-            )}
           </div>
         </div>
       );

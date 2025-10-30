@@ -14,6 +14,7 @@ import { UpdateOrderItemDto } from './dto/update-item.dto';
 import { MailerService } from '../common/mailer.service';
 import { CheckoutDto } from './dto/checkout.dto';
 import { AssetsService } from '../assets/assets.service';
+import { ChangeOrderStatusDto } from './dto/change-order-status.dto';
 
 type OrderDto = {
   id: string;
@@ -560,5 +561,12 @@ export class OrdersService {
     }
 
     return result;
+  }
+
+  async changeOrderStatus(id: string, dto: ChangeOrderStatusDto) {
+    return this.prisma.order.update({
+      where: { id },
+      data: { orderStatus: dto.status },
+    });
   }
 }

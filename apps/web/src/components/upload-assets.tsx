@@ -23,7 +23,7 @@ export function UploadAsset({ orderId, itemId }: Props) {
   const MAX_FILES = 8;
   const MAX_SIZE = 15 * 1024 * 1024;
 
-  async function onSelect(e: React.ChangeEvent<HTMLInputElement>) {
+  async function onSelect(e: React.FormEventHandler<HTMLInputElement>) {
     const list = e.target.files;
     if (!list) return;
     const arr = Array.from(list);
@@ -50,20 +50,21 @@ export function UploadAsset({ orderId, itemId }: Props) {
     () => jobs.some((j) => j.state === 'uploaded' && !j.itemId),
     [jobs],
   );
-
   return (
-    <div className="border rounded p-3 space-y-2">
-      <div className="text-sm text-neutral-700">Загрузите файлы</div>
-      <input
-        className="cursor-pointer"
-        type="file"
-        multiple
+    <div className="border rounded pt-[10px] pb-[20px] pr-[10px] pl-[10px] space-y-2">
+      <div className="text-sm text-neutral-700 mb-[20px]">Загрузите файлы</div>
+      <label
+        for="files"
         onChange={onSelect}
-      />
+        className="border rounded-md p-[10px] cursor-pointer"
+      >
+        <input id="files" type="file" className="hidden" />
+        Прикрепить файлы
+      </label>
       {error && <div className="text-sm text-red-600">{error}</div>}
 
       {!!jobs.length && (
-        <div className="space-y-1 text-sm">
+        <div className="space-y-1 text-sm mt-[20px]">
           {jobs.map((j) => (
             <div key={j.id}>
               {j.file.name} — {j.state}

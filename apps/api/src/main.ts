@@ -1,7 +1,5 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { mkdirSync } from 'fs';
-import { join, resolve } from 'path';
 import cookieParser from 'cookie-parser';
 import { ValidationPipe } from '@nestjs/common';
 import { v4 as uuid } from 'uuid';
@@ -29,13 +27,11 @@ async function bootstrap() {
 
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true, // отсекаем лишние поля
+      whitelist: true,
       forbidNonWhitelisted: false,
-      transform: true, // приведение типов для query/params
+      transform: true,
     }),
   );
-  // await setupAdmin(app);
-  // ensureUploadsDirs();
 
   const port = Number(process.env.PORT || 3001);
   await app.listen(port, '0.0.0.0');

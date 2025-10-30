@@ -16,6 +16,7 @@ import { UpdateOrderDto } from './dto/update-order.dto';
 import { UpdateOrderItemDto } from './dto/update-item.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { CheckoutDto } from './dto/checkout.dto';
+import { ChangeOrderStatusDto } from './dto/change-order-status.dto';
 
 @Controller('orders')
 export class OrdersController {
@@ -97,5 +98,13 @@ export class OrdersController {
   @Post(':id/checkout')
   async checkout(@Param('id') id: string, @Body() dto: CheckoutDto) {
     return this.ordersService.checkout(id, dto);
+  }
+
+  @Patch(':orderId/status')
+  changeOrderStatus(
+    @Param('orderId') orderId: string,
+    @Body() dto: ChangeOrderStatusDto,
+  ) {
+    return this.ordersService.changeOrderStatus(orderId, dto);
   }
 }

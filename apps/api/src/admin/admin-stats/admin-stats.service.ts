@@ -24,6 +24,7 @@ export class AdminStatsService {
       _count: { _all: true },
     });
     const ordersByStatus: Record<OrderStatus, number> = {
+      CANCELLED: 0,
       DRAFT: 0,
       ACCEPTED: 0,
       IN_PROGRESS: 0,
@@ -239,6 +240,7 @@ export class AdminStatsService {
 
     // SLA-пороги (ENV или дефолты). Формат в ENV: ADMIN_SLA_JSON='{"DRAFT":"2d","ACCEPTED":"2d","IN_PROGRESS":"5d","APPROVAL":"3d","SENT":"7d"}'
     const defaultSla: Record<OrderStatus, string> = {
+      CANCELLED: '2d',
       DRAFT: '2d',
       ACCEPTED: '2d',
       IN_PROGRESS: '5d',
@@ -272,6 +274,7 @@ export class AdminStatsService {
       thresholdHours: number;
     };
     const breachesByStatus: Record<OrderStatus, number> = {
+      CANCELLED: 0,
       DRAFT: 0,
       ACCEPTED: 0,
       IN_PROGRESS: 0,

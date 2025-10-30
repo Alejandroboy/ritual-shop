@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { OrderStatus } from '@prisma/client';
+import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 
 @Injectable()
 export class AdminOrdersService {
@@ -34,10 +34,10 @@ export class AdminOrdersService {
     });
   }
 
-  async updateStatus(id: string, status: OrderStatus) {
+  async updateStatus(id: string, dto: UpdateOrderStatusDto) {
     return this.prisma.order.update({
       where: { id },
-      data: { orderStatus: status },
+      data: { orderStatus: dto.status },
     });
   }
 }

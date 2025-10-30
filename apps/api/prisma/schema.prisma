@@ -75,6 +75,7 @@ enum AssetKind {
 }
 
 enum OrderStatus {
+  CANCELLED
   DRAFT
   ACCEPTED
   IN_PROGRESS

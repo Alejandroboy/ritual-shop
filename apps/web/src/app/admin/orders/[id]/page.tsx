@@ -1,10 +1,10 @@
 'use client';
 import { useParams } from 'next/navigation';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import useSWR from 'swr';
 import { adminApiFetch, bytesToSize } from '@utils';
 import AssetThumb from '../../../../components/asset-thumb';
-import { OrderItemDetails } from '@types';
+import { OrderItemDetails, OrderStatus } from '@types';
 
 export default function OrderDetail() {
   const { id } = useParams<{ id: string }>();
@@ -12,8 +12,23 @@ export default function OrderDetail() {
     adminApiFetch(u).then((r) => r.json()),
   );
   const [busy, setBusy] = useState(false);
+  const [orderStatus, setOrderStatus] = useState<OrderStatus>(
+    data?.orderStatus,
+  );
+  const [updatedOrderStatus, setUpdatedOrderStatus] = useState<OrderStatus>(
+    data?.orderStatus,
+  );
+  useEffect(() => {
+    setOrderStatus(data?.orderStatus);
+  }, [data?.orderStatus]);
 
-  async function setStatus(status: string) {
+  if (!data) return null;
+
+  const orderStatusList = Object.values(OrderStatus).filter(
+    (item) => typeof item === 'string',
+  );
+
+  async function setStatus(status: OrderStatus) {
     setBusy(true);
     await adminApiFetch(`/api/admin/orders/${id}/status`, {
       method: 'PATCH',
@@ -21,26 +36,39 @@ export default function OrderDetail() {
       body: JSON.stringify({ status }),
     });
     setBusy(false);
+    setOrderStatus(status);
     mutate();
   }
-
-  if (!data) return null;
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-semibold">Заказ {data.number}</h1>
       <div className="space-y-0 flex flex-wrap justify-between max-w-500">
-        {['принят', 'в работе', 'согласование', 'отправлен', 'готов'].map(
-          (s) => (
-            <button
-              key={s}
-              disabled={busy}
-              onClick={() => setStatus(s)}
-              className="px-3 py-1 border rounded-xl cursor-pointer mb-4 mr-8"
-            >
-              {s}
-            </button>
-          ),
-        )}
+        <p className="px-3 py-1 border rounded-xl mb-4 mr-8">
+          Текущий статус: {orderStatus}
+        </p>
+      </div>
+      <div className="space-y-0">
+        <label className="text-sm">
+          <select
+            className="border rounded-md px-2 py-1 bg-white"
+            value={updatedOrderStatus}
+            onChange={(e) => setUpdatedOrderStatus(e.target.value)}
+          >
+            <option value="">—</option>
+            {orderStatusList.map((h) => (
+              <option key={h} value={h}>
+                {h}
+              </option>
+            ))}
+          </select>
+        </label>
+        <button
+          disabled={busy}
+          onClick={() => setStatus(updatedOrderStatus)}
+          className="px-3 py-1 border rounded-xl cursor-pointer mb-4 mr-8 ml-[10px]"
+        >
+          Сменить статус
+        </button>
       </div>
       <div>
         <h2 className="font-semibold">Заказчик</h2>
