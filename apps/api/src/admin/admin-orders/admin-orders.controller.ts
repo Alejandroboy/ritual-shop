@@ -9,8 +9,8 @@ import {
 } from '@nestjs/common';
 import { AdminGuard } from '../../common/admin.guard';
 import { PrismaService } from '../../prisma/prisma.service';
-import { OrderStatus } from '@prisma/client';
 import { AdminOrdersService } from './admin-orders.service';
+import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 
 @Controller('admin/orders')
 export class AdminOrdersPingController {
@@ -47,10 +47,7 @@ export class AdminOrdersController {
   }
 
   @Patch(':id/status')
-  async setStatus(
-    @Param('id') id: string,
-    @Body() dto: { orderStatus: OrderStatus },
-  ) {
-    return this.adminOrdersService.updateStatus(id, dto.orderStatus);
+  async setStatus(@Param('id') id: string, @Body() dto: UpdateOrderStatusDto) {
+    return this.adminOrdersService.updateStatus(id, dto);
   }
 }

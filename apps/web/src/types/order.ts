@@ -25,3 +25,13 @@ export type Order = {
   id: string;
   createdAt: Date;
 };
+
+export enum OrderStatus {
+  CANCELLED,
+  DRAFT,
+  ACCEPTED,
+  IN_PROGRESS,
+  APPROVAL,
+  SENT,
+  READY,
+}

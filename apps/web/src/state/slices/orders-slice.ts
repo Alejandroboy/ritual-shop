@@ -1,13 +1,12 @@
 import { api } from '@utils';
 import { StateCreator } from 'zustand/vanilla';
 import { AppState } from '../app-store';
-import { access } from 'node:fs';
 import {
   CustomerOrder,
   CustomerOrderItem,
   CustomerOrderItemAsset,
   User,
-} from '../../types';
+} from '@types';
 
 export type MyAsset = {
   id: string;
