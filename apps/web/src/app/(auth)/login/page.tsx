@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { api } from '@utils';
-import { User } from '../../../types';
+import { User } from '@types';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');

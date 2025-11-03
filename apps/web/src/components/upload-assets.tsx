@@ -51,11 +51,10 @@ export function UploadAsset({ orderId, itemId }: Props) {
     [jobs],
   );
   return (
-    <div className="border rounded pt-[10px] pb-[20px] pr-[10px] pl-[10px] space-y-2">
-      <div className="text-sm text-neutral-700 mb-[20px]">Загрузите файлы</div>
+    <div>
       <label
         htmlFor="files"
-        className="border rounded-md p-[10px] cursor-pointer"
+        className="bg-[#f1f1f1] border rounded-md p-[10px] cursor-pointer"
       >
         <input id="files" type="file" className="hidden" onChange={onSelect} />
         Прикрепить файлы
