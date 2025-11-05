@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Finish, HolePattern, Prisma, OrderStatus } from '@prisma/client';
+import { Finish, HolePattern, OrderStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { AddOrderItemDto } from './dto/add-item.dto';
@@ -15,6 +15,7 @@ import { MailerService } from '../common/mailer.service';
 import { CheckoutDto } from './dto/checkout.dto';
 import { AssetsService } from '../assets/assets.service';
 import { ChangeOrderStatusDto } from './dto/change-order-status.dto';
+import { EmailService } from '../email/email.service';
 
 type OrderDto = {
   id: string;
@@ -49,6 +50,7 @@ export class OrdersService {
   constructor(
     private readonly prisma: PrismaService,
     private mailer: MailerService,
+    private email: EmailService,
     private readonly assets: AssetsService,
   ) {}
 
@@ -295,7 +297,7 @@ export class OrdersService {
     });
     if (!item) throw new NotFoundException('Order item not found');
 
-    return await this.prisma.orderItemAsset.create({
+    return this.prisma.orderItemAsset.create({
       data: {
         orderItemId: itemId,
         originalName: dto.originalName,
@@ -533,6 +535,7 @@ export class OrdersService {
         },
       });
       const number = `RS-${datePrefix}-${pad(countToday + 1, 4)}`;
+
       return tx.order.update({
         where: { id },
         data: {
@@ -558,6 +561,12 @@ export class OrdersService {
     } catch (e) {
       // логируем, но не валим чекаут
       console.error('MAIL_ERROR', e);
+    }
+    if (result.customerEmail) {
+      await this.email.orderPlaced(
+        result.customerEmail || '',
+        result.number || '',
+      );
     }
 
     return result;

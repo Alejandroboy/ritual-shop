@@ -1,10 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
+import { EmailService } from '../../email/email.service';
 
 @Injectable()
 export class AdminOrdersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private email: EmailService,
+  ) {}
 
   async getList(page: string, status?: string, q?: string) {
     const where: any = {};
@@ -35,9 +39,23 @@ export class AdminOrdersService {
   }
 
   async updateStatus(id: string, dto: UpdateOrderStatusDto) {
-    return this.prisma.order.update({
+    const prevOrder = await this.prisma.order.findUnique({
+      where: { id },
+    });
+
+    const order = this.prisma.order.update({
       where: { id },
       data: { orderStatus: dto.status },
     });
+    if (prevOrder?.customerEmail) {
+      await this.email.orderStatusChanged(
+        prevOrder.customerEmail,
+        prevOrder?.number || '',
+        prevOrder.orderStatus,
+        dto.status,
+      );
+    }
+
+    return order;
   }
 }

@@ -7,11 +7,13 @@ import { ConfigurationModule } from '../../config/configuration.module';
 import { ConfigurationService } from '../../config/configuration.service';
 import { AdminAuthModule } from '../admin-auth/admin-auth.module';
 import { AdminOrdersService } from './admin-orders.service';
+import { EmailModule } from '../../email/email.module';
 
 @Module({
   imports: [
     AdminAuthModule,
     ConfigurationModule,
+    EmailModule,
     JwtModule.registerAsync({
       imports: [ConfigurationModule],
       inject: [ConfigurationService],

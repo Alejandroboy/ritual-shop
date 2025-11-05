@@ -4,11 +4,12 @@ import { OrdersController } from './orders.controller';
 import { PrismaService } from '../prisma/prisma.service';
 import { MailerService } from '../common/mailer.service';
 import { AssetsModule } from '../assets/assets.module';
+import { EmailModule } from '../email/email.module';
 
 @Module({
   controllers: [OrdersController],
   providers: [OrdersService, PrismaService, MailerService],
   exports: [OrdersService],
-  imports: [AssetsModule],
+  imports: [AssetsModule, EmailModule],
 })
 export class OrdersModule {}
