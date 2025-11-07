@@ -2,6 +2,9 @@ import { api } from '@utils';
 import { type TemplateDetails } from '@types';
 import AddToOrderForm from '../../../components/add-to-order-form';
 import React from 'react';
+import { labelOf, holePatternLabels } from '../../../utils/labels';
+
+const holePatternLabel = labelOf<string>(holePatternLabels);
 
 export default async function TemplatePage({
   params,
@@ -29,7 +32,10 @@ export default async function TemplatePage({
         <h2 className="font-medium mb-2">Доступные опции</h2>
         <ul className="list-disc ml-5 space-y-1">
           <li>Размеры: {tpl.sizes.map((s) => s.label).join(', ') || '—'}</li>
-          <li>Отверстия: {tpl.holes.join(', ') || '—'}</li>
+          <li>
+            Отверстия:{' '}
+            {tpl.holes.map((item) => holePatternLabel(item)).join(', ') || '—'}
+          </li>
           {tpl.supportsFrame && (
             <li>Рамки: {tpl.frames.map((f) => f.code).join(', ') || '—'}</li>
           )}

@@ -2,7 +2,10 @@
 import useSWR from 'swr';
 import Link from 'next/link';
 import { adminApiFetch } from '@utils';
-import { Order } from '@types';
+import { Order, OrderStatusEnum } from '@types';
+import { labelOf, orderStatusLabels } from '../../../utils/labels';
+
+const orderLabel = labelOf<OrderStatusEnum>(orderStatusLabels);
 
 export default function Orders() {
   const { data } = useSWR('/api/admin/orders', (u) =>
@@ -18,7 +21,9 @@ export default function Orders() {
           return (
             <li key={o.id} className="p-3 border rounded-xl">
               <div className="font-mono">{o.number}</div>
-              <div className="text-sm text-gray-600">{o.orderStatus}</div>
+              <div className="text-sm text-gray-600">
+                {orderLabel(o.orderStatus)}
+              </div>
               <Link className="underline" href={`/admin/orders/${o.id}`}>
                 Открыть
               </Link>

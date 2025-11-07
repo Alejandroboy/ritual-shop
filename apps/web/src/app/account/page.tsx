@@ -1,12 +1,15 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAppStore } from '../../state/app-store';
+import { useAppStore } from '@state';
 import AssetThumb from '../../components/asset-thumb';
 import { LogoutButton } from '../../components/logout-button';
 import { bytesToSize } from '@utils';
 import { isExtendError } from '../../utils/is-extended-error';
 import { useHydrated } from '../../utils/use-hydrated';
+import { labelOf, orderStatusLabels } from '../../utils/labels';
+
+const orderLabel = labelOf<string>(orderStatusLabels);
 
 export default function AccountPage() {
   const router = useRouter();
@@ -89,7 +92,7 @@ export default function AccountPage() {
               <div key={order.id} className="border rounded-xl p-4 space-y-3">
                 <div className="flex items-center justify-between text-sm">
                   <div>Заказ от {createdAt.toLocaleString('ru-RU')}</div>
-                  <div>Статус: {order.orderStatus}</div>
+                  <div>Статус: {orderLabel(order.orderStatus)}</div>
                 </div>
 
                 {order.items.map((item) => (

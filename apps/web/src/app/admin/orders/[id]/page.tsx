@@ -4,7 +4,10 @@ import React, { useEffect, useState } from 'react';
 import useSWR from 'swr';
 import { adminApiFetch, bytesToSize } from '@utils';
 import AssetThumb from '../../../../components/asset-thumb';
-import { OrderItemDetails, OrderStatus } from '@types';
+import { OrderItemDetails, OrderStatusEnum } from '@types';
+import { labelOf, orderStatusLabels } from '../../../../utils/labels';
+
+const orderLabel = labelOf<string>(orderStatusLabels);
 
 export default function OrderDetail() {
   const { id } = useParams<{ id: string }>();
@@ -22,7 +25,7 @@ export default function OrderDetail() {
 
   if (!data) return null;
 
-  const orderStatusList = Object.values(OrderStatus).filter(
+  const orderStatusList = Object.values(OrderStatusEnum).filter(
     (item) => typeof item === 'string',
   );
 
@@ -42,7 +45,7 @@ export default function OrderDetail() {
       <h1 className="text-2xl font-semibold">Заказ {data.number}</h1>
       <div className="space-y-0 flex flex-wrap justify-between max-w-500">
         <p className="px-3 py-1 border rounded-xl mb-4 mr-8">
-          Текущий статус: {orderStatus}
+          Текущий статус: {orderLabel(orderStatus)}
         </p>
       </div>
       <div className="space-y-0">
@@ -55,7 +58,7 @@ export default function OrderDetail() {
             <option value="">—</option>
             {orderStatusList.map((h) => (
               <option key={h} value={h}>
-                {h}
+                {orderLabel(h)}
               </option>
             ))}
           </select>
@@ -95,12 +98,12 @@ export default function OrderDetail() {
                 </div>
               ))}
             </ul>
-            {!!it.retouchNeeded && (
+            {it.retouchNeeded && (
               <p>
                 <b> Нужна ретушь!</b>
               </p>
             )}
-            {!!it.approveNeeded && (
+            {it.approveNeeded && (
               <p>
                 <b>Нужно согласование!</b>
               </p>

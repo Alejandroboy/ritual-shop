@@ -215,4 +215,12 @@ export class UsersService {
       throw e;
     }
   }
+
+  async deleteUser(id: string) {
+    return this.prisma.user.delete({
+      where: {
+        id,
+      },
+    });
+  }
 }

@@ -2,6 +2,13 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import type { Material, Shape, Orientation, ColorMode } from '@types';
+import {
+  labelOf,
+  shapeLabels,
+  materialLabels,
+  orientationLabels,
+  colorModeLabels,
+} from '../utils/labels';
 
 const MATERIALS: Material[] = [
   'CERMET',
@@ -14,6 +21,11 @@ const MATERIALS: Material[] = [
 const SHAPES: Shape[] = ['RECTANGLE', 'OVAL', 'ARCH'];
 const ORIENTS: Orientation[] = ['VERTICAL', 'HORIZONTAL'];
 const COLORS: ColorMode[] = ['BW', 'COLOR'];
+
+const shapeLabel = labelOf<string>(shapeLabels);
+const materialLabel = labelOf<string>(materialLabels);
+const orientationLabel = labelOf<string>(orientationLabels);
+const colorModeLabel = labelOf<string>(colorModeLabels);
 
 export default function FilterBar() {
   const sp = useSearchParams();
@@ -46,6 +58,21 @@ export default function FilterBar() {
 
   const reset = () => r.push('/catalog');
 
+  function renderLabels(type: string, key: string) {
+    if (type === 'Материал') {
+      return materialLabel(key);
+    }
+    if (type === 'Форма') {
+      return shapeLabel(key);
+    }
+    if (type === 'Ориентация') {
+      return orientationLabel(key);
+    }
+    if (type === 'Цветность') {
+      return colorModeLabel(key);
+    }
+  }
+
   const select = (
     label: string,
     value: string,
@@ -62,7 +89,7 @@ export default function FilterBar() {
         <option value="">—</option>
         {list.map((v) => (
           <option key={v} value={v}>
-            {v}
+            {renderLabels(label, v)}
           </option>
         ))}
       </select>

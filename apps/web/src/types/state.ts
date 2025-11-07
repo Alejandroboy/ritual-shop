@@ -5,6 +5,7 @@ export type Me = {
   email: string;
   name?: string;
   phone?: string;
+  role?: string;
 } | null;
 
 export type TemplateFilter = {

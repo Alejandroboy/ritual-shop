@@ -13,9 +13,6 @@ import {
 } from 'recharts';
 import { adminApiFetch } from '@utils';
 
-const api = (u: string) =>
-  fetch(u, { credentials: 'include', cache: 'no-store' }).then((r) => r.json());
-
 export default function AdminStats() {
   const { data } = useSWR('/api/admin/stats?grain=day', (u) =>
     adminApiFetch(u).then((r) => r.json()),

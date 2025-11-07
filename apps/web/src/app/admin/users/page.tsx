@@ -1,33 +1,40 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { adminApiFetch } from '@utils';
+import { adminApiFetch, api } from '@utils';
 import useSWR from 'swr';
-import { useAppStore } from '../../../state/app-store';
+import { labelOf, roleLabels } from '../../../utils/labels';
+import { Role } from '@types';
 
 type User = {
   id: string;
   email: string;
   name?: string | null;
   phone?: string | null;
-  role: 'ADMIN' | 'MANAGER' | 'CUSTOMER';
+  role: Role;
 };
 
+const roleLabel = labelOf<Role>(roleLabels);
+
 export default function AdminUsersListPage() {
-  const me = useAppStore((s) => s.me);
-  const fetchMe = useAppStore((s) => s.fetchMe);
   const [q, setQ] = useState('');
   const [error, setError] = useState<string | null>(null);
   const { data } = useSWR(`/api/admin/users/list`, (u) =>
     adminApiFetch(u).then((r) => r.json()),
   );
 
-  useEffect(() => {
-    fetchMe();
-  }, []);
-
-  console.log('me', me);
+  async function handleDelete(id: string) {
+    try {
+      return await api(`admin/users/${id}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // важно для httpOnly-куки
+      });
+    } catch (e) {
+      console.log('e', e);
+    }
+  }
   return (
     <div>
       <div className="flex items-center justify-between">
@@ -52,12 +59,30 @@ export default function AdminUsersListPage() {
       <div className="mt-6 space-y-2">
         {data?.items?.length ? (
           data.items.map((u: User) => (
-            <div key={u.id} className="rounded-xl border p-4">
+            <div key={u.id} className="rounded-xl border p-4 relative">
+              <div
+                className="absolute top-[10px] right-[10px] cursor-pointer flex items-center"
+                onClick={() => handleDelete(u.id)}
+              >
+                <div>Удалить</div>
+                <svg
+                  className="w-[20px] h-[20px]"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </div>
               <div className="font-medium">{u.email}</div>
               <div className="text-sm text-gray-500">
                 <p>{u.name || '—'}</p>
                 <p>{u.phone || '—'}</p>
-                <p>{u.role}</p>
+                <p>{roleLabel(u.role)}</p>
               </div>
               <div className="mt-[10px]">
                 <button className="rounded-xl border px-4">

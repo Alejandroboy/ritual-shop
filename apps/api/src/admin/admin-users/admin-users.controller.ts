@@ -11,6 +11,7 @@ import {
   ParseIntPipe,
   NotFoundException,
   BadRequestException,
+  Delete,
 } from '@nestjs/common';
 import { UsersService } from '../../users/users.service';
 import { AdminCreateUserDto } from '../../users/dto/admin-create-user.dto';
@@ -59,5 +60,10 @@ export class AdminUsersController {
       dto,
     });
     return { user: u };
+  }
+
+  @Delete(':id')
+  async delete(@Param('id') id: string) {
+    return this.usersService.deleteUser(id);
   }
 }

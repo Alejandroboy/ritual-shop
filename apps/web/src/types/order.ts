@@ -1,3 +1,5 @@
+import { OrderStatusEnum } from './enums';
+
 export type OrderItemDetails = {
   comment?: string;
   id: string;
@@ -21,17 +23,7 @@ export type OrderItemAsset = {
 
 export type Order = {
   number: number;
-  orderStatus: string;
+  orderStatus: OrderStatusEnum;
   id: string;
   createdAt: Date;
 };
-
-export enum OrderStatus {
-  CANCELLED,
-  DRAFT,
-  ACCEPTED,
-  IN_PROGRESS,
-  APPROVAL,
-  SENT,
-  READY,
-}

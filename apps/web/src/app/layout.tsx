@@ -1,16 +1,28 @@
+'use client';
+
 import './globals.css';
 import Link from 'next/link';
-
-export const metadata = {
-  title: 'Ritual Shop',
-  description: 'Каталог и заказы',
-};
-
+import React, { useEffect } from 'react';
+import { useAppStore } from '@state';
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const me = useAppStore((s) => s.me);
+  const fetchMe = useAppStore((s) => s.fetchMe);
+
+  useEffect(() => {
+    fetchMe();
+  }, []);
+
+  const renderAdminLink = () => {
+    if (me && me.role === 'ADMIN') {
+      return <Link href="/admin">Админка</Link>;
+    }
+  };
+
+  console.log('me', me);
   return (
     <html lang="ru" suppressHydrationWarning={true}>
       <body
@@ -25,6 +37,7 @@ export default function RootLayout({
             <nav className="text-sm flex gap-4">
               <Link href="/catalog">Каталог</Link>
               <Link href="/account">Личный кабинет</Link>
+              {renderAdminLink()}
             </nav>
           </div>
         </header>

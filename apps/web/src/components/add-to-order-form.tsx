@@ -4,8 +4,12 @@ import type { TemplateDetails } from '@types';
 import { UploadAsset } from './upload-assets';
 import { useAppStore } from '@state';
 import { useRouter } from 'next/navigation';
+import { holePatternLabels, labelOf, finishLabels } from '../utils/labels';
 
 type Props = { tpl: TemplateDetails };
+
+const holePatternLabel = labelOf<string>(holePatternLabels);
+const finishLabel = labelOf<string>(finishLabels);
 
 export default function AddToOrderForm({ tpl }: Props) {
   const router = useRouter();
@@ -187,7 +191,7 @@ export default function AddToOrderForm({ tpl }: Props) {
             <option value="">—</option>
             {tpl.holes.map((h) => (
               <option key={h} value={h}>
-                {h}
+                {holePatternLabel(h)}
               </option>
             ))}
           </select>
@@ -245,7 +249,7 @@ export default function AddToOrderForm({ tpl }: Props) {
               {finishOptions.map((f) => {
                 return (
                   <option key={f.id} value={f.code}>
-                    {f.label}
+                    {finishLabel(f.code)}
                   </option>
                 );
               })}
