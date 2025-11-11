@@ -22,7 +22,6 @@ export default function RootLayout({
     }
   };
 
-  console.log('me', me);
   return (
     <html lang="ru" suppressHydrationWarning={true}>
       <body

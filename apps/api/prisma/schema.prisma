@@ -102,6 +102,11 @@ enum StorageType {
   s3
 }
 
+enum NotifyChannel {
+  TELEGRAM
+  WHATSAPP
+}
+
 // ====== СПРАВОЧНИКИ ======
 
 
@@ -359,6 +364,9 @@ model User {
   // Связи с заказами
   customerOrders Order[] @relation("CustomerOrders")
   managedOrders  Order[] @relation("ManagerOrders")
+
+  notifyChannel   NotifyChannel?
+  telegramChatId  String?
 
   // Ротация refresh-токенов
   refreshSessions RefreshSession[]

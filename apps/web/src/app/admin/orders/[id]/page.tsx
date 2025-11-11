@@ -6,10 +6,13 @@ import { adminApiFetch, bytesToSize } from '@utils';
 import AssetThumb from '../../../../components/asset-thumb';
 import { OrderItemDetails, OrderStatusEnum } from '@types';
 import { labelOf, orderStatusLabels } from '../../../../utils/labels';
+import { useAppStore } from '@state';
 
 const orderLabel = labelOf<string>(orderStatusLabels);
 
 export default function OrderDetail() {
+  const me = useAppStore((s) => s.me);
+  const fetchMe = useAppStore((s) => s.fetchMe);
   const { id } = useParams<{ id: string }>();
   const { data, mutate } = useSWR(`/api/admin/orders/${id}`, (u) =>
     adminApiFetch(u).then((r) => r.json()),
@@ -19,6 +22,11 @@ export default function OrderDetail() {
   const [updatedOrderStatus, setUpdatedOrderStatus] = useState<string>(
     data?.orderStatus,
   );
+
+  useEffect(() => {
+    if (!me) fetchMe().catch(() => {});
+  }, [me, fetchMe]);
+
   useEffect(() => {
     setOrderStatus(data?.orderStatus);
   }, [data?.orderStatus]);
@@ -34,7 +42,7 @@ export default function OrderDetail() {
     await adminApiFetch(`/api/admin/orders/${id}/status`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status }),
+      body: JSON.stringify({ status, userId: me?.id }),
     });
     setBusy(false);
     setOrderStatus(status);

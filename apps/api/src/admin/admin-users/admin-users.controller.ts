@@ -39,6 +39,7 @@ export class AdminUsersController {
       if (!id) throw new BadRequestException('id required');
       const user = await this.usersService.findByIdAdmin(id);
       if (!user) throw new NotFoundException('User not found');
+
       return { user };
     } catch (e) {
       console.log('User error', e);

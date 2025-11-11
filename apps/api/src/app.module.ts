@@ -15,6 +15,7 @@ import { UsersModule } from './users/users.module';
 import { AdminUsersModule } from './admin/admin-users/admin-users.module';
 import { S3Module } from './s3/s3.module';
 import { AssetsModule } from './assets/assets.module';
+import { TelegramModule } from './notifications/telegram/telegram.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { AssetsModule } from './assets/assets.module';
     HealthModule,
     OrdersModule,
     PrismaModule,
+    TelegramModule,
   ],
   providers: [MailerService],
 })

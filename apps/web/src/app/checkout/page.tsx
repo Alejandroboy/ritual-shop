@@ -7,6 +7,7 @@ import AssetThumb from '../../components/asset-thumb';
 import { bytesToSize } from '@utils';
 import { OrderItemDetails } from '@types';
 import { useHydrated } from '../../utils/use-hydrated';
+import { SubscribeTelegramButton } from '../../components/subscribe-telegram-button';
 
 type OrderDetails = {
   items: OrderItemDetails[];

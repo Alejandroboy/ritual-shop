@@ -8,12 +8,14 @@ import { ConfigurationService } from '../../config/configuration.service';
 import { AdminAuthModule } from '../admin-auth/admin-auth.module';
 import { AdminOrdersService } from './admin-orders.service';
 import { EmailModule } from '../../email/email.module';
+import { TelegramModule } from '../../notifications/telegram/telegram.module';
 
 @Module({
   imports: [
     AdminAuthModule,
     ConfigurationModule,
     EmailModule,
+    TelegramModule,
     JwtModule.registerAsync({
       imports: [ConfigurationModule],
       inject: [ConfigurationService],

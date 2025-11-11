@@ -6,6 +6,8 @@ export type Me = {
   name?: string;
   phone?: string;
   role?: string;
+  telegramChatId?: string;
+  notifyChannel?: string;
 } | null;
 
 export type TemplateFilter = {

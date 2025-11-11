@@ -16,6 +16,7 @@ import { CheckoutDto } from './dto/checkout.dto';
 import { AssetsService } from '../assets/assets.service';
 import { ChangeOrderStatusDto } from './dto/change-order-status.dto';
 import { EmailService } from '../email/email.service';
+import { TelegramService } from '../notifications/telegram/telegram.service';
 
 type OrderDto = {
   id: string;
@@ -51,6 +52,7 @@ export class OrdersService {
     private readonly prisma: PrismaService,
     private mailer: MailerService,
     private email: EmailService,
+    private telegram: TelegramService,
     private readonly assets: AssetsService,
   ) {}
 
@@ -552,6 +554,13 @@ export class OrdersService {
         },
       });
     });
+    const user = await this.prisma.user.findUnique({
+      where: { id: dto.userId },
+      select: {
+        telegramChatId: true,
+        notifyChannel: true,
+      },
+    });
 
     // Письма
     try {
@@ -567,6 +576,10 @@ export class OrdersService {
         result.customerEmail || '',
         result.number || '',
       );
+    }
+
+    if (user?.notifyChannel === 'TELEGRAM') {
+      await this.telegram.orderPlaced(user.telegramChatId, number);
     }
 
     return result;

@@ -1,5 +1,5 @@
 'use client';
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppStore } from '@state';
 import AssetThumb from '../../components/asset-thumb';
@@ -8,6 +8,7 @@ import { bytesToSize } from '@utils';
 import { isExtendError } from '../../utils/is-extended-error';
 import { useHydrated } from '../../utils/use-hydrated';
 import { labelOf, orderStatusLabels } from '../../utils/labels';
+import { SubscribeTelegramButton } from '../../components/subscribe-telegram-button';
 
 const orderLabel = labelOf<string>(orderStatusLabels);
 
@@ -125,6 +126,10 @@ export default function AccountPage() {
             );
           })
         )}
+        <SubscribeTelegramButton
+          userId={me.id}
+          telegramChatId={me.telegramChatId}
+        />
       </section>
     </main>
   );

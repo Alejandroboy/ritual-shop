@@ -21,6 +21,8 @@ export class UsersService {
         role: true,
         createdAt: true,
         updatedAt: true,
+        telegramChatId: true,
+        notifyChannel: true,
         _count: {
           select: {
             customerOrders: true,
@@ -59,6 +61,8 @@ export class UsersService {
         role: true,
         createdAt: true,
         updatedAt: true,
+        telegramChatId: true,
+        notifyChannel: true,
         // связи по необходимости:
         _count: {
           select: {

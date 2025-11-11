@@ -1,7 +1,10 @@
-import { IsEnum } from 'class-validator';
+import { IsEnum, IsString } from 'class-validator';
 import { OrderStatus } from '@prisma/client';
 
 export class UpdateOrderStatusDto {
   @IsEnum(OrderStatus)
   status!: OrderStatus;
+
+  @IsString()
+  userId!: string;
 }

@@ -2,12 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { EmailService } from '../../email/email.service';
+import { TelegramService } from '../../notifications/telegram/telegram.service';
 
 @Injectable()
 export class AdminOrdersService {
   constructor(
     private prisma: PrismaService,
     private email: EmailService,
+    private telegram: TelegramService,
   ) {}
 
   async getList(page: string, status?: string, q?: string) {
@@ -41,9 +43,22 @@ export class AdminOrdersService {
   async updateStatus(id: string, dto: UpdateOrderStatusDto) {
     const prevOrder = await this.prisma.order.findUnique({
       where: { id },
+      select: {
+        number: true,
+        orderStatus: true,
+      },
+    });
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: dto.userId,
+      },
+      select: {
+        notifyChannel: true,
+        telegramChatId: true,
+      },
     });
 
-    const order = this.prisma.order.update({
+    const order = await this.prisma.order.update({
       where: { id },
       data: { orderStatus: dto.status },
     });
@@ -52,6 +67,16 @@ export class AdminOrdersService {
         prevOrder.customerEmail,
         prevOrder?.number || '',
         prevOrder.orderStatus,
+        dto.status,
+      );
+    }
+
+    if (user?.telegramChatId) {
+      console.log(456);
+      await this.telegram.orderStatusChanged(
+        user.telegramChatId,
+        prevOrder?.number || '',
+        prevOrder?.orderStatus || '',
         dto.status,
       );
     }

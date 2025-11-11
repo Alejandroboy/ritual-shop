@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-// import { TelegramProvider } from './telegram.provider';
+import { TelegramProvider } from './telegram.provider';
 import { WhatsAppProvider } from './whatsapp.provider';
 import { OrderStatus } from '@prisma/client';
 
@@ -7,7 +7,7 @@ import { OrderStatus } from '@prisma/client';
 export class NotificationsService {
   private readonly log = new Logger(NotificationsService.name);
   constructor(
-    // private readonly telegram: TelegramProvider,
+    private readonly telegram: TelegramProvider,
     private readonly whatsapp: WhatsAppProvider,
   ) {}
 
