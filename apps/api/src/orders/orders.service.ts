@@ -579,7 +579,7 @@ export class OrdersService {
     }
 
     if (user?.notifyChannel === 'TELEGRAM') {
-      await this.telegram.orderPlaced(user.telegramChatId, number);
+      await this.telegram.orderPlaced(user.telegramChatId, result.number);
     }
 
     return result;

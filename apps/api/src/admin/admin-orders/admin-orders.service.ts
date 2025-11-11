@@ -46,6 +46,7 @@ export class AdminOrdersService {
       select: {
         number: true,
         orderStatus: true,
+        customerEmail: true,
       },
     });
     const user = await this.prisma.user.findUnique({
