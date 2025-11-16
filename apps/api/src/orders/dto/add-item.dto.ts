@@ -52,4 +52,24 @@ export class AddOrderItemDto {
 
   @IsOptional() @IsBoolean() approveNeeded?: boolean;
   @IsOptional() @IsBoolean() retouchNeeded?: boolean;
+
+  @IsOptional()
+  @IsString()
+  dateOfBirth: string;
+
+  @IsOptional()
+  @IsString()
+  dateOfDeath: string;
+
+  @IsOptional()
+  @IsString()
+  firstName: string;
+
+  @IsOptional()
+  @IsString()
+  middleName: string;
+
+  @IsOptional()
+  @IsString()
+  lastName: string;
 }

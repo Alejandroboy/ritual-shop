@@ -26,11 +26,26 @@ export type CustomerOrderItem = {
   id: string;
   orderId: string;
   sizeId: string;
+  template: {
+    label: string;
+  };
+  size: {
+    id: string;
+    label: string;
+  };
   templateCode: string;
   templateId: string;
   templateLabel: string;
   unitPriceMinor: number;
   updatedAt: string;
+  dateOfBirth: string;
+  dateOfDeath: string;
+  firstName: string;
+  middleName: string;
+  lastName: string;
+  approveNeeded: boolean;
+  approved: boolean;
+  approvalStage: string;
 };
 
 export type CustomerOrderItemAsset = {

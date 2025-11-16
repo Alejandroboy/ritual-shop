@@ -107,6 +107,17 @@ enum NotifyChannel {
   WHATSAPP
 }
 
+enum AssetStage {
+  ORIGINAL
+  RETOUCHED
+}
+
+enum ApprovalStage {
+  NOT_STARTED
+  IN_PROGRESS
+  APPROVED
+}
+
 // ====== СПРАВОЧНИКИ ======
 
 
@@ -308,6 +319,10 @@ model Order {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([createdAt])
+  @@index([orderStatus, createdAt])
+  @@index([customerId, createdAt])
 }
 
 /// Позиция заказа (конкретный шаблон с выбранными опциями)
@@ -325,6 +340,8 @@ model OrderItem {
   comment      String?
   approveNeeded Boolean   @default(false)
   retouchNeeded Boolean   @default(false)
+  approvalStage ApprovalStage @default(NOT_STARTED)
+  approved     Boolean @default(false)
 
   // для внутренней валидации можно хранить слепок кода/лейбла (на случай изменения справочников)
   templateCode  String
@@ -339,6 +356,12 @@ model OrderItem {
 
   persons OrderItemPerson[]
   assets    OrderItemAsset[]   @relation("OrderItemToAssets")
+
+  dateOfBirth DateTime?
+  dateOfDeath DateTime?
+  firstName String?
+  middleName String?
+  lastName String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -400,30 +423,19 @@ model OrderItemPerson {
   @@index([itemId])
 }
 
-/// Файлы (фото/рефы/документы) по позиции
-// model Asset {
-//   id       String    @id @default(cuid())
-//   itemId   String
-//   kind     AssetKind
-//   filename String
-//   url      String? // S3/MinIO/локальный путь
-//   primary  Boolean   @default(false)
-//   note     String?
-//   size     Int?
-//   mime     String?
-//
-//   item OrderItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
-//
-//   createdAt DateTime @default(now())
-//
-//   @@index([itemId])
-// }
-
 model OrderItemAsset {
   id           String        @id @default(cuid())
   orderItemId  String
 
   orderItem    OrderItem     @relation("OrderItemToAssets", fields: [orderItemId], references: [id], onDelete: Cascade)
+
+  // стадия (оригинал/ретушь)
+  stage        AssetStage  @default(ORIGINAL)
+
+  // связь «ретушь → оригинал»
+  derivedFromId  String?
+  derivedFrom    OrderItemAsset? @relation("AssetDerivation", fields: [derivedFromId], references: [id], onDelete: Cascade)
+  derivatives    OrderItemAsset[] @relation("AssetDerivation")
 
   storage      StorageType   @default(s3)
 

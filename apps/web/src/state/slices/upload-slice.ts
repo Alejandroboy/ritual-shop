@@ -11,6 +11,8 @@ export type UploadState =
   | 'done'
   | 'error';
 
+type Mode = 'original' | 'retouch';
+
 export type UploadJob = {
   id: string;
   orderId: Id;
@@ -23,6 +25,9 @@ export type UploadJob = {
   bucket?: string;
   key?: string;
   etag?: string | null;
+
+  mode?: Mode;
+  retouchOf?: Id | null;
 };
 
 export type UploadsSlice = {
@@ -30,7 +35,12 @@ export type UploadsSlice = {
   concurrency: number;
   running: number;
 
-  enqueueFiles: (orderId: Id, itemId: Id | null, files: File[]) => void;
+  enqueueFiles: (
+    orderId: Id,
+    itemId: Id | null,
+    files: File[],
+    opts?: { mode?: Mode; retouchOf?: Id },
+  ) => void;
   attachPendingToItem: (orderId: Id, itemId: Id) => void;
   clearFinished: () => void;
 
@@ -57,7 +67,7 @@ export const createUploadsSlice: UploadsCreator = (
   concurrency: 2,
   running: 0,
 
-  enqueueFiles: (orderId, itemId, files) => {
+  enqueueFiles: (orderId, itemId, files, opts) => {
     if (!files?.length) return;
     const jobs: UploadJob[] = files.map((f) => ({
       id: rid(),
@@ -66,6 +76,8 @@ export const createUploadsSlice: UploadsCreator = (
       file: f,
       state: 'queued',
       error: null,
+      mode: opts?.mode ?? 'original',
+      retouchOf: opts?.retouchOf ?? null,
     }));
     set((s) => ({ queue: [...s.queue, ...jobs] }));
     get()._pump();
@@ -118,6 +130,7 @@ export const createUploadsSlice: UploadsCreator = (
             itemId: job.itemId || undefined,
             filename: job.file.name,
             contentType: job.file.type || undefined,
+            retouchOf: job.retouchOf || undefined, // optional
           }),
         });
 
@@ -144,19 +157,42 @@ export const createUploadsSlice: UploadsCreator = (
         (x) => x.id === job.id,
       )!;
       if (current.itemId) {
-        await api(`/orders/${current.orderId}/items/${current.itemId}/assets`, {
+        const isRetouch = current.mode === 'retouch';
+        if (isRetouch && !current.retouchOf) {
+          throw new Error('retouchOf is required for retouch mode');
+        }
+
+        const url = isRetouch
+          ? `/orders/${current.orderId}/items/${current.itemId}/assets/retouch`
+          : `/orders/${current.orderId}/items/${current.itemId}/assets`;
+
+        const body = isRetouch
+          ? {
+              storage: 's3',
+              sourceAssetId: current.retouchOf, // 👈 ключевой параметр
+              bucket: current.bucket,
+              key: current.key,
+              contentType: current.file.type || undefined,
+              size: current.file.size,
+              etag: current.etag,
+              originalName: current.file.name,
+              filename: current.file.name,
+            }
+          : {
+              storage: 's3',
+              bucket: current.bucket,
+              key: current.key,
+              contentType: current.file.type || undefined,
+              size: current.file.size,
+              etag: current.etag,
+              originalName: current.file.name,
+              filename: current.file.name,
+            };
+
+        await api(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            storage: 's3',
-            bucket: current.bucket,
-            key: current.key,
-            contentType: current.file.type || undefined,
-            size: current.file.size,
-            etag: current.etag,
-            originalName: current.file.name,
-            filename: current.file.name,
-          }),
+          body: JSON.stringify(body),
         });
 
         set((s) => {

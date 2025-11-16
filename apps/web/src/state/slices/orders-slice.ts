@@ -19,8 +19,16 @@ export type MyOrderItem = {
   id: string;
   templateLabel: string;
   comment?: string | null;
-  sizeId?: string | null;
+  sizeLabel?: string | null;
   assets: MyAsset[];
+  dateOfBirth: string;
+  dateOfDeath: string;
+  firstName: string;
+  middleName: string;
+  lastName: string;
+  approveNeeded: boolean;
+  approved: boolean;
+  approvalStage: string;
 };
 
 export type MyOrder = {
@@ -56,10 +64,18 @@ const mapAsset = (a: CustomerOrderItemAsset): MyAsset => ({
 
 const mapItem = (i: CustomerOrderItem): MyOrderItem => ({
   id: i.id,
-  templateLabel: i.templateLabel,
+  templateLabel: i.template.label,
   comment: i.comment,
-  sizeId: i.sizeId ?? null,
+  sizeLabel: i.size.label ?? null,
+  dateOfBirth: i.dateOfBirth,
+  dateOfDeath: i.dateOfDeath,
+  firstName: i.firstName,
+  middleName: i.middleName,
+  lastName: i.lastName,
   assets: Array.isArray(i.assets) ? i.assets.map(mapAsset) : [],
+  approveNeeded: i.approveNeeded,
+  approvalStage: i.approvalStage,
+  approved: i.approved,
 });
 
 const mapOrder = (o: CustomerOrder): MyOrder => ({

@@ -1,4 +1,4 @@
-import type { Id, OrderItem } from '../../types';
+import type { Id, OrderItem } from '@types';
 import { api } from '@utils';
 import { StateCreator } from 'zustand/vanilla';
 import { AppState } from '../app-store';
@@ -19,9 +19,15 @@ export type OrderSlice = {
   setDraft: (id: Id | null) => void;
   ensureOrder: () => Promise<Id>;
   clearDraft: () => void;
+  updateApprove: (orderId: string, itemId: string) => void;
 
   // позиции
   addItem: (payload: {
+    dateOfBirth: string;
+    dateOfDeath: string;
+    firstName: string;
+    middleName: string;
+    lastName: string;
     templateCode: string;
     sizeId?: number;
     frameId?: number;
@@ -76,6 +82,10 @@ export const createOrderSlice: OrderCreator = (set, get, _api): OrderSlice => ({
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
+  },
+
+  updateApprove: async (orderId, itemId) => {
+    return api<OrderDetails>(`/orders/${orderId}/items/${itemId}/approve`);
   },
 
   getOrderDetails: async () => {

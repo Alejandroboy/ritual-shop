@@ -15,7 +15,7 @@ export class S3Service {
   private s3 = new S3Client({
     region: process.env.S3_REGION || 'ru-1',
     endpoint: process.env.S3_ENDPOINT,
-    forcePathStyle: true, // для совместимых S3 надёжнее
+    forcePathStyle: true,
     credentials: {
       accessKeyId: process.env.S3_ACCESS_KEY!,
       secretAccessKey: process.env.S3_SECRET_KEY!,

@@ -1,36 +1,24 @@
-'use client';
-import useSWR from 'swr';
-import Link from 'next/link';
-import { adminApiFetch } from '@utils';
-import { Order, OrderStatusEnum } from '@types';
-import { labelOf, orderStatusLabels } from '../../../utils/labels';
+import { Orders } from '../../../components/orders';
 
-const orderLabel = labelOf<OrderStatusEnum>(orderStatusLabels);
+export default function Page({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const qs = new URLSearchParams(
+    Object.entries(searchParams).flatMap(([k, v]) =>
+      Array.isArray(v)
+        ? v.map((x) => [k, String(x)])
+        : v
+          ? [[k, String(v)]]
+          : [],
+    ) as [string, string][],
+  ).toString();
 
-export default function Orders() {
-  const { data } = useSWR('/api/admin/orders', (u) =>
-    adminApiFetch(u).then((r) => r.json()),
-  );
-
-  const items = data?.items ?? [];
   return (
     <div>
       <h1 className="text-2xl font-semibold mb-4">Заказы</h1>
-      <ul className="space-y-2">
-        {items.map((o: Order) => {
-          return (
-            <li key={o.id} className="p-3 border rounded-xl">
-              <div className="font-mono">{o.number}</div>
-              <div className="text-sm text-gray-600">
-                {orderLabel(o.orderStatus)}
-              </div>
-              <Link className="underline" href={`/admin/orders/${o.id}`}>
-                Открыть
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
+      <Orders qs={qs} />
     </div>
   );
 }

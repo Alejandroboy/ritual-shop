@@ -17,6 +17,7 @@ import { AssetsService } from '../assets/assets.service';
 import { ChangeOrderStatusDto } from './dto/change-order-status.dto';
 import { EmailService } from '../email/email.service';
 import { TelegramService } from '../notifications/telegram/telegram.service';
+import { asDate, toDateString } from '../common/helpers';
 
 type OrderDto = {
   id: string;
@@ -140,6 +141,16 @@ export class OrdersService {
           : null,
         retouchNeeded: (it as any).size ? (it as any).retouchNeeded : null,
         comment: (it as any).comment ?? null,
+        dateOfBirth: toDateString(it.dateOfBirth),
+        dateOfDeath: toDateString(it.dateOfDeath),
+        firstName: it.firstName ?? null,
+        middleName: it.middleName ?? null,
+        lastName: it.lastName ?? null,
+        sizeId: it.sizeId,
+        holePattern: it.holePattern,
+        frameId: it.frameId,
+        backgroundId: it.backgroundId,
+        finish: it.finish,
         assets: await Promise.all(
           it.assets.map((a) => this.assets.toDtoWithUrls(a)),
         ),
@@ -273,7 +284,11 @@ export class OrdersService {
         templateId: tpl.id,
         templateCode: tpl.code,
         templateLabel: tpl.label,
-
+        dateOfBirth: asDate(dto.dateOfBirth),
+        dateOfDeath: asDate(dto.dateOfDeath),
+        firstName: dto.firstName,
+        middleName: dto.middleName,
+        lastName: dto.lastName,
         sizeId: dto.sizeId,
         holePattern: dto.holePattern,
         frameId: dto.frameId,

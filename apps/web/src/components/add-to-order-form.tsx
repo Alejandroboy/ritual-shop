@@ -4,7 +4,7 @@ import type { TemplateDetails } from '@types';
 import { UploadAsset } from './upload-assets';
 import { useAppStore } from '@state';
 import { useRouter } from 'next/navigation';
-import { holePatternLabels, labelOf, finishLabels } from '../utils/labels';
+import { holePatternLabels, labelOf, finishLabels } from '@utils';
 
 type Props = { tpl: TemplateDetails };
 
@@ -30,6 +30,11 @@ export default function AddToOrderForm({ tpl }: Props) {
   );
 
   const [itemId, setItemId] = useState<string | null>(null);
+  const [dateOfBirth, setDateOfBirth] = useState<string>('');
+  const [dateOfDeath, setDateOfDeath] = useState<string>('');
+  const [firstName, setFirstName] = useState<string>('');
+  const [middleName, setMiddleName] = useState<string>('');
+  const [lastName, setLastName] = useState<string>('');
   const [approveNeeded, setApproveNeeded] = useState<boolean>(false);
   const [retouchNeeded, setRetouchNeeded] = useState<boolean>(false);
 
@@ -41,7 +46,6 @@ export default function AddToOrderForm({ tpl }: Props) {
     tpl.defaults.holePattern ?? '',
   );
 
-  const [holesPrice, setHolesPrices] = useState<boolean>(false);
   if (tpl.perHolePrice && holePattern) {
     const firstFour = holePattern.slice(0, 4);
     if (firstFour.includes('TWO') && price) {
@@ -72,6 +76,11 @@ export default function AddToOrderForm({ tpl }: Props) {
   async function submit() {
     const orderId = await ensureOrder();
     const payload = {
+      dateOfBirth,
+      dateOfDeath,
+      firstName,
+      middleName,
+      lastName,
       templateCode: tpl.code,
       sizeId: sizeId || undefined,
       holePattern: holePattern || undefined,
@@ -79,8 +88,8 @@ export default function AddToOrderForm({ tpl }: Props) {
       backgroundId: backgroundId || undefined,
       finish: finish || undefined,
       comment: comment || undefined,
-      approveNeeded: approveNeeded,
-      retouchNeeded: retouchNeeded,
+      approveNeeded,
+      retouchNeeded,
     };
     try {
       const item = await addItem(payload);
@@ -116,7 +125,7 @@ export default function AddToOrderForm({ tpl }: Props) {
               id="checkbox-retouch"
               checked={retouchNeeded}
               onChange={handleRetouchClick}
-            />{' '}
+            />
             Нужна ретушь
           </label>
           <label className="cursor-pointer" htmlFor="checkbox-approve">
@@ -125,7 +134,7 @@ export default function AddToOrderForm({ tpl }: Props) {
               id="checkbox-approve"
               checked={approveNeeded}
               onChange={handleApproveClick}
-            />{' '}
+            />
             Нужно согласование
           </label>
         </div>
@@ -257,6 +266,53 @@ export default function AddToOrderForm({ tpl }: Props) {
           </label>
         )}
       </div>
+      <div>Надпись на изделии</div>
+      <div className="grid sm:grid-cols-2 gap-3">
+        <label className="text-sm">
+          <span className="block mb-1 text-neutral-600">Дата Рождения</span>
+          <input
+            type="date"
+            className="border rounded-md px-2 py-1 bg-white"
+            value={dateOfBirth}
+            onChange={(e) => setDateOfBirth(e.target.value)}
+          />
+        </label>
+        <label className="text-sm">
+          <span className="block mb-1 text-neutral-600">Дата смерти</span>
+          <input
+            type="date"
+            className="border rounded-md px-2 py-1 bg-white"
+            value={dateOfDeath}
+            onChange={(e) => setDateOfDeath(e.target.value)}
+          />
+        </label>
+        <label className="text-sm">
+          <span className="block mb-1 text-neutral-600">Имя</span>
+          <input
+            className="border rounded-md px-2 py-1 bg-white min-w-64"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+          />
+        </label>
+        <label className="text-sm">
+          <span className="block mb-1 text-neutral-600">
+            Отчество (если есть)
+          </span>
+          <input
+            className="border rounded-md px-2 py-1 bg-white min-w-64"
+            value={middleName}
+            onChange={(e) => setMiddleName(e.target.value)}
+          />
+        </label>
+        <label className="text-sm">
+          <span className="block mb-1 text-neutral-600">Фамилия</span>
+          <input
+            className="border rounded-md px-2 py-1 bg-white min-w-64"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+          />
+        </label>
+      </div>
 
       <label className="text-sm block">
         <div className="mb-1 text-neutral-600">Комментарий</div>
@@ -269,7 +325,7 @@ export default function AddToOrderForm({ tpl }: Props) {
       </label>
 
       <div className="pt-2">
-        <UploadAsset orderId={draftOrderId} itemId={itemId} />
+        <UploadAsset orderId={draftOrderId} itemId={itemId} mode="original" />
       </div>
 
       <div className="flex justify-between">

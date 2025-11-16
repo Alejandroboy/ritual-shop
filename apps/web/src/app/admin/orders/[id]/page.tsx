@@ -3,10 +3,11 @@ import { useParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import useSWR from 'swr';
 import { adminApiFetch, bytesToSize } from '@utils';
-import AssetThumb from '../../../../components/asset-thumb';
+import { AssetThumb } from '../../../../components/asset-thumb';
 import { OrderItemDetails, OrderStatusEnum } from '@types';
-import { labelOf, orderStatusLabels } from '../../../../utils/labels';
+import { labelOf, orderStatusLabels } from '@utils';
 import { useAppStore } from '@state';
+import Link from 'next/link';
 
 const orderLabel = labelOf<string>(orderStatusLabels);
 
@@ -81,9 +82,9 @@ export default function OrderDetail() {
       </div>
       <div>
         <h2 className="font-semibold">Заказчик</h2>
-        <p>{data.customer.name}</p>
-        <p>{data.customer.email}</p>
-        <p>{data.customer.phone}</p>
+        <p>{data?.customerName}</p>
+        <p>{data?.customerEmail}</p>
+        <p>{data?.customerPhone}</p>
       </div>
       <div>
         <h2 className="font-semibold">Позиции</h2>
@@ -116,6 +117,12 @@ export default function OrderDetail() {
                 <b>Нужно согласование!</b>
               </p>
             )}
+            <Link
+              className="underline"
+              href={`/admin/orders/${id}/items/${it.id}`}
+            >
+              Открыть
+            </Link>
           </div>
         ))}
       </div>

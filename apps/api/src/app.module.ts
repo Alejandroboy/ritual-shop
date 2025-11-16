@@ -16,9 +16,11 @@ import { AdminUsersModule } from './admin/admin-users/admin-users.module';
 import { S3Module } from './s3/s3.module';
 import { AssetsModule } from './assets/assets.module';
 import { TelegramModule } from './notifications/telegram/telegram.module';
+import { OrdersItemsModule } from './orders/orders-items/orders-items.module';
 
 @Module({
   imports: [
+    OrdersItemsModule,
     S3Module,
     AssetsModule,
     AdminUsersModule,

@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@utils';
 import { useAppStore } from '@state';
-import AssetThumb from '../../components/asset-thumb';
+import { AssetThumb } from '../../components/asset-thumb';
 import { bytesToSize } from '@utils';
 import { OrderItemDetails } from '@types';
 import { useHydrated } from '../../utils/use-hydrated';
@@ -164,6 +164,11 @@ export default function CheckoutPage() {
               </div>
               <p>{item.templateLabel}</p>
               <p>{item.size?.label}</p>
+              {!!item?.firstName && <p>{item?.firstName}</p>}
+              {!!item?.middleName && <p>{item?.middleName}</p>}
+              {!!item?.lastName && <p>{item?.lastName}</p>}
+              {!!item?.dateOfBirth && <p>{item?.dateOfBirth}</p>}
+              {!!item?.dateOfDeath && <p>{item?.dateOfDeath}</p>}
               {!!item?.comment && <p>{item?.comment}</p>}
               {!!item.assets.length && (
                 <div className="flex gap-3 flex-wrap">
@@ -180,8 +185,8 @@ export default function CheckoutPage() {
                   ))}
                 </div>
               )}
-              {!!item.retouchNeeded && <p>Нужна ретушь</p>}
-              {!!item.approveNeeded && <p>Нужно согласование</p>}
+              {item.retouchNeeded && <p>Нужна ретушь</p>}
+              {item.approveNeeded && <p>Нужно согласование</p>}
             </div>
           ))}
         </div>

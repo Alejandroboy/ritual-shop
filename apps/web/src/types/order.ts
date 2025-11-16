@@ -1,4 +1,4 @@
-import { OrderStatusEnum } from './enums';
+import { ApprovalStage, OrderStatusEnum } from './enums';
 
 export type OrderItemDetails = {
   comment?: string;
@@ -7,12 +7,19 @@ export type OrderItemDetails = {
   templateCode: string;
   backgroundId: string;
   frameId: string;
+  dateOfBirth: string;
+  dateOfDeath: string;
   size: {
     label: string;
   };
+  sizeLabel: string;
+  firstName: string;
+  middleName: string;
+  lastName: string;
   assets: OrderItemAsset[];
   retouchNeeded: boolean;
   approveNeeded: boolean;
+  approvalStage: ApprovalStage;
 };
 
 export type OrderItemAsset = {
@@ -26,4 +33,6 @@ export type Order = {
   orderStatus: OrderStatusEnum;
   id: string;
   createdAt: Date;
+  customerEmail: string;
+  customerName: string;
 };

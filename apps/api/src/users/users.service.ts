@@ -63,7 +63,6 @@ export class UsersService {
         updatedAt: true,
         telegramChatId: true,
         notifyChannel: true,
-        // связи по необходимости:
         _count: {
           select: {
             customerOrders: true,
@@ -76,7 +75,33 @@ export class UsersService {
             orderStatus: true,
             createdAt: true,
             items: {
-              include: { assets: true },
+              select: {
+                id: true,
+                createdAt: true,
+                updatedAt: true,
+                comment: true,
+                approveNeeded: true,
+                retouchNeeded: true,
+                approvalStage: true,
+                approved: true,
+                dateOfBirth: true,
+                dateOfDeath: true,
+                firstName: true,
+                middleName: true,
+                lastName: true,
+                size: { select: { id: true, label: true } },
+                template: { select: { id: true, label: true, code: true } },
+
+                assets: {
+                  orderBy: { createdAt: 'asc' },
+                  select: {
+                    id: true,
+                    createdAt: true,
+                    kind: true,
+                    originalName: true,
+                  },
+                },
+              },
             },
           },
           take: 10,
@@ -162,11 +187,6 @@ export class UsersService {
     return user;
   }
 
-  /**
-   * Админ/менеджер обновляют пользователя.
-   * - Менеджер НЕ может менять роль на ADMIN и не может менять email/пароль админам.
-   * - Админ может менять роль/email/пароль всем.
-   */
   async adminUpdate(params: {
     targetUserId: string;
     actorRole: Role;

@@ -2,13 +2,12 @@
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppStore } from '@state';
-import AssetThumb from '../../components/asset-thumb';
 import { LogoutButton } from '../../components/logout-button';
-import { bytesToSize } from '@utils';
 import { isExtendError } from '../../utils/is-extended-error';
 import { useHydrated } from '../../utils/use-hydrated';
-import { labelOf, orderStatusLabels } from '../../utils/labels';
+import { labelOf, orderStatusLabels } from '@utils';
 import { SubscribeTelegramButton } from '../../components/subscribe-telegram-button';
+import { OrderItem } from '../../components/order-item';
 
 const orderLabel = labelOf<string>(orderStatusLabels);
 
@@ -95,33 +94,11 @@ export default function AccountPage() {
                   <div>Заказ от {createdAt.toLocaleString('ru-RU')}</div>
                   <div>Статус: {orderLabel(order.orderStatus)}</div>
                 </div>
-
-                {order.items.map((item) => (
-                  <div key={item.id} className="space-y-2">
-                    <div className="font-medium">{item.templateLabel}</div>
-                    {item.comment && (
-                      <div className="text-sm text-gray-600">
-                        {item.comment}
-                      </div>
-                    )}
-
-                    {!!item.assets.length && (
-                      <div className="flex gap-3 flex-wrap">
-                        {item.assets.map((a) => (
-                          <div key={a.id} className="text-xs">
-                            <AssetThumb asset={a} size={120} />
-                            <div className="mt-1 truncate max-w-[120px]">
-                              {a.originalName || 'файл'}
-                            </div>
-                            <div className="text-gray-500">
-                              {bytesToSize(a.size || 0)}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
+                {order.items.map((item) => {
+                  return (
+                    <OrderItem orderId={order.id} {...item} key={item.id} />
+                  );
+                })}
               </div>
             );
           })

@@ -2,9 +2,23 @@
 import React, { useMemo, useState } from 'react';
 import { useAppStore } from '@state';
 
-type Props = { orderId: string | null; itemId: string | null };
+type Mode = 'original' | 'retouch';
 
-export function UploadAsset({ orderId, itemId }: Props) {
+type Props = {
+  orderId: string | null;
+  itemId: string | null;
+  mode?: Mode;
+  sourceAssetId?: string;
+  onDone?: () => void;
+};
+
+export function UploadAsset({
+  orderId,
+  itemId,
+  mode = 'original',
+  sourceAssetId,
+  onDone,
+}: Props) {
   const enqueueFiles = useAppStore((s) => s.enqueueFiles);
   const ensureOrder = useAppStore((s) => s.ensureOrder);
   const queue = useAppStore((s) => s.queue);
@@ -18,6 +32,7 @@ export function UploadAsset({ orderId, itemId }: Props) {
     [queue, orderId, itemId],
   );
   const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
 
   const ACCEPTED = ['image/png', 'image/jpeg', 'image/webp', 'application/pdf'];
   const MAX_FILES = 8;
@@ -26,47 +41,64 @@ export function UploadAsset({ orderId, itemId }: Props) {
   async function onSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const list = e.target.files;
     if (!list) return;
-    const arr = Array.from(list);
+    const files = Array.from(list).slice(0, MAX_FILES);
+    e.target.value = '';
 
-    const invalid = arr.find(
+    const invalid = files.find(
       (f) => !ACCEPTED.includes(f.type) || f.size > MAX_SIZE,
     );
     if (invalid) {
       setError(
         `Разрешены PNG/JPEG/WEBP/PDF до 15MB. Файл "${invalid.name}" не подходит.`,
       );
-      e.target.value = '';
+      return;
+    }
+    if (mode === 'retouch' && !sourceAssetId) {
+      setError('Не указан исходный ассет для ретуши');
       return;
     }
     setError(null);
 
     const ensuredOrderId = orderId ?? (await ensureOrder());
 
-    enqueueFiles(ensuredOrderId, itemId || null, arr.slice(0, MAX_FILES));
-    e.target.value = '';
+    enqueueFiles(ensuredOrderId, itemId || null, files, {
+      mode,
+      retouchOf: sourceAssetId,
+    });
+
+    onDone?.();
   }
 
   const hasStaged = useMemo(
     () => jobs.some((j) => j.state === 'uploaded' && !j.itemId),
     [jobs],
   );
+
   return (
     <div>
       <label
         htmlFor="files"
-        className="bg-[#f1f1f1] border rounded-md p-[10px] cursor-pointer"
+        className="bg-[#f1f1f1] border rounded-md p-[10px] cursor-pointer inline-block"
       >
-        <input id="files" type="file" className="hidden" onChange={onSelect} />
-        Прикрепить файлы
+        <input
+          id="files"
+          type="file"
+          className="hidden"
+          onChange={onSelect}
+          multiple
+        />
+        {busy
+          ? 'Загрузка…'
+          : mode === 'retouch'
+            ? 'Добавить ретушь'
+            : 'Прикрепить файлы'}
       </label>
       {error && <div className="text-sm text-red-600">{error}</div>}
-
       {!!jobs.length && (
         <div className="space-y-1 text-sm mt-[20px]">
           {jobs.map((j) => (
             <div key={j.id}>
               {j.file.name} — {j.state}
-              {j.state === 'uploaded' && !j.itemId}
               {j.error ? ` (${j.error})` : ''}
             </div>
           ))}
@@ -75,5 +107,3 @@ export function UploadAsset({ orderId, itemId }: Props) {
     </div>
   );
 }
-
-export default UploadAsset;

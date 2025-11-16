@@ -8,7 +8,7 @@ import {
   materialLabels,
   orientationLabels,
   colorModeLabels,
-} from '../utils/labels';
+} from '@utils';
 
 const MATERIALS: Material[] = [
   'CERMET',

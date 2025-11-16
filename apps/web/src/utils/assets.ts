@@ -17,10 +17,7 @@ export async function getJsonAsset<T>(url: string): Promise<T> {
   return r.json();
 }
 
-export async function getAssetUrl(
-  assetId: string,
-  opts?: { download?: boolean },
-) {
-  const q = opts?.download ? '?download=1' : '';
+export async function getAssetUrl(assetId: string, download?: boolean) {
+  const q = download ? '?download=1' : '';
   return api<{ url: string; expiresIn: number }>(`/assets/${assetId}/url${q}`);
 }

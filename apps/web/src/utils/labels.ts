@@ -8,6 +8,7 @@ import {
   OrientationEnum,
   HolePatternEnum,
   FinishEnum,
+  ApprovalStage,
 } from '@types';
 
 export const orderStatusLabels = {
@@ -66,6 +67,12 @@ export const orientationLabels = {
   [OrientationEnum.HORIZONTAL]: 'Горизонтально',
   [OrientationEnum.VERTICAL]: 'Вертикально',
 } satisfies Record<OrientationEnum, string>;
+
+export const approvalStageLabels = {
+  [ApprovalStage.APPROVED]: 'Согласовано',
+  [ApprovalStage.NOT_STARTED]: 'Согласование не начато',
+  [ApprovalStage.IN_PROGRESS]: 'Согласование в процессе',
+} satisfies Record<ApprovalStage, string>;
 
 export const labelOf =
   <T extends string>(map: Record<T, string>) =>

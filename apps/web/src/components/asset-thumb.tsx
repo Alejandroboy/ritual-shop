@@ -3,18 +3,19 @@ import React from 'react';
 import Image from 'next/image';
 import { getAssetUrl } from '@utils';
 
-type Props = {
+type AssetThumbProps = {
   asset: {
     id: string;
     originalName?: string | null;
     contentType?: string | null;
   };
-  size?: number; // px
+  size: number;
+  primary?: boolean;
 };
 
-export function AssetThumb({ asset, size = 160 }: Props) {
+export function AssetThumb({ asset, size = 160 }: AssetThumbProps) {
   const [url, setUrl] = React.useState<string | null>(null);
-  const isImage = (asset.contentType || '').startsWith('image/');
+  const [downloadUrl, setDownloadUrl] = React.useState<string>();
 
   React.useEffect(() => {
     let live = true;
@@ -23,6 +24,7 @@ export function AssetThumb({ asset, size = 160 }: Props) {
         if (live) setUrl(url);
       })
       .catch(() => {});
+    getAssetUrl(asset.id, true).then(({ url }) => setDownloadUrl(url));
     return () => {
       live = false;
     };
@@ -37,20 +39,21 @@ export function AssetThumb({ asset, size = 160 }: Props) {
     );
   }
 
-  return isImage ? (
-    <Image
-      src={url}
-      alt={asset.originalName || ''}
-      width={size}
-      height={size}
-      className="object-cover rounded"
-      unoptimized
-    />
-  ) : (
-    <a href={url} target="_blank" className="underline text-sm">
-      Открыть файл
-    </a>
+  return (
+    <>
+      <Image
+        src={url}
+        alt={asset.originalName || ''}
+        width={0}
+        height={0}
+        className="object-cover rounded"
+        style={{ width: size, height: 'auto' }}
+        unoptimized
+      />
+
+      <a href={downloadUrl} target="_blank" className="underline text-sm">
+        Скачать файл
+      </a>
+    </>
   );
 }
-
-export default AssetThumb;

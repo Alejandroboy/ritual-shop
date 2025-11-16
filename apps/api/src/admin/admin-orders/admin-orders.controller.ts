@@ -11,6 +11,7 @@ import { AdminGuard } from '../../common/admin.guard';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AdminOrdersService } from './admin-orders.service';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
+import { AdminOrdersQueryDto } from './dto/admin-orders.query.dto';
 
 @Controller('admin/orders')
 export class AdminOrdersPingController {
@@ -27,18 +28,15 @@ export class AdminOrdersController {
     private prisma: PrismaService,
     private readonly adminOrdersService: AdminOrdersService,
   ) {}
+
   @Get('_ping')
   ping() {
     return { ok: true, ts: Date.now() };
   }
 
   @Get()
-  async list(
-    @Query('status') status?: string,
-    @Query('q') q?: string,
-    @Query('page') page = '1',
-  ) {
-    return await this.adminOrdersService.getList(page, status, q);
+  async list(@Query() dto: AdminOrdersQueryDto) {
+    return this.adminOrdersService.getList(dto);
   }
 
   @Get(':id')

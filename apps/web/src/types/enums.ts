@@ -57,3 +57,9 @@ export enum OrderStatusEnum {
   SENT = 'SENT',
   READY = 'READY',
 }
+
+export enum ApprovalStage {
+  NOT_STARTED = 'NOT_STARTED',
+  IN_PROGRESS = 'IN_PROGRESS',
+  APPROVED = 'APPROVED',
+}
