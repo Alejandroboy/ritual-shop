@@ -28,24 +28,6 @@ export class TelegramService {
     }
   }
 
-  buildStatusText(order: { number: string; orderStatus: string; id: string }) {
-    const map: Record<string, string> = {
-      [OrderStatus.ACCEPTED]: 'Принят',
-      [OrderStatus.IN_PROGRESS]: 'В работе',
-      [OrderStatus.APPROVAL]: 'Согласование',
-      [OrderStatus.SENT]: 'Отправлен',
-      [OrderStatus.READY]: 'Готов',
-      [OrderStatus.CANCELLED]: 'Отменен',
-    };
-    const human = map[order.orderStatus] ?? order.orderStatus;
-    const link = `${process.env.PUBLIC_SITE_ORIGIN}/order/${order.id}`;
-    return [
-      `Заказ №${order.number}: статус <b>${human}</b>.`,
-      `Детали: ${link}`,
-      `Если есть вопросы — просто ответьте на это сообщение.`,
-    ].join('\n');
-  }
-
   async orderPlaced(chatId: string | null, orderNumber: string) {
     return this.sendMessage(
       chatId,
@@ -59,9 +41,25 @@ export class TelegramService {
     oldStatus: string,
     newStatus: string,
   ) {
+    const map: Record<string, string> = {
+      [OrderStatus.ACCEPTED]: 'Принят',
+      [OrderStatus.IN_PROGRESS]: 'В работе',
+      [OrderStatus.APPROVAL]: 'Согласование',
+      [OrderStatus.SENT]: 'Отправлен',
+      [OrderStatus.READY]: 'Готов',
+      [OrderStatus.CANCELLED]: 'Отменен',
+    };
+    const humanOldStatus = map[oldStatus] ?? oldStatus;
+    const humanNewStatus = map[newStatus] ?? newStatus;
+    if (newStatus === 'APPROVAL') {
+      return this.sendMessage(
+        telegramChatId,
+        `Статус заказа № ${orderNumber} изменился: ${humanOldStatus} → ${humanNewStatus}. Пожлуйста зайдите в личный кабинет и согласуйте ретушь`,
+      );
+    }
     return this.sendMessage(
       telegramChatId,
-      `Статус заказа № ${orderNumber} изменился: ${oldStatus} → ${newStatus}`,
+      `Статус заказа № ${orderNumber} изменился: ${humanOldStatus} → ${humanNewStatus}`,
     );
   }
 }

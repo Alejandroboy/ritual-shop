@@ -2,6 +2,7 @@ import * as nodemailer from 'nodemailer';
 import { Injectable, Logger } from '@nestjs/common';
 import { Transporter } from 'nodemailer';
 import { createTransport } from './create-transport';
+import { OrderStatus } from '@prisma/client';
 
 @Injectable()
 export class EmailService {
@@ -39,10 +40,26 @@ export class EmailService {
     oldStatus: string,
     newStatus: string,
   ) {
+    const map: Record<string, string> = {
+      [OrderStatus.ACCEPTED]: 'Принят',
+      [OrderStatus.IN_PROGRESS]: 'В работе',
+      [OrderStatus.APPROVAL]: 'Согласование',
+      [OrderStatus.SENT]: 'Отправлен',
+      [OrderStatus.READY]: 'Готов',
+      [OrderStatus.CANCELLED]: 'Отменен',
+    };
+    const humanOldStatus = map[oldStatus] ?? oldStatus;
+    const humanNewStatus = map[newStatus] ?? newStatus;
+    if (newStatus === 'APPROVAL')
+      return this.send(
+        to,
+        `Статус заказа №${orderNumber}: ${humanNewStatus}`,
+        `<p>Статус заказа <b>№${orderNumber}</b> изменился:</p><p><b>${humanOldStatus}</b> → <b>${humanNewStatus}</b></p> <p><b>Пожлуйста зайдите в личный кабинет и согласуйте ретушь</b></p>`,
+      );
     return this.send(
       to,
-      `Статус заказа №${orderNumber}: ${newStatus}`,
-      `<p>Статус заказа <b>№${orderNumber}</b> изменился:</p><p><b>${oldStatus}</b> → <b>${newStatus}</b></p>`,
+      `Статус заказа №${orderNumber}: ${humanNewStatus}`,
+      `<p>Статус заказа <b>№${orderNumber}</b> изменился:</p><p><b>${humanOldStatus}</b> → <b>${humanNewStatus}</b></p>`,
     );
   }
 }
