@@ -111,6 +111,9 @@ export class AdminOrdersService {
         customerEmail: true,
       },
     });
+
+    if (prevOrder?.orderStatus === dto.status) return;
+
     const user = await this.prisma.user.findUnique({
       where: { id: dto.userId },
       select: { notifyChannel: true, telegramChatId: true },

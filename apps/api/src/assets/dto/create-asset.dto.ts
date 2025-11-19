@@ -35,4 +35,8 @@ export class CreateAssetDto {
   @IsString()
   @IsOptional()
   originalName?: string | null;
+
+  @IsString()
+  @IsOptional()
+  userId: string;
 }

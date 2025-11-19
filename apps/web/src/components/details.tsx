@@ -3,14 +3,20 @@ import { useParams } from 'next/navigation';
 import React from 'react';
 import useSWR from 'swr';
 import { labelOf, approvalStageLabels, adminApiFetch } from '@utils';
-import { AssetThumb } from '../../../../../../components/asset-thumb';
-import { UploadAsset } from '../../../../../../components/upload-assets';
-import { AssetPair, fetchAssetPairs } from '../../../../../../utils/assets-api';
+import { AssetThumb } from './asset-thumb';
+import { UploadAsset } from './upload-assets';
+import { AssetPair, fetchAssetPairs } from '../utils/assets-api';
 
 const approvalStageLabel = labelOf<string>(approvalStageLabels);
 
-export default function OrderItemsDetails() {
-  const { id, itemId } = useParams<{ itemId: string; id: string }>();
+export function OrderItemsDetails({
+  itemId,
+  userId,
+}: {
+  itemId: string;
+  userId?: string;
+}) {
+  const { id } = useParams<{ itemId: string; id: string }>();
   const { data, mutate, isLoading } = useSWR(
     `/api/admin/orders/${id}/items/${itemId}`,
     (u) => adminApiFetch(u).then((r) => r.json()),
@@ -52,7 +58,7 @@ export default function OrderItemsDetails() {
           <b>Нужно согласование!</b>
         </p>
       )}
-      {pairs.map(({ original, retouches }) => (
+      {pairs.map(({ original, retouch }) => (
         <div key={original.id} className="rounded-2xl shadow p-4">
           <div className="mb-2">Оригинал</div>
           <AssetThumb
@@ -69,19 +75,28 @@ export default function OrderItemsDetails() {
           )}
           <div className="font-medium">Ретушь</div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-2">
-            {retouches.map((r) => (
+            {retouch && (
               <AssetThumb
-                key={r.id}
+                key={retouch.id}
                 asset={{
-                  id: r.id,
-                  originalName: r.originalName,
-                  contentType: r.contentType,
+                  id: retouch.id,
+                  originalName: retouch.originalName,
+                  contentType: retouch.contentType,
                 }}
                 size={140}
-                primary={r.primary}
+                primary={retouch.primary}
               />
-            ))}
+            )}
           </div>
+          {data.userActionNeeded && !data.managerActionNeeded && (
+            <span>Ожидание пользователя</span>
+          )}
+          {data.discussComment && !data.userActionNeeded && (
+            <div>
+              <div>Комментарий по ретуши:</div>
+              <div>{data.discussComment}</div>
+            </div>
+          )}
           {data.approved ? (
             <p>
               <b>Согласовано</b>
@@ -94,6 +109,7 @@ export default function OrderItemsDetails() {
                 mode="retouch"
                 sourceAssetId={original.id}
                 onDone={reload}
+                userId={userId}
               />
             </div>
           )}

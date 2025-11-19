@@ -15,7 +15,7 @@ export const orderStatusLabels = {
   [OrderStatusEnum.ACCEPTED]: 'Принят',
   [OrderStatusEnum.IN_PROGRESS]: 'В работе',
   [OrderStatusEnum.DRAFT]: 'Черновик',
-  [OrderStatusEnum.READY]: 'Отправлен',
+  [OrderStatusEnum.READY]: 'Готов',
   [OrderStatusEnum.SENT]: 'Отправлен',
   [OrderStatusEnum.APPROVAL]: 'Согласование',
   [OrderStatusEnum.CANCELLED]: 'Отменен',

@@ -8,6 +8,7 @@ import { OrderItemDetails, OrderStatusEnum } from '@types';
 import { labelOf, orderStatusLabels } from '@utils';
 import { useAppStore } from '@state';
 import Link from 'next/link';
+import { OrderItemsDetails } from '../../../../components/details';
 
 const orderLabel = labelOf<string>(orderStatusLabels);
 
@@ -18,6 +19,7 @@ export default function OrderDetail() {
   const { data, mutate } = useSWR(`/api/admin/orders/${id}`, (u) =>
     adminApiFetch(u).then((r) => r.json()),
   );
+  const [itemId, setItemId] = useState('');
   const [busy, setBusy] = useState(false);
   const [orderStatus, setOrderStatus] = useState<string>(data?.orderStatus);
   const [updatedOrderStatus, setUpdatedOrderStatus] = useState<string>(
@@ -29,6 +31,10 @@ export default function OrderDetail() {
   }, [me, fetchMe]);
 
   useEffect(() => {
+    setItemId(data?.items.id);
+  }, [data?.items]);
+
+  useEffect(() => {
     setOrderStatus(data?.orderStatus);
   }, [data?.orderStatus]);
 
@@ -37,6 +43,7 @@ export default function OrderDetail() {
   const orderStatusList = Object.values(OrderStatusEnum).filter(
     (item) => typeof item === 'string',
   );
+  console.log('data', data);
 
   async function setStatus(status: string) {
     setBusy(true);
@@ -87,44 +94,9 @@ export default function OrderDetail() {
         <p>{data?.customerPhone}</p>
       </div>
       <div>
-        <h2 className="font-semibold">Позиции</h2>
-        {data.items.map((it: OrderItemDetails) => (
-          <div key={it.id} className="border rounded-xl p-3 my-2">
-            <div className="text-sm">{it.templateCode}</div>
-            <div className="text-sm">{it.templateLabel}</div>
-            <div className="text-sm">Вид фона: {it.backgroundId}</div>
-            <div className="text-sm">Вид рамки: {it.frameId}</div>
-            <ul className="text-sm mt-2">
-              {it.assets.map((a) => (
-                <div key={a.id} className="text-xs">
-                  <AssetThumb asset={a} size={120} />
-                  <div className="mt-1 truncate max-w-[120px]">
-                    {a.originalName || 'файл'}
-                  </div>
-                  <div className="text-gray-500">
-                    {bytesToSize(a.size || 0)}
-                  </div>
-                </div>
-              ))}
-            </ul>
-            {it.retouchNeeded && (
-              <p>
-                <b> Нужна ретушь!</b>
-              </p>
-            )}
-            {it.approveNeeded && (
-              <p>
-                <b>Нужно согласование!</b>
-              </p>
-            )}
-            <Link
-              className="underline"
-              href={`/admin/orders/${id}/items/${it.id}`}
-            >
-              Открыть
-            </Link>
-          </div>
-        ))}
+        {itemId && (
+          <OrderItemsDetails itemId={itemId} userId={data?.customer?.id} />
+        )}
       </div>
     </div>
   );

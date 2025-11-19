@@ -39,20 +39,35 @@ export const OrderItem = ({
   approveNeeded,
   approvalStage,
   approved,
+  managerActionNeeded,
+  userActionNeeded,
 }: OrderItemProps) => {
   const updateApprove = useAppStore((s) => s.updateApprove);
-  const [approvedRetouch, setApprovedRetouch] = useState(false);
-
-  useEffect(() => {
-    if (approvedRetouch) {
-      updateApprove(orderId, id);
-    }
-  }, [approvedRetouch]);
+  const updateComment = useAppStore((s) => s.updateComment);
+  const [approveRetouch, setApproveRetouch] = useState(false);
+  const [disapproveRetouch, setDisapproveRetouch] = useState(false);
+  const [retouchComment, setRetouchComment] = useState('');
 
   function handleApproveClick(event: SyntheticEvent) {
     event.preventDefault();
-    setApprovedRetouch((prevState) => !prevState);
+    setApproveRetouch(true);
+    setDisapproveRetouch(false);
   }
+
+  function handleDisapproveClick(event: SyntheticEvent) {
+    event.preventDefault();
+    setDisapproveRetouch(true);
+    setApproveRetouch(false);
+  }
+
+  function handleApproveSubmit() {
+    return updateApprove(orderId, id);
+  }
+
+  function handleCommentSubmit() {
+    return updateComment(orderId, id, retouchComment);
+  }
+
   const [pairs, setPairs] = React.useState<AssetPair[]>([]);
 
   const reload = React.useCallback(async () => {
@@ -68,41 +83,119 @@ export const OrderItem = ({
   const birthDate = dateOfBirth ? new Date(dateOfBirth) : undefined;
   const deathDay = dateOfDeath ? new Date(dateOfDeath) : undefined;
 
-  const renderRetouches = (retouches: AssetView[]) => {
-    if (!retouches || retouches.length < 1) return;
-    return (
-      <>
-        <div className="font-medium">Ретушь</div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-2">
-          {retouches.map((r) => (
-            <AssetThumb
-              key={r.id}
-              asset={{
-                id: r.id,
-                originalName: r.originalName,
-                contentType: r.contentType,
-              }}
-              size={140}
-              primary={r.primary}
-            />
-          ))}
-        </div>
-
-        <div className="mb-[15px]">
-          {approved ? (
-            <p>Согласовано</p>
-          ) : (
-            <label className="cursor-pointer" htmlFor="checkbox-approve">
+  const renderCheckboxes = () => {
+    if (!approveRetouch && !disapproveRetouch)
+      return (
+        <div className="flex mt-[15px]">
+          <div className="cursor-pointer mr-[15px] p-[15px] border rounded-xl block w-fit">
+            <label htmlFor="checkbox-approve" className="cursor-pointer">
               <input
                 type="checkbox"
                 id="checkbox-approve"
-                checked={approved}
+                checked={approveRetouch}
                 onChange={handleApproveClick}
               />
               &nbsp;Согласен
             </label>
-          )}
+          </div>
+          <div className="cursor-pointer mr-[15px] p-[15px] border rounded-xl block w-fit">
+            <label htmlFor="checkbox-disapprove" className="cursor-pointer">
+              <input
+                type="checkbox"
+                id="checkbox-disapprove"
+                checked={disapproveRetouch}
+                onChange={handleDisapproveClick}
+              />
+              &nbsp;Есть замечания
+            </label>
+          </div>
         </div>
+      );
+
+    if (approveRetouch)
+      return (
+        <>
+          <div className="cursor-pointer mr-[15px] p-[15px] border rounded-xl block w-fit mt-[10px]">
+            <label htmlFor="checkbox-approve" className="cursor-pointer">
+              <input
+                type="checkbox"
+                id="checkbox-approve"
+                checked={approveRetouch}
+                onChange={handleApproveClick}
+              />
+              &nbsp;Согласен
+            </label>
+          </div>
+          <button
+            onClick={handleApproveSubmit}
+            className="border rounded-md cursor-pointer p-[5px] mt-[10px]"
+          >
+            Отправить
+          </button>
+        </>
+      );
+
+    if (disapproveRetouch)
+      return (
+        <>
+          <div className="cursor-pointer mr-[15px] mb-[15px] p-[15px] border rounded-xl block w-fit mt-[10px]">
+            <label htmlFor="checkbox-disapprove" className="cursor-pointer">
+              <input
+                type="checkbox"
+                id="checkbox-disapprove"
+                checked={disapproveRetouch}
+                onChange={handleDisapproveClick}
+              />
+              &nbsp;Есть замечания
+            </label>
+          </div>
+          <textarea
+            className="border rounded-md px-2 py-1 bg-white w-full mt-[10px]"
+            rows={3}
+            value={retouchComment}
+            onChange={(e) => setRetouchComment(e.target.value)}
+          />
+          <button
+            onClick={handleCommentSubmit}
+            className="border rounded-md cursor-pointer p-[5px] mt-[10px]"
+          >
+            Отправить
+          </button>
+        </>
+      );
+  };
+
+  const renderForms = () => {
+    if (approved) return <p>Согласовано</p>;
+    if (userActionNeeded)
+      return (
+        <div>
+          <p>Ожидает согласования</p>
+          {renderCheckboxes()}
+        </div>
+      );
+    if (managerActionNeeded) return <p>Ожиданние новой ретуши</p>;
+  };
+
+  const renderRetouch = (retouch: AssetView) => {
+    if (!retouch) return;
+    return (
+      <>
+        <div className="font-medium">Ретушь</div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-2 mb-[15px]">
+          <AssetThumb
+            key={retouch.id}
+            asset={{
+              id: retouch.id,
+              originalName: retouch.originalName,
+              contentType: retouch.contentType,
+            }}
+            size={140}
+            primary={retouch.primary}
+          />
+        </div>
+
+        {approveNeeded && <div className="mb-[15px] flex">{renderForms()}</div>}
       </>
     );
   };
@@ -135,7 +228,7 @@ export const OrderItem = ({
       )}
       {comment && <div className="text-sm text-gray-600">{comment}</div>}
 
-      {pairs.map(({ original, retouches }) => (
+      {pairs.map(({ original, retouch }) => (
         <div key={original.id} className="rounded-2xl shadow p-4">
           <div className="mb-2">Оригинал</div>
           <AssetThumb
@@ -150,7 +243,7 @@ export const OrderItem = ({
           {approveNeeded && approvalStage && (
             <p>{approvalStageLabel(approvalStage)}</p>
           )}
-          {renderRetouches(retouches)}
+          {renderRetouch(retouch)}
         </div>
       ))}
     </div>

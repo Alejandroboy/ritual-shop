@@ -86,7 +86,7 @@ export default function AccountPage() {
         {myOrders.length === 0 ? (
           <div className="text-sm text-gray-600">Нет заказов</div>
         ) : (
-          myOrders.map((order) => {
+          myOrders.map((order, index) => {
             const createdAt = new Date(order.createdAt);
             return (
               <div key={order.id} className="border rounded-xl p-4 space-y-3">
@@ -94,11 +94,7 @@ export default function AccountPage() {
                   <div>Заказ от {createdAt.toLocaleString('ru-RU')}</div>
                   <div>Статус: {orderLabel(order.orderStatus)}</div>
                 </div>
-                {order.items.map((item) => {
-                  return (
-                    <OrderItem orderId={order.id} {...item} key={item.id} />
-                  );
-                })}
+                <OrderItem orderId={order.id} {...order.items} />
               </div>
             );
           })

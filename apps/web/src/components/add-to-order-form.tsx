@@ -115,28 +115,29 @@ export default function AddToOrderForm({ tpl }: Props) {
   const renderCheckboxes = () => {
     if (assetUploaded.length) {
       return (
-        <div className="mb-[15px]">
-          <label
-            className="mr-[15px] cursor-pointer"
-            htmlFor="checkbox-retouch"
-          >
-            <input
-              type="checkbox"
-              id="checkbox-retouch"
-              checked={retouchNeeded}
-              onChange={handleRetouchClick}
-            />
-            Нужна ретушь
-          </label>
-          <label className="cursor-pointer" htmlFor="checkbox-approve">
-            <input
-              type="checkbox"
-              id="checkbox-approve"
-              checked={approveNeeded}
-              onChange={handleApproveClick}
-            />
-            Нужно согласование
-          </label>
+        <div className="mb-[15px] flex">
+          <div className="mr-[15px] cursor-pointer p-[15px] border rounded-xl block w-fit">
+            <label className="cursor-pointer" htmlFor="checkbox-retouch">
+              <input
+                type="checkbox"
+                id="checkbox-retouch"
+                checked={retouchNeeded}
+                onChange={handleRetouchClick}
+              />
+              &nbsp;Нужна ретушь
+            </label>
+          </div>
+          <div className="cursor-pointer p-[15px] border rounded-xl block w-fit">
+            <label className="cursor-pointer" htmlFor="checkbox-approve">
+              <input
+                type="checkbox"
+                id="checkbox-approve"
+                checked={approveNeeded}
+                onChange={handleApproveClick}
+              />
+              &nbsp;Нужно согласование
+            </label>
+          </div>
         </div>
       );
     }

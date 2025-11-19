@@ -10,6 +10,7 @@ type Props = {
   mode?: Mode;
   sourceAssetId?: string;
   onDone?: () => void;
+  userId?: string;
 };
 
 export function UploadAsset({
@@ -18,6 +19,7 @@ export function UploadAsset({
   mode = 'original',
   sourceAssetId,
   onDone,
+  userId,
 }: Props) {
   const enqueueFiles = useAppStore((s) => s.enqueueFiles);
   const ensureOrder = useAppStore((s) => s.ensureOrder);
@@ -64,6 +66,7 @@ export function UploadAsset({
     enqueueFiles(ensuredOrderId, itemId || null, files, {
       mode,
       retouchOf: sourceAssetId,
+      userId,
     });
 
     onDone?.();

@@ -308,7 +308,7 @@ model Order {
   orderNumber   String? @unique
   currency   Currency @default(RUB)
 
-  items OrderItem[]
+  items OrderItem?
 
   customerId String?
   customer   User?    @relation("CustomerOrders", fields: [customerId], references: [id])
@@ -328,7 +328,7 @@ model Order {
 /// Позиция заказа (конкретный шаблон с выбранными опциями)
 model OrderItem {
   id         String @id @default(cuid())
-  orderId    String
+  orderId    String @unique
   templateId String
 
   // выбранные параметры
@@ -338,6 +338,7 @@ model OrderItem {
   backgroundId Int?
   finish       Finish?
   comment      String?
+  discussComment      String?
   approveNeeded Boolean   @default(false)
   retouchNeeded Boolean   @default(false)
   approvalStage ApprovalStage @default(NOT_STARTED)
@@ -362,6 +363,9 @@ model OrderItem {
   firstName String?
   middleName String?
   lastName String?
+
+  managerActionNeeded Boolean?
+  userActionNeeded Boolean?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

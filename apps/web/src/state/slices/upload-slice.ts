@@ -28,6 +28,7 @@ export type UploadJob = {
 
   mode?: Mode;
   retouchOf?: Id | null;
+  userId: string | null;
 };
 
 export type UploadsSlice = {
@@ -39,7 +40,7 @@ export type UploadsSlice = {
     orderId: Id,
     itemId: Id | null,
     files: File[],
-    opts?: { mode?: Mode; retouchOf?: Id },
+    opts?: { mode?: Mode; retouchOf?: Id; userId?: string },
   ) => void;
   attachPendingToItem: (orderId: Id, itemId: Id) => void;
   clearFinished: () => void;
@@ -78,6 +79,7 @@ export const createUploadsSlice: UploadsCreator = (
       error: null,
       mode: opts?.mode ?? 'original',
       retouchOf: opts?.retouchOf ?? null,
+      userId: opts?.userId ?? null,
     }));
     set((s) => ({ queue: [...s.queue, ...jobs] }));
     get()._pump();
@@ -169,7 +171,7 @@ export const createUploadsSlice: UploadsCreator = (
         const body = isRetouch
           ? {
               storage: 's3',
-              sourceAssetId: current.retouchOf, // 👈 ключевой параметр
+              sourceAssetId: current.retouchOf,
               bucket: current.bucket,
               key: current.key,
               contentType: current.file.type || undefined,
@@ -177,6 +179,7 @@ export const createUploadsSlice: UploadsCreator = (
               etag: current.etag,
               originalName: current.file.name,
               filename: current.file.name,
+              userId: current.userId,
             }
           : {
               storage: 's3',

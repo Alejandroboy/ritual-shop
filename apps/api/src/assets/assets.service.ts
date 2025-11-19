@@ -159,17 +159,18 @@ export class AssetsService {
         'Retouch can be created only from ORIGINAL asset',
       );
     }
-
-    await this.prisma.orderItemAsset.updateMany({
+    await this.prisma.orderItemAsset.deleteMany({
       where: { derivedFromId: src.id },
-      data: { primary: false },
     });
 
     await this.ordersItemsService.changeApprovalStage(
       orderId,
       itemId,
       ApprovalStage.IN_PROGRESS,
+      dto.userId,
     );
+
+    await this.ordersItemsService.changeUserActionNeeded(orderId, itemId);
 
     return this.prisma.orderItemAsset.create({
       data: {
@@ -201,21 +202,29 @@ export class AssetsService {
       const originals = assets.filter((a) => a.stage === 'ORIGINAL');
       const retouched = assets.filter((a) => a.stage === 'RETOUCHED');
 
-      const byOriginal = new Map<string, OrderItemAsset[]>();
-      for (const a of retouched) {
-        if (!a.derivedFromId) continue;
-        const list = byOriginal.get(a.derivedFromId) ?? [];
-        list.push(a);
-        byOriginal.set(a.derivedFromId, list);
+      const byOriginal = new Map<string, OrderItemAsset | null>();
+
+      for (const r of retouched) {
+        if (!r.derivedFromId) continue;
+
+        const existing = byOriginal.get(r.derivedFromId);
+
+        if (!existing) {
+          byOriginal.set(r.derivedFromId, r);
+        } else if (!existing.primary && r.primary) {
+          byOriginal.set(r.derivedFromId, r);
+        } else {
+        }
       }
 
       return Promise.all(
-        originals.map(async (o) => ({
-          original: await this.toDtoWithUrls(o),
-          retouches: await Promise.all(
-            (byOriginal.get(o.id) ?? []).map((r) => this.toDtoWithUrls(r)),
-          ),
-        })),
+        originals.map(async (o) => {
+          const r = byOriginal.get(o.id) ?? null;
+          return {
+            original: await this.toDtoWithUrls(o),
+            retouch: r ? await this.toDtoWithUrls(r) : null,
+          };
+        }),
       );
     }
 

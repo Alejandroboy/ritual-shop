@@ -20,6 +20,7 @@ export type OrderSlice = {
   ensureOrder: () => Promise<Id>;
   clearDraft: () => void;
   updateApprove: (orderId: string, itemId: string) => void;
+  updateComment: (orderId: string, itemId: string, text: string) => void;
 
   // позиции
   addItem: (payload: {
@@ -86,6 +87,15 @@ export const createOrderSlice: OrderCreator = (set, get, _api): OrderSlice => ({
 
   updateApprove: async (orderId, itemId) => {
     return api<OrderDetails>(`/orders/${orderId}/items/${itemId}/approve`);
+  },
+
+  updateComment: async (orderId, itemId, text) => {
+    return api(`/orders/${orderId}/items/${itemId}/discus`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ text: text }),
+    });
   },
 
   getOrderDetails: async () => {

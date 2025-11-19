@@ -83,7 +83,7 @@ const mapOrder = (o: CustomerOrder): MyOrder => ({
   createdAt: o.createdAt,
   orderStatus: o.orderStatus,
   totalMinor: o.totalMinor,
-  items: Array.isArray(o.items) ? o.items.map(mapItem) : [],
+  items: o.items,
 });
 
 type UserResponse = {
@@ -107,6 +107,7 @@ export const createOrdersSlice: OrdersCreator = (
         credentials: 'include',
       });
       const ordersRaw = resp?.user?.customerOrders ?? [];
+      console.log('resp?.user?.customerOrders', resp?.user?.customerOrders);
       const orders = ordersRaw.map(mapOrder);
       set({ myOrders: orders });
       return orders;

@@ -35,4 +35,6 @@ export type Order = {
   createdAt: Date;
   customerEmail: string;
   customerName: string;
+  customerPhone: string;
+  orderNumber: string;
 };

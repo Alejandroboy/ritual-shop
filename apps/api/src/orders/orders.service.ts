@@ -131,31 +131,33 @@ export class OrdersService {
 
     if (!order) throw new NotFoundException('Order not found');
 
-    const items = await Promise.all(
-      order.items.map(async (it) => ({
-        id: it.id,
-        templateLabel: (it as any).templateLabel, // подставь реальное поле
-        size: (it as any).size ? { label: (it as any).size.label } : null,
-        approveNeeded: (it as any).approveNeeded
-          ? (it as any).approveNeeded
-          : null,
-        retouchNeeded: (it as any).size ? (it as any).retouchNeeded : null,
-        comment: (it as any).comment ?? null,
-        dateOfBirth: toDateString(it.dateOfBirth),
-        dateOfDeath: toDateString(it.dateOfDeath),
-        firstName: it.firstName ?? null,
-        middleName: it.middleName ?? null,
-        lastName: it.lastName ?? null,
-        sizeId: it.sizeId,
-        holePattern: it.holePattern,
-        frameId: it.frameId,
-        backgroundId: it.backgroundId,
-        finish: it.finish,
-        assets: await Promise.all(
-          it.assets.map((a) => this.assets.toDtoWithUrls(a)),
-        ),
-      })),
-    );
+    const rawItem = order.items;
+
+    const items = rawItem
+      ? [
+          {
+            id: rawItem.id,
+            templateLabel: rawItem.templateLabel,
+            size: rawItem.size ? { label: rawItem.size.label } : null,
+            approveNeeded: rawItem.approveNeeded ?? null,
+            retouchNeeded: rawItem.retouchNeeded ?? null,
+            comment: rawItem.comment ?? null,
+            dateOfBirth: toDateString(rawItem.dateOfBirth),
+            dateOfDeath: toDateString(rawItem.dateOfDeath),
+            firstName: rawItem.firstName ?? null,
+            middleName: rawItem.middleName ?? null,
+            lastName: rawItem.lastName ?? null,
+            sizeId: rawItem.sizeId,
+            holePattern: rawItem.holePattern,
+            frameId: rawItem.frameId,
+            backgroundId: rawItem.backgroundId,
+            finish: rawItem.finish,
+            assets: await Promise.all(
+              rawItem.assets.map((a) => this.assets.toDtoWithUrls(a)),
+            ),
+          },
+        ]
+      : [];
 
     return { id: order.id, items };
   }
@@ -173,17 +175,19 @@ export class OrdersService {
     return Promise.all(
       orders.map(async (o) => ({
         id: o.id,
-        items: await Promise.all(
-          o.items.map(async (it) => ({
-            id: it.id,
-            templateLabel: (it as any).templateLabel,
-            size: (it as any).size ? { label: (it as any).size.label } : null,
-            comment: (it as any).comment ?? null,
-            assets: await Promise.all(
-              it.assets.map((a) => this.assets.toDtoWithUrls(a)),
-            ),
-          })),
-        ),
+        items: o.items
+          ? [
+              {
+                id: o.items.id,
+                templateLabel: o.items.templateLabel,
+                size: o.items.size ? { label: o.items.size.label } : null,
+                comment: o.items.comment ?? null,
+                assets: await Promise.all(
+                  o.items.assets.map((a) => this.assets.toDtoWithUrls(a)),
+                ),
+              },
+            ]
+          : [],
       })),
     );
   }
@@ -541,8 +545,7 @@ export class OrdersService {
       include: { items: true },
     });
     if (!order) throw new NotFoundException('Order not found 4');
-    if (!order.items.length)
-      throw new BadRequestException('Order has no items');
+    if (!order.items) throw new BadRequestException('Order has no items');
 
     const datePrefix = todayPrefix();
     const result = await this.prisma.$transaction(async (tx) => {
@@ -578,20 +581,20 @@ export class OrdersService {
     });
 
     // Письма
-    try {
-      await this.mailer.sendOrderCreatedToManager(result);
-      if (result.customerEmail)
-        await this.mailer.sendOrderCreatedToClient(result);
-    } catch (e) {
-      // логируем, но не валим чекаут
-      console.error('MAIL_ERROR', e);
-    }
-    if (result.customerEmail) {
-      await this.email.orderPlaced(
-        result.customerEmail || '',
-        result.number || '',
-      );
-    }
+    // try {
+    //   await this.mailer.sendOrderCreatedToManager(result);
+    //   if (result.customerEmail)
+    //     await this.mailer.sendOrderCreatedToClient(result);
+    // } catch (e) {
+    //   // логируем, но не валим чекаут
+    //   console.error('MAIL_ERROR', e);
+    // }
+    // if (result.customerEmail) {
+    //   await this.email.orderPlaced(
+    //     result.customerEmail || '',
+    //     result.number || '',
+    //   );
+    // }
 
     if (user?.notifyChannel === 'TELEGRAM') {
       await this.telegram.orderPlaced(user.telegramChatId, result.number);
@@ -601,6 +604,15 @@ export class OrdersService {
   }
 
   async changeOrderStatus(id: string, dto: ChangeOrderStatusDto) {
+    const order = await this.prisma.order.findUnique({
+      where: { id },
+      select: {
+        orderStatus: true,
+      },
+    });
+
+    if (order?.orderStatus === dto.status) return;
+
     return this.prisma.order.update({
       where: { id },
       data: { orderStatus: dto.status },
