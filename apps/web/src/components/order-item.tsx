@@ -24,6 +24,7 @@ interface OrderItemProps {
   approved?: boolean;
   managerActionNeeded?: boolean;
   userActionNeeded?: boolean;
+  userId: string;
 }
 
 const approvalStageLabel = labelOf<string>(approvalStageLabels);
@@ -64,11 +65,11 @@ export const OrderItem = ({
   }
 
   function handleApproveSubmit() {
-    return updateApprove(orderId, id, userId);
+    return updateApprove(orderId, userId, id);
   }
 
   function handleCommentSubmit() {
-    return updateComment(orderId, id, retouchComment);
+    return updateComment(orderId, retouchComment, id);
   }
 
   const [pairs, setPairs] = React.useState<AssetPair[]>([]);

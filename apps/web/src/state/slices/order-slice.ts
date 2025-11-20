@@ -19,8 +19,8 @@ export type OrderSlice = {
   setDraft: (id: Id | null) => void;
   ensureOrder: () => Promise<Id>;
   clearDraft: () => void;
-  updateApprove: (orderId: string, itemId: string, userId: string) => void;
-  updateComment: (orderId: string, itemId: string, text: string) => void;
+  updateApprove: (orderId: string, userId: string, itemId?: string) => void;
+  updateComment: (orderId: string, text: string, itemId?: string) => void;
 
   // позиции
   addItem: (payload: {
