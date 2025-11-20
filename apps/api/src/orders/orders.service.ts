@@ -577,6 +577,26 @@ export class OrdersService {
         },
       });
     });
+
+    const item = result.items;
+    if (item?.assets?.length) {
+      await Promise.all(
+        item.assets.map((asset) => {
+          const ext =
+            asset.originalName?.split('.').pop()?.toLowerCase() ||
+            asset.contentType?.split('/').pop() ||
+            'bin';
+
+          const fileName = `${result.orderNumber}.${ext}`;
+
+          return this.prisma.orderItemAsset.update({
+            where: { id: asset.id },
+            data: { fileName },
+          });
+        }),
+      );
+    }
+
     const user = await this.prisma.user.findUnique({
       where: { id: dto.userId },
       select: {
@@ -591,7 +611,6 @@ export class OrdersService {
       if (result.customerEmail)
         await this.mailer.sendOrderCreatedToClient(result);
     } catch (e) {
-      // логируем, но не валим чекаут
       console.error('MAIL_ERROR', e);
     }
     if (result.customerEmail) {

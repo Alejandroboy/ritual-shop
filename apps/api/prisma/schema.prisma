@@ -457,6 +457,8 @@ model OrderItemAsset {
   primary      Boolean        @default(false)
 
   originalName String?
+  fileName     String?
+
   createdAt    DateTime      @default(now())
 
   @@index([orderItemId, createdAt])

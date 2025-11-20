@@ -38,5 +38,9 @@ export class CreateAssetDto {
 
   @IsString()
   @IsOptional()
+  fileName?: string;
+
+  @IsString()
+  @IsOptional()
   userId: string;
 }

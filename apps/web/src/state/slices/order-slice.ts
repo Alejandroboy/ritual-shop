@@ -19,8 +19,24 @@ export type OrderSlice = {
   setDraft: (id: Id | null) => void;
   ensureOrder: () => Promise<Id>;
   clearDraft: () => void;
-  updateApprove: (orderId: string, userId: string, itemId?: string) => void;
-  updateComment: (orderId: string, text: string, itemId?: string) => void;
+  updateApprove: ({
+    orderId,
+    userId,
+    itemId,
+  }: {
+    orderId: string;
+    userId: string;
+    itemId?: string;
+  }) => void;
+  updateComment: ({
+    orderId,
+    text,
+    itemId,
+  }: {
+    orderId: string;
+    text: string;
+    itemId?: string;
+  }) => void;
 
   // позиции
   addItem: (payload: {
@@ -64,7 +80,6 @@ export const createOrderSlice: OrderCreator = (set, get, _api): OrderSlice => ({
 
   setDraft: (id) => set({ draftOrderId: id }),
 
-  // создаём черновой заказ, если ещё нет
   ensureOrder: async () => {
     const existing = get().draftOrderId as Id | null;
     if (existing) return existing;
@@ -85,7 +100,7 @@ export const createOrderSlice: OrderCreator = (set, get, _api): OrderSlice => ({
     });
   },
 
-  updateApprove: async (orderId, itemId, userId) => {
+  updateApprove: async ({ orderId, itemId, userId }) => {
     return api<OrderDetails>(`/orders/${orderId}/items/${itemId}/approve`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -94,7 +109,7 @@ export const createOrderSlice: OrderCreator = (set, get, _api): OrderSlice => ({
     });
   },
 
-  updateComment: async (orderId, itemId, text) => {
+  updateComment: async ({ orderId, itemId, text }) => {
     return api(`/orders/${orderId}/items/${itemId}/discus`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },

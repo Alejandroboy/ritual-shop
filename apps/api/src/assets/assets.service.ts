@@ -24,6 +24,7 @@ export type AssetDto = {
   primary: boolean; // NEW
   derivedFromId?: string | null; // NEW
   originalName?: string | null;
+  fileName?: string | null;
   contentType?: string | null;
   size?: number | null;
   viewUrl: string;
@@ -72,6 +73,7 @@ export class AssetsService {
         primary: a.primary, // NEW
         derivedFromId: a.derivedFromId, // NEW
         originalName: a.originalName,
+        fileName: a.fileName,
         contentType: a.contentType,
         size: a.size ?? null,
         viewUrl: path,
@@ -86,13 +88,32 @@ export class AssetsService {
       a.key,
     );
 
+    const ext =
+      a.fileName?.split('.').pop()?.toLowerCase() ||
+      a.originalName?.split('.').pop()?.toLowerCase() ||
+      contentType?.split('/').pop() ||
+      'bin';
+
+    let baseName =
+      a.fileName?.replace(/\.[^.]+$/, '') ||
+      a.originalName?.replace(/\.[^.]+$/, '') ||
+      'file';
+
+    if (a.stage === 'RETOUCHED') {
+      if (!baseName.endsWith('_retouch')) {
+        baseName = `${baseName}_retouch`;
+      }
+    }
+
+    const downloadName = `${baseName}.${ext}`;
+
     const view = await this.s3.signGet(
       { bucket: a.bucket, key: a.key },
       { contentType },
     );
     const dl = await this.s3.signGet(
       { bucket: a.bucket, key: a.key },
-      { downloadName: a.originalName ?? 'file', contentType },
+      { downloadName, contentType },
     );
 
     return {
@@ -102,6 +123,7 @@ export class AssetsService {
       primary: a.primary, // NEW
       derivedFromId: a.derivedFromId, // NEW
       originalName: a.originalName,
+      fileName: a.fileName,
       contentType,
       size: a.size ?? null,
       viewUrl: view.url,
@@ -129,6 +151,7 @@ export class AssetsService {
         size: dto.size ?? null,
         etag: dto.etag ?? null,
         originalName: dto.originalName ?? null,
+        fileName: dto.fileName ?? dto.originalName ?? null,
         stage: 'ORIGINAL',
         primary: false,
       },
@@ -172,6 +195,18 @@ export class AssetsService {
 
     await this.ordersItemsService.changeUserActionNeeded(orderId, itemId);
 
+    const item = await this.prisma.orderItem.findUnique({
+      where: { id: itemId },
+      select: { order: { select: { orderNumber: true } } },
+    });
+    const orderNumber = item?.order.orderNumber ?? orderId;
+    const ext =
+      dto.originalName?.split('.').pop()?.toLowerCase() ||
+      dto.contentType?.split('/').pop() ||
+      'bin';
+
+    const filename = `${orderNumber}-retouch.${ext}`;
+
     return this.prisma.orderItemAsset.create({
       data: {
         orderItemId: src.orderItemId,
@@ -186,6 +221,7 @@ export class AssetsService {
         size: dto.size ?? null,
         etag: dto.etag ?? null,
         originalName: dto.originalName ?? null,
+        fileName: filename,
       },
     });
   }

@@ -65,11 +65,11 @@ export const OrderItem = ({
   }
 
   function handleApproveSubmit() {
-    return updateApprove(orderId, userId, id);
+    return updateApprove({ orderId, userId, itemId: id });
   }
 
   function handleCommentSubmit() {
-    return updateComment(orderId, retouchComment, id);
+    return updateComment({ orderId, text: retouchComment, itemId: id });
   }
 
   const [pairs, setPairs] = React.useState<AssetPair[]>([]);
@@ -204,7 +204,7 @@ export const OrderItem = ({
     );
   };
   return (
-    <div key={id} className="space-y-2">
+    <div className="space-y-2">
       <div className="font-medium">{templateLabel}</div>
       <div className="text-sm text-gray-600">{sizeLabel}</div>
       {firstName && <div className="text-sm text-gray-600">{firstName}</div>}
