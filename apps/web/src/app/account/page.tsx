@@ -94,7 +94,11 @@ export default function AccountPage() {
                   <div>Заказ от {createdAt.toLocaleString('ru-RU')}</div>
                   <div>Статус: {orderLabel(order.orderStatus)}</div>
                 </div>
-                <OrderItem orderId={order.id} {...order.items} />
+                <OrderItem
+                  userId={me?.id}
+                  orderId={order.id}
+                  {...order.items}
+                />
               </div>
             );
           })

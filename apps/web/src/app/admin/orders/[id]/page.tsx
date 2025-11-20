@@ -2,13 +2,12 @@
 import { useParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import useSWR from 'swr';
-import { adminApiFetch, bytesToSize } from '@utils';
-import { AssetThumb } from '../../../../components/asset-thumb';
-import { OrderItemDetails, OrderStatusEnum } from '@types';
+import { adminApiFetch } from '@utils';
+import { OrderStatusEnum } from '@types';
 import { labelOf, orderStatusLabels } from '@utils';
 import { useAppStore } from '@state';
-import Link from 'next/link';
 import { OrderItemsDetails } from '../../../../components/details';
+import { DownloadBlankButton } from '../../../../components/download-blank-button';
 
 const orderLabel = labelOf<string>(orderStatusLabels);
 
@@ -62,6 +61,9 @@ export default function OrderDetail() {
       <div className="space-y-0 flex flex-wrap justify-between max-w-500">
         <p className="px-3 py-1 border rounded-xl mb-4 mr-8">
           Текущий статус: {orderLabel(orderStatus)}
+        </p>
+        <p>
+          <DownloadBlankButton orderId={id} />
         </p>
       </div>
       <div className="space-y-0">

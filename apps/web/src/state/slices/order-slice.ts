@@ -19,7 +19,7 @@ export type OrderSlice = {
   setDraft: (id: Id | null) => void;
   ensureOrder: () => Promise<Id>;
   clearDraft: () => void;
-  updateApprove: (orderId: string, itemId: string) => void;
+  updateApprove: (orderId: string, itemId: string, userId: string) => void;
   updateComment: (orderId: string, itemId: string, text: string) => void;
 
   // позиции
@@ -85,8 +85,13 @@ export const createOrderSlice: OrderCreator = (set, get, _api): OrderSlice => ({
     });
   },
 
-  updateApprove: async (orderId, itemId) => {
-    return api<OrderDetails>(`/orders/${orderId}/items/${itemId}/approve`);
+  updateApprove: async (orderId, itemId, userId) => {
+    return api<OrderDetails>(`/orders/${orderId}/items/${itemId}/approve`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ userId: userId }),
+    });
   },
 
   updateComment: async (orderId, itemId, text) => {

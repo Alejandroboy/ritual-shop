@@ -98,7 +98,7 @@ export async function removeAsset(
   if (!res.ok) throw new Error('Failed to remove asset');
 }
 
-export type AssetPair = { original: AssetView; retouches: AssetView[] };
+export type AssetPair = { original: AssetView; retouch: AssetView };
 
 export async function fetchAssetPairs(orderId: string, itemId: string) {
   const res = await fetch(

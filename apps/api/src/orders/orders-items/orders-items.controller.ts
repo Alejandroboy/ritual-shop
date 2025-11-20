@@ -31,11 +31,11 @@ export class OrdersItemsController {
     return this.ordersItemsService.getById(id, itemId);
   }
 
-  @Get(':itemId/approve')
+  @Patch(':itemId/approve')
   approve(
     @Param('itemId') itemId: string,
     @Param('id') id: string,
-    dto: ApproveDto,
+    @Body() dto: ApproveDto,
   ) {
     return this.ordersItemsService.updateApproval(id, itemId, dto);
   }

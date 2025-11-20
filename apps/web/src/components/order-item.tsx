@@ -9,25 +9,28 @@ import { useAppStore } from '@state';
 interface OrderItemProps {
   orderId: string;
   comment?: string | null;
-  id: string;
-  templateLabel: string;
+  id?: string;
+  templateLabel?: string;
   backgroundId?: string;
   frameId?: string;
-  dateOfBirth: string;
-  dateOfDeath: string;
+  dateOfBirth?: string;
+  dateOfDeath?: string;
   sizeLabel?: string | null;
-  firstName: string;
-  middleName: string;
-  lastName: string;
-  approveNeeded: boolean;
-  approvalStage: string;
-  approved: boolean;
+  firstName?: string;
+  middleName?: string;
+  lastName?: string;
+  approveNeeded?: boolean;
+  approvalStage?: string;
+  approved?: boolean;
+  managerActionNeeded?: boolean;
+  userActionNeeded?: boolean;
 }
 
 const approvalStageLabel = labelOf<string>(approvalStageLabels);
 export const OrderItem = ({
   orderId,
   id,
+  userId,
   dateOfBirth,
   dateOfDeath,
   templateLabel,
@@ -61,7 +64,7 @@ export const OrderItem = ({
   }
 
   function handleApproveSubmit() {
-    return updateApprove(orderId, id);
+    return updateApprove(orderId, id, userId);
   }
 
   function handleCommentSubmit() {
