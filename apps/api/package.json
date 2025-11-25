@@ -28,6 +28,7 @@
     "prisma:migrate": "prisma migrate dev --schema prisma/schema.prisma",
     "prisma:seed": "prisma db seed --schema prisma/schema.prisma",
     "prisma:seed-group": "node prisma/seed.group.ts",
+    "prisma:seed-admin": "node prisma/seed-admin.ts",
     "prisma:deploy": "prisma migrate deploy",
     "prisma:seed-once": "node prisma/seed-once.js"
   },
