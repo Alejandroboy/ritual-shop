@@ -6,7 +6,7 @@ import {
   materialLabels,
   orientationLabels,
   shapeLabels,
-} from '../utils/labels';
+} from '@utils';
 
 export default function TemplateCard({ t }: { t: TemplateListItem }) {
   const shapeLabel = labelOf<string>(shapeLabels);
@@ -16,7 +16,7 @@ export default function TemplateCard({ t }: { t: TemplateListItem }) {
   return (
     <div className="rounded-xl border bg-white p-4 flex flex-col gap-2">
       <div className="text-sm text-neutral-500">{t.code}</div>
-      <div className="font-medium">{t.label}</div>
+      <div className="font-medium">{t.fullTitle}</div>
       <div className="text-xs text-neutral-600">
         {materialLabel(t.material)} · {shapeLabel(t.shape)}
         {t.orientation ? ` · ${orientationLabel(t.orientation)}` : ''} ·{' '}

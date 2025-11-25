@@ -18,7 +18,7 @@ const MATERIALS: Material[] = [
   'GROWTH_PHOTOCERAMICS',
   'ENGRAVING',
 ];
-const SHAPES: Shape[] = ['RECTANGLE', 'OVAL', 'ARCH'];
+const SHAPES: Shape[] = ['RECTANGLE', 'OVAL', 'ARCH', 'STAR', 'HEART'];
 const ORIENTS: Orientation[] = ['VERTICAL', 'HORIZONTAL'];
 const COLORS: ColorMode[] = ['BW', 'COLOR'];
 

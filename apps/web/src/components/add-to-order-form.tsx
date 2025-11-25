@@ -4,7 +4,7 @@ import type { TemplateDetails } from '@types';
 import { UploadAsset } from './upload-assets';
 import { useAppStore } from '@state';
 import { useRouter } from 'next/navigation';
-import { holePatternLabels, labelOf, finishLabels } from '@utils';
+import { finishLabels, holePatternLabels, labelOf } from '@utils';
 
 type Props = { tpl: TemplateDetails };
 
@@ -69,9 +69,8 @@ export default function AddToOrderForm({ tpl }: Props) {
     tpl.variants.some((v) => v.holePattern === holePattern && v.finishRequired);
 
   const finishOptions = useMemo(() => {
-    const byVariant = tpl.variants.find((v) => v.finishRequired);
-    return byVariant?.finishes?.map((f) => f) ?? [];
-  }, [holePattern, tpl.variants]);
+    return tpl.allowedFinishes.map((v) => v.finish);
+  }, [holePattern, tpl.allowedFinishes]);
 
   async function submit() {
     const orderId = await ensureOrder();
@@ -169,6 +168,9 @@ export default function AddToOrderForm({ tpl }: Props) {
       return <div>Пожалуйста загрузите другое изображение</div>;
     }
   };
+  const availableSizes = tpl.allowedSizes.filter((item) =>
+    item.availableHolePattern.includes(holePattern),
+  );
 
   return (
     <div className="border rounded-xl p-4 bg-white space-y-3">
@@ -182,10 +184,9 @@ export default function AddToOrderForm({ tpl }: Props) {
               setSizeId(e.target.value ? Number(e.target.value) : '')
             }
           >
-            <option value="">—</option>
-            {tpl.sizes.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.label}
+            {availableSizes.map((s) => (
+              <option key={s.size.id} value={s.size.id}>
+                {s.size.label}
               </option>
             ))}
           </select>
@@ -198,7 +199,6 @@ export default function AddToOrderForm({ tpl }: Props) {
             value={holePattern}
             onChange={(e) => setHolePattern(e.target.value || '')}
           >
-            <option value="">—</option>
             {tpl.holes.map((h) => (
               <option key={h} value={h}>
                 {holePatternLabel(h)}
@@ -217,7 +217,6 @@ export default function AddToOrderForm({ tpl }: Props) {
                 setFrameId(e.target.value ? Number(e.target.value) : '')
               }
             >
-              <option value="">—</option>
               {tpl.frames.map((f) => (
                 <option key={f.id} value={f.id}>
                   Рамка {f.code}
@@ -237,7 +236,6 @@ export default function AddToOrderForm({ tpl }: Props) {
                 setBackgroundId(e.target.value ? Number(e.target.value) : '')
               }
             >
-              <option value="">—</option>
               {tpl.backgrounds.map((b) => (
                 <option key={b.id} value={b.id}>
                   Фон {b.code}
@@ -255,15 +253,15 @@ export default function AddToOrderForm({ tpl }: Props) {
               value={finish}
               onChange={(e) => setFinish(e.target.value || '')}
             >
-              <option value="">—</option>
               {finishOptions.map((f) => {
                 return (
-                  <option key={f.id} value={f.code}>
-                    {finishLabel(f.code)}
+                  <option key={f} value={f}>
+                    {finishLabel(f)}
                   </option>
                 );
               })}
             </select>
+            *Выбор финиша обязателен*
           </label>
         )}
       </div>

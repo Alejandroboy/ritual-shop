@@ -166,6 +166,7 @@ model Template {
   code  String @unique
   /// Человеческий код как в каталоге, напр.: "Т1ц", "К4 овал", "Ст4ц овал"
   label String
+  fullTitle   String?
 
   material      Material
   shape       Shape
@@ -210,7 +211,7 @@ model Template {
 model TemplateSize {
   templateId String
   sizeId     Int
-
+  availableHolePattern HolePattern[] @default([])
   price Int @default(0)
   template Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
   size     Size     @relation(fields: [sizeId], references: [id], onDelete: Restrict)

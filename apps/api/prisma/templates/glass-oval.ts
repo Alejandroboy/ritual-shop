@@ -1,0 +1,93 @@
+// ---------- Стекло: овалы (стр. 44–45) ----------
+import {
+  ColorMode,
+  Coverage,
+  HolePattern,
+  Material,
+  Orientation,
+  Shape,
+} from '@prisma/client';
+import { sizesStdGlass, type TemplateConfig } from './shared.ts';
+
+const glassOvalBasesSingle = ['St1', 'St2', 'St3'];
+const glassOvalBasesCouple = ['St4', 'St5', 'St6'];
+
+const PRICES: Record<string, number> = {
+  '15×20': 1500,
+  '20×25': 2500,
+  '20×30': 3500,
+  '25×30': 4500,
+  '30×40': 5500,
+  '30×60': 6500,
+};
+
+export const glassOvalTemplates: TemplateConfig[] = [
+  ...glassOvalBasesSingle.flatMap((base) => {
+    const bw: TemplateConfig = {
+      code: `${base}_oval`,
+      label: `${base.replace('St', 'Ст')} овал`,
+      fullTitle: `Портрет на стекле ${base.replace('St', 'Ст')} овал`,
+      material: Material.GLASS,
+      shape: Shape.OVAL,
+      orientation: Orientation.VERTICAL,
+      colorMode: ColorMode.BW,
+      coverage: Coverage.NORMAL,
+      supportsFrame: false,
+      requiresBackground: true,
+      requiresFinish: false,
+      supportsHoles: true,
+      sizeLabels: sizesStdGlass,
+      perHolePrice: 350,
+      basePrice: 0,
+      sizePrice: PRICES,
+      holePatterns: [
+        HolePattern.TWO_HORIZONTAL,
+        HolePattern.TWO_VERTICAL,
+        HolePattern.FOUR_CORNERS,
+        HolePattern.NONE,
+      ],
+    };
+    const color: TemplateConfig = {
+      ...bw,
+      code: `${base}_oval_c`,
+      label: `${base.replace('St', 'Ст')}ц овал`,
+      fullTitle: `Портрет на стекле ${base.replace('St', 'Ст')}ц овал`,
+      colorMode: ColorMode.COLOR,
+    };
+    return [bw, color];
+  }),
+  ...glassOvalBasesCouple.flatMap((base) => {
+    const bw: TemplateConfig = {
+      code: `${base}_oval`,
+      label: `${base.replace('St', 'Ст')} овал`,
+      fullTitle: `Портрет на стекле ${base.replace('St', 'Ст')} овал`,
+      material: Material.GLASS,
+      shape: Shape.OVAL,
+      orientation: Orientation.VERTICAL,
+      colorMode: ColorMode.BW,
+      coverage: Coverage.NORMAL,
+      supportsFrame: false,
+      requiresBackground: true,
+      requiresFinish: false,
+      supportsHoles: true,
+      sizeLabels: sizesStdGlass,
+      perHolePrice: 350,
+      basePrice: 0,
+      sizePrice: PRICES,
+      holePatterns: [
+        HolePattern.TWO_HORIZONTAL,
+        HolePattern.TWO_VERTICAL,
+        HolePattern.FOUR_CORNERS,
+        HolePattern.NONE,
+      ],
+    };
+    const color: TemplateConfig = {
+      ...bw,
+      code: `${base}_oval_c`,
+      label: `${base.replace('St', 'Ст')}ц овал`,
+      fullTitle: `Портрет на стекле ${base.replace('St', 'Ст')}ц овал`,
+      colorMode: ColorMode.COLOR,
+    };
+    return [bw, color];
+  }),
+];

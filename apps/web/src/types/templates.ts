@@ -64,6 +64,7 @@ export type TemplateListItem = {
   id: string;
   code: string;
   label: string;
+  fullTitle: string;
   material: Material;
   shape: Shape;
   orientation?: Orientation;
@@ -90,6 +91,11 @@ export type TemplateDetails = TemplateListItem & {
   allowedSizes: {
     size: { id: number; label: string; widthCm: number; heightCm: number };
     price: number;
+    availableHolePattern: string[];
+  }[];
+  allowedFinishes: {
+    finish: string;
+    templateId: string;
   }[];
   defaults: {
     sizeId: number | null;

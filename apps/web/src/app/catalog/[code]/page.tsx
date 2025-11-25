@@ -2,7 +2,7 @@ import { api } from '@utils';
 import { type TemplateDetails } from '@types';
 import AddToOrderForm from '../../../components/add-to-order-form';
 import React from 'react';
-import { labelOf, holePatternLabels } from '../../../utils/labels';
+import { labelOf, holePatternLabels } from '@utils';
 
 const holePatternLabel = labelOf<string>(holePatternLabels);
 
@@ -19,7 +19,7 @@ export default async function TemplatePage({
     <div className="space-y-6" data-qa="template-page">
       <div>
         <div className="text-sm text-neutral-500">{tpl.code}</div>
-        <h1 className="text-2xl font-semibold">{tpl.label}</h1>
+        <h1 className="text-2xl font-semibold">{tpl.fullTitle}</h1>
         <div className="text-sm text-neutral-600">
           {tpl.material} · {tpl.shape}
           {tpl.orientation ? ` · ${tpl.orientation}` : ''} · {tpl.colorMode}

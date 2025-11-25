@@ -1,0 +1,88 @@
+// ---------- Ростовая фотокерамика (стр. 40–41) ----------
+import {
+  ColorMode,
+  Coverage,
+  Finish,
+  Material,
+  Orientation,
+  Shape,
+} from '@prisma/client';
+import {
+  sizesGrowthOval,
+  sizesGrowthRectArch,
+  type TemplateConfig,
+} from './shared.ts';
+
+const PRICES_RECT_ARCH: Record<string, number> = {
+  '40×60': 5500,
+  '50×70': 6500,
+  '50×80': 7500,
+  '55×80': 8500,
+  '50×100': 9500,
+  '60×100': 10500,
+  '60×120': 11500,
+};
+const PRICES_OVAL: Record<string, number> = {
+  '40×60': 5500,
+  '50×70': 6500,
+};
+
+export const growthTemplates: TemplateConfig[] = [
+  {
+    code: 'R_RECT',
+    label: 'Ростовой прямой',
+    fullTitle: 'Ростовой портрет ПРЯМОУГОЛЬНЫЙ на керамограните',
+    material: Material.GROWTH_PHOTOCERAMICS,
+    shape: Shape.RECTANGLE,
+    orientation: Orientation.VERTICAL,
+    colorMode: ColorMode.COLOR,
+    coverage: Coverage.FULL_WRAP,
+    supportsFrame: false,
+    requiresBackground: true,
+    requiresFinish: true,
+    supportsHoles: false,
+    sizeLabels: sizesGrowthRectArch,
+    finishes: [Finish.GLOSS],
+    sizePrice: PRICES_RECT_ARCH,
+    perHolePrice: 350,
+    basePrice: 0,
+  },
+  {
+    code: 'R_OVAL',
+    label: 'Ростовой овал',
+    fullTitle: 'Ростовой портрет ОВАЛ на керамограните',
+    material: Material.GROWTH_PHOTOCERAMICS,
+    shape: Shape.OVAL,
+    orientation: Orientation.VERTICAL,
+    colorMode: ColorMode.COLOR,
+    coverage: Coverage.FULL_WRAP,
+    supportsFrame: false,
+    requiresBackground: true,
+    requiresFinish: true,
+    supportsHoles: false,
+    sizeLabels: sizesGrowthOval,
+    finishes: [Finish.GLOSS],
+    sizePrice: PRICES_OVAL,
+    perHolePrice: 350,
+    basePrice: 0,
+  },
+  {
+    code: 'R_ARCH',
+    label: 'Ростовой арка',
+    fullTitle: 'Ростовой портрет на керамограните АРКА',
+    material: Material.GROWTH_PHOTOCERAMICS,
+    shape: Shape.ARCH,
+    orientation: Orientation.VERTICAL,
+    colorMode: ColorMode.COLOR,
+    coverage: Coverage.FULL_WRAP,
+    supportsFrame: false,
+    requiresBackground: true,
+    requiresFinish: true,
+    supportsHoles: false,
+    sizeLabels: sizesGrowthRectArch,
+    finishes: [Finish.GLOSS],
+    sizePrice: PRICES_RECT_ARCH,
+    perHolePrice: 350,
+    basePrice: 0,
+  },
+];

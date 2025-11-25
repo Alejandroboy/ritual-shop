@@ -11,6 +11,7 @@ const templateSelect = {
   orientation: true,
   colorMode: true,
   coverage: true,
+  fullTitle: true,
 };
 @Injectable()
 export class CatalogService {
@@ -110,6 +111,7 @@ export class CatalogService {
         label: true,
         material: true,
         shape: true,
+        fullTitle: true,
         orientation: true,
         colorMode: true,
         coverage: true,
@@ -127,6 +129,7 @@ export class CatalogService {
             size: {
               select: { id: true, label: true, widthCm: true, heightCm: true },
             },
+            availableHolePattern: true,
           },
         },
         allowedHoles: { select: { pattern: true } },
@@ -138,6 +141,7 @@ export class CatalogService {
             background: { select: { id: true, code: true, name: true } },
           },
         },
+        allowedFinishes: true,
         variants: {
           select: {
             holePattern: true,
