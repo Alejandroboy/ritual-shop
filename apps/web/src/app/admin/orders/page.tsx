@@ -1,4 +1,5 @@
 import { Orders } from '../../../components/orders';
+import { Suspense } from 'react';
 
 export default function Page({
   searchParams,
@@ -18,7 +19,9 @@ export default function Page({
   return (
     <div>
       <h1 className="text-2xl font-semibold mb-4">Заказы</h1>
-      <Orders qs={qs} />
+      <Suspense fallback={<div> Загружаем заказы ... </div>}>
+        <Orders qs={qs} />
+      </Suspense>
     </div>
   );
 }
