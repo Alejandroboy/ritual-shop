@@ -88,6 +88,7 @@ export type TemplateDetails = TemplateListItem & {
     finishRequired: boolean;
     finishes: FinishOption[];
   }[];
+  inscribed: boolean | null;
   allowedSizes: {
     size: { id: number; label: string; widthCm: number; heightCm: number };
     price: number;

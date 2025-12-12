@@ -26,7 +26,7 @@ const SIZE_HOLES: Record<string, HolePattern[]> = {
 };
 
 export const metalRectHorTemplates: TemplateConfig[] =
-  metalRectHorBases.flatMap((base) => {
+  metalRectHorBases.flatMap((base, index) => {
     const bw: TemplateConfig = {
       code: base,
       label: base.replace('T', 'Т'),
@@ -51,7 +51,7 @@ export const metalRectHorTemplates: TemplateConfig[] =
         HolePattern.FOUR_CORNERS,
         HolePattern.TWO_HORIZONTAL,
       ],
-      finishes: [],
+      inscribed: index !== 0,
     };
     const color: TemplateConfig = {
       ...bw,

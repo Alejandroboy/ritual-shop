@@ -14,7 +14,7 @@ const PRICES: Record<string, number> = {
   '17×24': 1500,
 };
 export const archMetalTemplates: TemplateConfig[] = archMetalBases.flatMap(
-  (base) => {
+  (base, index) => {
     const bw: TemplateConfig = {
       code: base,
       label: base.replace('A', 'А'),
@@ -32,6 +32,7 @@ export const archMetalTemplates: TemplateConfig[] = archMetalBases.flatMap(
       perHolePrice: 0,
       sizePrice: PRICES,
       holePatterns: [HolePattern.NONE, HolePattern.TWO_HORIZONTAL],
+      inscribed: index !== 0,
     };
     const color: TemplateConfig = {
       ...bw,

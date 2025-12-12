@@ -93,10 +93,59 @@ export class AdminOrdersService {
   }
 
   async getById(id: string) {
+    const ee = await this.prisma.order.findUnique({
+      where: { id },
+      include: {
+        items: {
+          include: {
+            assets: true,
+            template: {
+              include: {
+                allowedSizes: {
+                  include: {
+                    size: true, // чтобы сразу получить width/height/label
+                  },
+                },
+                allowedFrames: { select: { frameId: true } },
+                allowedBackgrounds: { select: { backgroundId: true } },
+                allowedHoles: { select: { pattern: true } },
+              },
+            },
+          },
+        },
+        customer: true,
+      },
+    });
+    console.log('ee', ee);
     return this.prisma.order.findUnique({
       where: { id },
       include: {
-        items: { include: { assets: true } },
+        items: {
+          include: {
+            assets: true,
+            template: {
+              include: {
+                allowedSizes: {
+                  include: {
+                    size: true, // чтобы сразу получить width/height/label
+                  },
+                },
+                allowedHoles: true,
+                allowedFrames: {
+                  include: {
+                    frame: true,
+                  },
+                },
+                allowedBackgrounds: {
+                  include: {
+                    background: true,
+                  },
+                },
+                allowedFinishes: true,
+              },
+            },
+          },
+        },
         customer: true,
       },
     });
@@ -124,14 +173,14 @@ export class AdminOrdersService {
       data: { orderStatus: dto.status },
     });
 
-    if (prevOrder?.customerEmail) {
-      await this.email.orderStatusChanged(
-        prevOrder.customerEmail,
-        prevOrder?.number || '',
-        prevOrder.orderStatus,
-        dto.status,
-      );
-    }
+    // if (prevOrder?.customerEmail) {
+    //   await this.email.orderStatusChanged(
+    //     prevOrder.customerEmail,
+    //     prevOrder?.number || '',
+    //     prevOrder.orderStatus,
+    //     dto.status,
+    //   );
+    // }
 
     if (user?.telegramChatId) {
       await this.telegram.orderStatusChanged(

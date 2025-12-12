@@ -28,7 +28,7 @@ const SIZE_HOLES: Record<string, HolePattern[]> = {
 };
 
 export const metalOvalVertTemplates: TemplateConfig[] =
-  metalOvalVertBases.flatMap((base) => {
+  metalOvalVertBases.flatMap((base, index) => {
     const bw: TemplateConfig = {
       code: base,
       label: base.replace('F', 'Ф'), // F1 -> Ф1
@@ -53,7 +53,7 @@ export const metalOvalVertTemplates: TemplateConfig[] =
         HolePattern.TWO_VERTICAL,
       ],
       sizeHolePatterns: SIZE_HOLES,
-      finishes: [],
+      inscribed: index !== 0,
     };
 
     const color: TemplateConfig = {

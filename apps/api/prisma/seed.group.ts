@@ -59,6 +59,7 @@ async function createTemplate(cfg: TemplateConfig) {
       supportsHoles: cfg.supportsHoles ?? true,
       fullTitle: cfg.fullTitle ?? null,
       perHolePrice: cfg.perHolePrice ?? null,
+      inscribed: cfg.inscribed ?? null,
     },
   });
 

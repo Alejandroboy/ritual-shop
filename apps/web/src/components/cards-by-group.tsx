@@ -4,7 +4,7 @@ import type { TemplateListItem } from '@types';
 
 type CardsByGroupProps = {
   material: string;
-  shape?: string;
+  shape?: string | string[];
   orientation?: string;
   coverage?: string;
 };
@@ -25,7 +25,13 @@ export const CardsByGroup = async ({
   const queryString = new URLSearchParams();
 
   queryString.set('material', material);
-  if (shape) queryString.set('shape', shape);
+  if (shape) {
+    if (Array.isArray(shape)) {
+      shape.forEach((item) => queryString.append('shape', item));
+    } else {
+      queryString.set('shape', shape);
+    }
+  }
   if (orientation) queryString.set('orientation', orientation);
   if (coverage) queryString.set('coverage', coverage);
   queryString.set('pageSize', '100');
@@ -33,6 +39,10 @@ export const CardsByGroup = async ({
   const data = await api<ListResp>(
     `/catalog/templates?${queryString.toString()}`,
   );
+  console.log('data', queryString.toString());
+  console.log('coverage', coverage);
+  console.log('orientation', orientation);
+  console.log('shape', shape);
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
       {data.items.map((t) => (

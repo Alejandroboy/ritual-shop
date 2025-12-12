@@ -22,7 +22,7 @@ const PRICES: Record<string, number> = {
 };
 
 export const glassOvalTemplates: TemplateConfig[] = [
-  ...glassOvalBasesSingle.flatMap((base) => {
+  ...glassOvalBasesSingle.flatMap((base, index) => {
     const bw: TemplateConfig = {
       code: `${base}_oval`,
       label: `${base.replace('St', 'Ст')} овал`,
@@ -46,6 +46,7 @@ export const glassOvalTemplates: TemplateConfig[] = [
         HolePattern.FOUR_CORNERS,
         HolePattern.NONE,
       ],
+      inscribed: index !== 0,
     };
     const color: TemplateConfig = {
       ...bw,
@@ -56,7 +57,7 @@ export const glassOvalTemplates: TemplateConfig[] = [
     };
     return [bw, color];
   }),
-  ...glassOvalBasesCouple.flatMap((base) => {
+  ...glassOvalBasesCouple.flatMap((base, index) => {
     const bw: TemplateConfig = {
       code: `${base}_oval`,
       label: `${base.replace('St', 'Ст')} овал`,
@@ -80,6 +81,7 @@ export const glassOvalTemplates: TemplateConfig[] = [
         HolePattern.FOUR_CORNERS,
         HolePattern.NONE,
       ],
+      inscribed: index !== 0,
     };
     const color: TemplateConfig = {
       ...bw,

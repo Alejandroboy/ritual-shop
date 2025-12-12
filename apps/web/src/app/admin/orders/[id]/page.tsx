@@ -7,7 +7,7 @@ import { OrderStatusEnum } from '@types';
 import { labelOf, orderStatusLabels } from '@utils';
 import { useAppStore } from '@state';
 import { OrderItemsDetails } from '../../../../components/details';
-import { DownloadBlankButton } from '../../../../components/download-blank-button';
+import { OrderBlankButton } from '../../../../components/order-blank-button';
 
 const orderLabel = labelOf<string>(orderStatusLabels);
 
@@ -30,7 +30,7 @@ export default function OrderDetail() {
   }, [me, fetchMe]);
 
   useEffect(() => {
-    setItemId(data?.items.id);
+    setItemId(data?.items?.id);
   }, [data?.items]);
 
   useEffect(() => {
@@ -42,7 +42,6 @@ export default function OrderDetail() {
   const orderStatusList = Object.values(OrderStatusEnum).filter(
     (item) => typeof item === 'string',
   );
-  console.log('data', data);
 
   async function setStatus(status: string) {
     setBusy(true);
@@ -62,9 +61,7 @@ export default function OrderDetail() {
         <p className="px-3 py-1 border rounded-xl mb-4 mr-8">
           Текущий статус: {orderLabel(orderStatus)}
         </p>
-        <p>
-          <DownloadBlankButton orderId={id} />
-        </p>
+        <OrderBlankButton order={data} />
       </div>
       <div className="space-y-0">
         <label className="text-sm">

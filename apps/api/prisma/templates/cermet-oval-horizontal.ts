@@ -29,7 +29,7 @@ const SIZE_HOLES: Record<string, HolePattern[]> = {
 };
 
 export const metalOvalHorTemplates: TemplateConfig[] =
-  metalOvalHorBases.flatMap((base) => {
+  metalOvalHorBases.flatMap((base, index) => {
     const bw: TemplateConfig = {
       code: base,
       label: base.replace('F', 'Ф'),
@@ -55,6 +55,7 @@ export const metalOvalHorTemplates: TemplateConfig[] =
         HolePattern.TWO_VERTICAL,
       ],
       finishes: [],
+      inscribed: index !== 0,
     };
     const color: TemplateConfig = {
       ...bw,

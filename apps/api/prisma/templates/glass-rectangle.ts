@@ -22,7 +22,7 @@ const PRICES: Record<string, number> = {
 };
 
 export const glassRectTemplates: TemplateConfig[] = [
-  ...glassRectBasesSingle.flatMap((base) => {
+  ...glassRectBasesSingle.flatMap((base, index) => {
     const bw: TemplateConfig = {
       code: base,
       label: base.replace('St', 'Ст'),
@@ -46,6 +46,7 @@ export const glassRectTemplates: TemplateConfig[] = [
         HolePattern.NONE,
       ],
       sizePrice: PRICES,
+      inscribed: index !== 0,
     };
     const color: TemplateConfig = {
       ...bw,
@@ -56,7 +57,7 @@ export const glassRectTemplates: TemplateConfig[] = [
     };
     return [bw, color];
   }),
-  ...glassRectBasesCouple.flatMap((base) => {
+  ...glassRectBasesCouple.flatMap((base, index) => {
     const bw: TemplateConfig = {
       code: base,
       label: base.replace('St', 'Ст'),
@@ -80,6 +81,7 @@ export const glassRectTemplates: TemplateConfig[] = [
         HolePattern.NONE,
       ],
       sizePrice: PRICES,
+      inscribed: index !== 0,
     };
     const color: TemplateConfig = {
       ...bw,

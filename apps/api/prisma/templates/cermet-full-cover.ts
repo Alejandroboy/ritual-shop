@@ -87,7 +87,7 @@ const SIZE_HOLES_VERT_OVAL: Record<string, HolePattern[]> = {
 };
 
 export const metalFullTemplates: TemplateConfig[] = [
-  ...metalFullBasesHorizontal.flatMap((base) => {
+  ...metalFullBasesHorizontal.flatMap((base, index) => {
     const bw: TemplateConfig = {
       code: base,
       label: base.replace('T', 'Т'),
@@ -107,6 +107,7 @@ export const metalFullTemplates: TemplateConfig[] = [
       sizePrice: PRICES_HOR,
       sizeLabels: sizesMetalFullWrap,
       holePatterns: [HolePattern.NONE, HolePattern.TWO_HORIZONTAL],
+      inscribed: index !== 0,
     };
     const color: TemplateConfig = {
       ...bw,
@@ -117,7 +118,7 @@ export const metalFullTemplates: TemplateConfig[] = [
     };
     return [bw, color];
   }),
-  ...heartBasesFull.flatMap((base) => {
+  ...heartBasesFull.flatMap((base, index) => {
     const bw: TemplateConfig = {
       code: base,
       label: base.replace('C', 'С'),
@@ -136,6 +137,7 @@ export const metalFullTemplates: TemplateConfig[] = [
       sizePrice: PRICES_HEART,
       sizeLabels: sizeHeart,
       holePatterns: [HolePattern.NONE, HolePattern.TWO_VERTICAL],
+      inscribed: index !== 0,
     };
     const color: TemplateConfig = {
       ...bw,
@@ -146,7 +148,7 @@ export const metalFullTemplates: TemplateConfig[] = [
     };
     return [bw, color];
   }),
-  ...metalFullBasesVertical.flatMap((base) => {
+  ...metalFullBasesVertical.flatMap((base, index) => {
     const bw: TemplateConfig = {
       code: base,
       label: base.replace('T', 'Т'),
@@ -166,6 +168,7 @@ export const metalFullTemplates: TemplateConfig[] = [
       sizePrice: PRICES_VERT,
       sizeLabels: sizesMetalFullWrap,
       holePatterns: [HolePattern.NONE, HolePattern.TWO_VERTICAL],
+      inscribed: index !== 0,
     };
     const color: TemplateConfig = {
       ...bw,
@@ -176,11 +179,11 @@ export const metalFullTemplates: TemplateConfig[] = [
     };
     return [bw, color];
   }),
-  ...metalFullOvalVertical.flatMap((base) => {
+  ...metalFullOvalVertical.flatMap((base, index) => {
     const bw: TemplateConfig = {
       code: base,
       label: base.replace('F', 'Ф'),
-      fullTitle: `Фигурная табличка овал ${base.replace('F', 'Ф')} полное покрытие`,
+      fullTitle: `Вертикальный овал ${base.replace('F', 'Ф')} полное покрытие`,
       material: Material.CERMET,
       shape: Shape.OVAL,
       orientation: Orientation.VERTICAL,
@@ -196,22 +199,23 @@ export const metalFullTemplates: TemplateConfig[] = [
       sizePrice: PRICES_VERT_OVAL,
       sizeLabels: sizeArchMetal,
       holePatterns: [HolePattern.NONE, HolePattern.TWO_HORIZONTAL],
+      inscribed: index !== 0,
     };
     const color: TemplateConfig = {
       ...bw,
       code: `${base}c`,
       label: `${bw.label}ц`,
-      fullTitle: `Фигурная табличка овал ${base.replace('F', 'Ф')}ц полное покрытие`,
+      fullTitle: `Вертикальный овал ${base.replace('F', 'Ф')}ц полное покрытие`,
       colorMode: ColorMode.COLOR,
     };
     return [bw, color];
   }),
 
-  ...metalFullOvalHorizontal.flatMap((base) => {
+  ...metalFullOvalHorizontal.flatMap((base, index) => {
     const bw: TemplateConfig = {
       code: base,
       label: base.replace('A', 'А'),
-      fullTitle: `Фигурная табличка овал ${base.replace('F', 'Ф')} полное покрытие`,
+      fullTitle: `Горизонтальный овал ${base.replace('F', 'Ф')} полное покрытие`,
       material: Material.CERMET,
       shape: Shape.OVAL,
       orientation: Orientation.HORIZONTAL,
@@ -227,17 +231,18 @@ export const metalFullTemplates: TemplateConfig[] = [
       sizePrice: PRICES_HOR_OVAL,
       sizeLabels: sizeArchMetal,
       holePatterns: [HolePattern.NONE, HolePattern.TWO_HORIZONTAL],
+      inscribed: index !== 0,
     };
     const color: TemplateConfig = {
       ...bw,
       code: `${base}c`,
       label: `${bw.label}ц`,
-      fullTitle: `Фигурная табличка овал ${base.replace('F', 'Ф')}ц полное покрытие`,
+      fullTitle: `Горизонтальный овал ${base.replace('F', 'Ф')}ц полное покрытие`,
       colorMode: ColorMode.COLOR,
     };
     return [bw, color];
   }),
-  ...archMetalFullBases.flatMap((base) => {
+  ...archMetalFullBases.flatMap((base, index) => {
     const bw: TemplateConfig = {
       code: base,
       label: base.replace('A', 'А'),
@@ -256,6 +261,7 @@ export const metalFullTemplates: TemplateConfig[] = [
       sizePrice: PRICES_ARCH,
       sizeLabels: sizeArchMetal,
       holePatterns: [HolePattern.NONE, HolePattern.TWO_HORIZONTAL],
+      inscribed: index !== 0,
     };
     const color: TemplateConfig = {
       ...bw,

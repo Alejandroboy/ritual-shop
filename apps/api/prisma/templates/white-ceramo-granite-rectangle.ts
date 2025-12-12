@@ -24,7 +24,7 @@ const PRICES_RECT: Record<string, number> = {
 };
 
 export const whiteRectTemplates: TemplateConfig[] = [
-  ...whiteRectSingleBases.flatMap((base) => {
+  ...whiteRectSingleBases.flatMap((base, index) => {
     const bw: TemplateConfig = {
       code: base,
       label: base.replace('K', 'К'),
@@ -49,6 +49,7 @@ export const whiteRectTemplates: TemplateConfig[] = [
         HolePattern.FOUR_CORNERS,
         HolePattern.NONE,
       ],
+      inscribed: index !== 0,
     };
     const color: TemplateConfig = {
       ...bw,
@@ -59,7 +60,7 @@ export const whiteRectTemplates: TemplateConfig[] = [
     };
     return [bw, color];
   }),
-  ...whiteRectCoupleBases.flatMap((base) => {
+  ...whiteRectCoupleBases.flatMap((base, index) => {
     const bw: TemplateConfig = {
       code: base,
       label: base.replace('K', 'К'),
@@ -84,6 +85,7 @@ export const whiteRectTemplates: TemplateConfig[] = [
         HolePattern.FOUR_CORNERS,
         HolePattern.NONE,
       ],
+      inscribed: index !== 0,
     };
     const color: TemplateConfig = {
       ...bw,

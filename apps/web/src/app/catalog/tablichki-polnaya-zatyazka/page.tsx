@@ -5,5 +5,5 @@ export default async function HorizontalRectangles() {
   const material = MaterialEnum.CERMET;
   const coverage = CoverageEnum.FULL_WRAP;
 
-  return <CardsByGroup material={material} />;
+  return <CardsByGroup material={material} coverage={coverage} />;
 }

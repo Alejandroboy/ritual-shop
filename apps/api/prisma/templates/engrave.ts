@@ -21,7 +21,7 @@ const PRICES: Record<string, number> = {
 };
 
 export const engravingTemplates: TemplateConfig[] = engravingBases.map(
-  (base) => ({
+  (base, index) => ({
     code: base,
     label: base.replace('G', 'Г'),
     fullTitle: `Гравировка на камне ${base.replace('G', 'Г')}`,
@@ -43,5 +43,6 @@ export const engravingTemplates: TemplateConfig[] = engravingBases.map(
       HolePattern.FOUR_CORNERS,
       HolePattern.NONE,
     ],
+    inscribed: index !== 0 || index !== 3,
   }),
 );

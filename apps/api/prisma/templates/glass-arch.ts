@@ -22,7 +22,7 @@ const PRICES: Record<string, number> = {
 };
 
 export const glassArchTemplates: TemplateConfig[] = [
-  ...glassArchBasesSingle.flatMap((base) => {
+  ...glassArchBasesSingle.flatMap((base, index) => {
     const bw: TemplateConfig = {
       code: `${base}_arch`,
       label: `${base.replace('St', 'Ст')} арка`,
@@ -46,6 +46,7 @@ export const glassArchTemplates: TemplateConfig[] = [
         HolePattern.FOUR_CORNERS,
         HolePattern.NONE,
       ],
+      inscribed: index !== 0,
     };
     const color: TemplateConfig = {
       ...bw,
@@ -56,7 +57,7 @@ export const glassArchTemplates: TemplateConfig[] = [
     };
     return [bw, color];
   }),
-  ...glassArchBasesCouple.flatMap((base) => {
+  ...glassArchBasesCouple.flatMap((base, index) => {
     const bw: TemplateConfig = {
       code: `${base}_arch`,
       label: `${base.replace('St', 'Ст')} арка`,
@@ -80,6 +81,7 @@ export const glassArchTemplates: TemplateConfig[] = [
         HolePattern.FOUR_CORNERS,
         HolePattern.NONE,
       ],
+      inscribed: index !== 0,
     };
     const color: TemplateConfig = {
       ...bw,

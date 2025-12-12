@@ -5,6 +5,7 @@ import { UploadAsset } from './upload-assets';
 import { useAppStore } from '@state';
 import { useRouter } from 'next/navigation';
 import { finishLabels, holePatternLabels, labelOf } from '@utils';
+import Link from 'next/link';
 
 type Props = { tpl: TemplateDetails };
 
@@ -12,6 +13,7 @@ const holePatternLabel = labelOf<string>(holePatternLabels);
 const finishLabel = labelOf<string>(finishLabels);
 
 export default function AddToOrderForm({ tpl }: Props) {
+  console.log('tpl', tpl);
   const router = useRouter();
   const attachPendingToItem = useAppStore((s) => s.attachPendingToItem);
   const draftOrderId = useAppStore((s) => s.draftOrderId);
@@ -37,6 +39,7 @@ export default function AddToOrderForm({ tpl }: Props) {
   const [lastName, setLastName] = useState<string>('');
   const [approveNeeded, setApproveNeeded] = useState<boolean>(false);
   const [retouchNeeded, setRetouchNeeded] = useState<boolean>(false);
+  const [readAgreement, setReadAgreement] = useState<boolean>(false);
 
   const [sizeId, setSizeId] = useState<number | ''>(tpl.defaults.sizeId ?? '');
   //В коде расчёта цены: total = size.priceMinor + holesCount(material) * perHoleMinor.
@@ -111,6 +114,11 @@ export default function AddToOrderForm({ tpl }: Props) {
     setRetouchNeeded((prevState) => !prevState);
   }
 
+  function handleReadClick(event: SyntheticEvent) {
+    event.preventDefault();
+    setReadAgreement((prevState) => !prevState);
+  }
+
   const renderCheckboxes = () => {
     if (assetUploaded.length) {
       return (
@@ -142,6 +150,33 @@ export default function AddToOrderForm({ tpl }: Props) {
     }
   };
 
+  const renderRequiredCheckboxes = () => {
+    return (
+      <div>
+        <div className="mr-[15px] cursor-pointer p-[15px] flex">
+          <label className="cursor-pointer" htmlFor="checkbox-agreement">
+            <input
+              type="checkbox"
+              id="checkbox-agreement"
+              checked={readAgreement}
+              onChange={handleReadClick}
+            />
+          </label>
+          <div className="ml-[15px]">
+            Я даю&nbsp;
+            <Link href="/agreement" className="underline" target="_blank">
+              согласие
+            </Link>
+            &nbsp;на обработку персональных данных в соответствии с&nbsp;
+            <Link href="/pivacy" className="underline" target="_blank">
+              политикой конфиденциальности
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderButtons = () => {
     if (
       (assetUploaded.length && !assetLoading.length && !assetError.length) ||
@@ -158,6 +193,7 @@ export default function AddToOrderForm({ tpl }: Props) {
               Добавить в заказ
             </button>
           </div>
+          {renderRequiredCheckboxes()}
         </div>
       );
     }
@@ -265,53 +301,57 @@ export default function AddToOrderForm({ tpl }: Props) {
           </label>
         )}
       </div>
-      <div>Надпись на изделии</div>
-      <div className="grid sm:grid-cols-2 gap-3">
-        <label className="text-sm">
-          <span className="block mb-1 text-neutral-600">Дата Рождения</span>
-          <input
-            type="date"
-            className="border rounded-md px-2 py-1 bg-white"
-            value={dateOfBirth}
-            onChange={(e) => setDateOfBirth(e.target.value)}
-          />
-        </label>
-        <label className="text-sm">
-          <span className="block mb-1 text-neutral-600">Дата смерти</span>
-          <input
-            type="date"
-            className="border rounded-md px-2 py-1 bg-white"
-            value={dateOfDeath}
-            onChange={(e) => setDateOfDeath(e.target.value)}
-          />
-        </label>
-        <label className="text-sm">
-          <span className="block mb-1 text-neutral-600">Имя</span>
-          <input
-            className="border rounded-md px-2 py-1 bg-white min-w-64"
-            value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
-          />
-        </label>
-        <label className="text-sm">
-          <span className="block mb-1 text-neutral-600">
-            Отчество (если есть)
-          </span>
-          <input
-            className="border rounded-md px-2 py-1 bg-white min-w-64"
-            value={middleName}
-            onChange={(e) => setMiddleName(e.target.value)}
-          />
-        </label>
-        <label className="text-sm">
-          <span className="block mb-1 text-neutral-600">Фамилия</span>
-          <input
-            className="border rounded-md px-2 py-1 bg-white min-w-64"
-            value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
-          />
-        </label>
-      </div>
+      {tpl.inscribed && (
+        <>
+          <div>Надпись на изделии</div>
+          <div className="grid sm:grid-cols-2 gap-3">
+            <label className="text-sm">
+              <span className="block mb-1 text-neutral-600">Дата Рождения</span>
+              <input
+                type="date"
+                className="border rounded-md px-2 py-1 bg-white"
+                value={dateOfBirth}
+                onChange={(e) => setDateOfBirth(e.target.value)}
+              />
+            </label>
+            <label className="text-sm">
+              <span className="block mb-1 text-neutral-600">Дата смерти</span>
+              <input
+                type="date"
+                className="border rounded-md px-2 py-1 bg-white"
+                value={dateOfDeath}
+                onChange={(e) => setDateOfDeath(e.target.value)}
+              />
+            </label>
+            <label className="text-sm">
+              <span className="block mb-1 text-neutral-600">Имя</span>
+              <input
+                className="border rounded-md px-2 py-1 bg-white min-w-64"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+              />
+            </label>
+            <label className="text-sm">
+              <span className="block mb-1 text-neutral-600">
+                Отчество (если есть)
+              </span>
+              <input
+                className="border rounded-md px-2 py-1 bg-white min-w-64"
+                value={middleName}
+                onChange={(e) => setMiddleName(e.target.value)}
+              />
+            </label>
+            <label className="text-sm">
+              <span className="block mb-1 text-neutral-600">Фамилия</span>
+              <input
+                className="border rounded-md px-2 py-1 bg-white min-w-64"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+              />
+            </label>
+          </div>
+        </>
+      )}
 
       <label className="text-sm block">
         <div className="mb-1 text-neutral-600">Комментарий</div>
@@ -331,6 +371,12 @@ export default function AddToOrderForm({ tpl }: Props) {
         <div>
           Итоговая цена: {Number.isFinite(price) ? price : 0}&nbsp;&#8381;
         </div>
+      </div>
+      <div>
+        Ознакомтесь с&nbsp;
+        <Link href="/rules" className="underline" target="_blank">
+          правилами оформления заказа
+        </Link>
       </div>
       {renderButtons()}
     </div>

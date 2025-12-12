@@ -24,10 +24,14 @@ export class CatalogService {
 
       const where = {
         material: q.material,
-        shape: q.shape,
         orientation: q.orientation,
         colorMode: q.colorMode,
         coverage: q.coverage,
+        ...(q.shape
+          ? Array.isArray(q.shape)
+            ? { shape: { in: q.shape } }
+            : { shape: q.shape }
+          : {}),
       };
 
       const skip = (page - 1) * pageSize;
@@ -107,6 +111,7 @@ export class CatalogService {
       where: { code },
       select: {
         id: true,
+        inscribed: true,
         code: true,
         label: true,
         material: true,

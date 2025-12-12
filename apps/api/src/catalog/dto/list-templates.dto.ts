@@ -26,7 +26,12 @@ import {
 
 export class ListTemplatesQuery {
   @IsOptional() @IsEnum(Material) material?: Material;
-  @IsOptional() @IsEnum(Shape) shape?: Shape;
+  @IsOptional()
+  @IsEnum(Shape, { each: true })
+  @Transform(({ value }) =>
+    Array.isArray(value) ? value : [value].filter(Boolean),
+  )
+  shape?: Shape[];
   @IsOptional() @IsEnum(Orientation) orientation?: Orientation;
   @IsOptional() @IsEnum(ColorMode) colorMode?: ColorMode;
   @IsOptional() @IsEnum(Coverage) coverage?: Coverage;

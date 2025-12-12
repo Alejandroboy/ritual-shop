@@ -41,7 +41,7 @@ const PRICES_OVAL: Record<string, number> = {
   '30×40': 2700,
 };
 export const blackCoupleTemplates: TemplateConfig[] = [
-  ...blackCoupleBases.map<TemplateConfig>((base) => ({
+  ...blackCoupleBases.map<TemplateConfig>((base, index) => ({
     code: base,
     label: base.replace('KCh', 'КЧ'),
     fullTitle: `Черный прямоугольный портрет ${base.replace('KCh', 'КЧ')} на керамограните`,
@@ -65,8 +65,9 @@ export const blackCoupleTemplates: TemplateConfig[] = [
       HolePattern.FOUR_CORNERS,
       HolePattern.NONE,
     ],
+    inscribed: index !== 0,
   })),
-  ...blackCoupleBases.map<TemplateConfig>((base) => ({
+  ...blackCoupleBases.map<TemplateConfig>((base, index) => ({
     code: `${base}_arch`,
     label: `${base.replace('KCh', 'КЧ')} арка`,
     fullTitle: `Черный портрет ${base.replace('KCh', 'КЧ')} арка на керамограните`,
@@ -90,8 +91,9 @@ export const blackCoupleTemplates: TemplateConfig[] = [
       HolePattern.FOUR_CORNERS,
       HolePattern.NONE,
     ],
+    inscribed: index !== 0,
   })),
-  ...blackCoupleBases.map<TemplateConfig>((base) => ({
+  ...blackCoupleBases.map<TemplateConfig>((base, index) => ({
     code: `${base}_oval`,
     label: `${base.replace('KCh', 'КЧ')} овал`,
     fullTitle: `Черный портрет ${base.replace('KCh', 'КЧ')} овал на керамограните`,
@@ -114,6 +116,7 @@ export const blackCoupleTemplates: TemplateConfig[] = [
       HolePattern.FOUR_CORNERS,
       HolePattern.NONE,
     ],
+    inscribed: index !== 0,
     finishes: [Finish.MATTE, Finish.GLOSS],
   })),
 ];

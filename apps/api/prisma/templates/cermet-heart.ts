@@ -16,7 +16,7 @@ const PRICES: Record<string, number> = {
 };
 
 export const heartTemplates: TemplateConfig[] = [
-  ...heartBasesNormal.flatMap((base) => {
+  ...heartBasesNormal.flatMap((base, index) => {
     const bw: TemplateConfig = {
       code: base,
       label: base.replace('C', 'С'),
@@ -34,6 +34,7 @@ export const heartTemplates: TemplateConfig[] = [
       perHolePrice: 0,
       sizePrice: PRICES,
       holePatterns: [HolePattern.NONE, HolePattern.TWO_VERTICAL],
+      inscribed: index !== 0,
     };
     const color: TemplateConfig = {
       ...bw,

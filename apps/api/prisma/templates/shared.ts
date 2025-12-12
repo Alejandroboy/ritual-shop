@@ -78,6 +78,7 @@ export type TemplateConfig = {
   requiresFinish?: boolean;
   supportsHoles?: boolean;
   fullTitle?: string;
+  inscribed?: boolean;
 
   sizeLabels: string[]; // "13×18" и т.п.
   holePatterns?: HolePattern[]; // если нужен нестандартный набор
