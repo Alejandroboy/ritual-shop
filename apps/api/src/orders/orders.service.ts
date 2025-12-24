@@ -18,10 +18,6 @@ import { ChangeOrderStatusDto } from './dto/change-order-status.dto';
 import { EmailService } from '../email/email.service';
 import { TelegramService } from '../notifications/telegram/telegram.service';
 import { asDate, toDateString } from '../common/helpers';
-import path from 'path';
-import * as fs from 'fs';
-import { PDFDocument, rgb } from 'pdf-lib';
-import fontkit from '@pdf-lib/fontkit';
 
 type OrderDto = {
   id: string;
@@ -60,9 +56,6 @@ export class OrdersService {
     private telegram: TelegramService,
     private readonly assets: AssetsService,
   ) {}
-
-  // ===== Orders =====
-  private PDFDocument: any;
 
   private genNumber(): string {
     const d = new Date();
@@ -491,14 +484,12 @@ export class OrdersService {
     });
     if (!tpl) throw new BadRequestException('Template not found');
 
-    // size
     if (input.sizeId) {
       const ok = tpl.allowedSizes.some((s) => s.sizeId === input.sizeId);
       if (!ok)
         throw new BadRequestException('Size is not allowed for template');
     }
 
-    // hole pattern
     if (input.holePattern) {
       const ok = tpl.allowedHoles.some((h) => h.pattern === input.holePattern);
       if (!ok)
@@ -507,7 +498,6 @@ export class OrdersService {
         );
     }
 
-    // frame
     if (input.frameId) {
       if (!tpl.supportsFrame)
         throw new BadRequestException('Template does not support frames');
@@ -516,7 +506,6 @@ export class OrdersService {
         throw new BadRequestException('Frame is not allowed for template');
     }
 
-    // background
     if (input.backgroundId) {
       if (tpl.requiresBackground)
         throw new BadRequestException(
@@ -530,7 +519,6 @@ export class OrdersService {
     } else if (tpl.requiresBackground) {
     }
 
-    // finish
     if (input.finish) {
       const ok = tpl.allowedFinishes.some((f) => f.finish === input.finish);
       if (!ok)

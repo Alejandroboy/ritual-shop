@@ -15,18 +15,15 @@ datasource db {
 }
 
 // ====== ENUMS ======
-
-/// Семейство продукта (материал/технология)
 enum Material {
-  CERMET // Металлокерамика
-  WHITE_CERAMIC_GRANITE // Белый керамогранит
-  BLACK_CERAMIC_GRANITE // Черный керамогранит
-  GLASS // Стекло
-  GROWTH_PHOTOCERAMICS // Ростовая фотокерамика (на глазурованном керамограните)
-  ENGRAVING // Гравировка на камне (черный камень)
+  CERMET
+  WHITE_CERAMIC_GRANITE
+  BLACK_CERAMIC_GRANITE
+  GLASS
+  GROWTH_PHOTOCERAMICS
+  ENGRAVING
 }
 
-/// Форма заготовки
 enum Shape {
   RECTANGLE
   OVAL
@@ -35,39 +32,33 @@ enum Shape {
   HEART
 }
 
-/// Ориентация изделия (для прямоугольников и части фигурных)
 enum Orientation {
   VERTICAL
   HORIZONTAL
 }
 
-/// Цветность шаблона
 enum ColorMode {
-  BW // черно-белая
-  COLOR // цветная
+  BW
+  COLOR
 }
 
-/// Покрытие/заливка фона
 enum Coverage {
-  NORMAL // без полной затяжки
-  FULL_WRAP // полная затяжка (фон на всю заготовку)
+  NORMAL
+  FULL_WRAP
 }
 
-/// Схема отверстий
 enum HolePattern {
   NONE
-  TWO_HORIZONTAL // 2 отверстия по горизонтали
-  TWO_VERTICAL // 2 отверстия по вертикали
-  FOUR_CORNERS // 4 по углам
+  TWO_HORIZONTAL
+  TWO_VERTICAL
+  FOUR_CORNERS
 }
 
-/// Поверхность для тех семейств, где это важно
 enum Finish {
   MATTE
   GLOSS
 }
 
-/// Тип файла, связанного с позицией заказа
 enum AssetKind {
   PHOTO
   REFERENCE
@@ -84,7 +75,6 @@ enum OrderStatus {
   READY
 }
 
-// Валюта
 enum Currency {
   KZT
   RUB
@@ -119,17 +109,13 @@ enum ApprovalStage {
 }
 
 // ====== СПРАВОЧНИКИ ======
-
-
-/// Размеры изделий в сантиметрах (целые, как в каталоге)
 model Size {
   id       Int    @id @default(autoincrement())
   widthCm  Int
   heightCm Int
-  label    String // "13×19", "20×30" и т.д.
+  label    String
   priceMinor Int  @default(0)
 
-  // связи
   allowedForTemplates TemplateSize[]
   OrderItem           OrderItem[]
 
@@ -137,17 +123,15 @@ model Size {
   @@index([heightCm, widthCm])
 }
 
-/// Виды рамок (1–6 для металлокерамики)
 model Frame {
   id   Int    @id @default(autoincrement())
-  code Int    @unique // 1..6 как в каталоге
+  code Int    @unique
   name String
 
   allowedForTemplates TemplateFrame[]
   OrderItem           OrderItem[]
 }
 
-/// Фоны (1–36, 100 белый, 200 черный)
 model Background {
   id   Int    @id @default(autoincrement())
   code Int    @unique
@@ -159,46 +143,38 @@ model Background {
 
 // ====== КАТАЛОГ ШАБЛОНОВ ======
 
-/// Шаблон позиции каталога (T1, T1ц, Т14, A5ц, К4 овал, Ст4ц овал, КЧ1, Г3 и т.п.)
 model Template {
   id    String @id @default(cuid())
-  /// Машинный код без пробелов (slug), напр.: "T1", "T1c", "K4_oval", "St4c_oval", "KCh1", "G3"
   code  String @unique
-  /// Человеческий код как в каталоге, напр.: "Т1ц", "К4 овал", "Ст4ц овал"
   label String
   fullTitle   String?
 
   material      Material
   shape       Shape
-  orientation Orientation? // для форм, где есть ориентация
+  orientation Orientation?
   colorMode   ColorMode
   coverage    Coverage     @default(NORMAL)
   perHolePrice Int @default(0)
   inscribed Boolean?
 
-  // Поведенческие флаги
   supportsFrame      Boolean @default(false)
-  requiresBackground Boolean @default(false) // напр., стекло — обязательно; белый керамогранит — обычно есть; черный/гравировка — нет
-  requiresFinish     Boolean @default(false) // белый и черный керамогранит; ростовая — только глянец (см. allowedFinishes)
+  requiresBackground Boolean @default(false)
+  requiresFinish     Boolean @default(false)
   supportsHoles      Boolean @default(true)
 
-  // Состав (кол-во персон на изображении)
   personsMin Int @default(1)
   personsMax Int @default(1)
 
   notes String?
 
-  // Разрешенные опции для данного шаблона
   allowedSizes       TemplateSize[]
   allowedHoles       TemplateHole[]
   allowedFrames      TemplateFrame[]
   allowedBackgrounds TemplateBackground[]
   allowedFinishes    TemplateFinish[]
 
-  // Связь с заказами
   items OrderItem[]
 
-  // связь с вариантами
   variants      TemplateVariant[]
 
   createdAt DateTime @default(now())
@@ -208,7 +184,6 @@ model Template {
   @@index([colorMode])
 }
 
-/// m:n — какие размеры доступны конкретному шаблону
 model TemplateSize {
   templateId String
   sizeId     Int
@@ -219,7 +194,6 @@ model TemplateSize {
   @@id([templateId, sizeId])
 }
 
-/// m:n — какие схемы отверстий доступны шаблону
 model TemplateHole {
   templateId String
   pattern    HolePattern
@@ -228,7 +202,6 @@ model TemplateHole {
   @@id([templateId, pattern])
 }
 
-/// m:n — какие рамки доступны шаблону (актуально для металлокерамики прямоугольных табличек)
 model TemplateFrame {
   templateId String
   frameId    Int
@@ -239,7 +212,6 @@ model TemplateFrame {
   @@id([templateId, frameId])
 }
 
-/// m:n — какие фоны разрешены для шаблона
 model TemplateBackground {
   templateId   String
   backgroundId Int
@@ -250,7 +222,6 @@ model TemplateBackground {
   @@id([templateId, backgroundId])
 }
 
-/// m:n — какие финиши (мат/глянец) допустимы для шаблона
 model TemplateFinish {
   templateId String
   finish     Finish
@@ -261,19 +232,16 @@ model TemplateFinish {
 }
 
 model TemplateVariant {
-  // составной ключ: один вариант на один holePattern внутри шаблона
   templateId   String
   holePattern  HolePattern
 
   template     Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
 
-  // атрибуты варианта
   finishRequired Boolean   @default(false)
 
-  // если есть разрешённые покрытия/финиши — пример явной M2M со связной таблицей:
   allowedFinishes TemplateVariantFinish[]
 
-  @@id([templateId, holePattern]) // даст where: { templateId_holePattern: { ... } }
+  @@id([templateId, holePattern])
 }
 
 model FinishVariant {
@@ -302,9 +270,9 @@ model Order {
   customerName  String?
   customerPhone String?
   customerEmail String?
-  intakePoint   String? // пункт приема
-  delivery      String? // самовывоз/доставка
-  intakeDate    DateTime? // дата приема (из бланка)
+  intakePoint   String?
+  delivery      String?
+  intakeDate    DateTime?
   approveNeeded Boolean   @default(false)
   orderStatus   OrderStatus @default(DRAFT)
   orderNumber   String? @unique
@@ -327,13 +295,11 @@ model Order {
   @@index([customerId, createdAt])
 }
 
-/// Позиция заказа (конкретный шаблон с выбранными опциями)
 model OrderItem {
   id         String @id @default(cuid())
   orderId    String @unique
   templateId String
 
-  // выбранные параметры
   sizeId       Int?
   holePattern  HolePattern?
   frameId      Int?
@@ -346,7 +312,6 @@ model OrderItem {
   approvalStage ApprovalStage @default(NOT_STARTED)
   approved     Boolean @default(false)
 
-  // для внутренней валидации можно хранить слепок кода/лейбла (на случай изменения справочников)
   templateCode  String
   templateLabel String
 
@@ -385,19 +350,20 @@ model User {
   passwordHash String
   name         String?
   phone        String?
+  legalName    String?
+  address      String?
+  inn          String?
   role         Role     @default(CUSTOMER)
 
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  // Связи с заказами
   customerOrders Order[] @relation("CustomerOrders")
   managedOrders  Order[] @relation("ManagerOrders")
 
   notifyChannel   NotifyChannel?
   telegramChatId  String?
 
-  // Ротация refresh-токенов
   refreshSessions RefreshSession[]
 }
 
@@ -412,7 +378,6 @@ model RefreshSession {
   createdAt  DateTime @default(now())
 }
 
-/// Персоналии для позиции (ФИО и даты)
 model OrderItemPerson {
   id     String @id @default(cuid())
   itemId String
@@ -435,20 +400,16 @@ model OrderItemAsset {
 
   orderItem    OrderItem     @relation("OrderItemToAssets", fields: [orderItemId], references: [id], onDelete: Cascade)
 
-  // стадия (оригинал/ретушь)
   stage        AssetStage  @default(ORIGINAL)
 
-  // связь «ретушь → оригинал»
   derivedFromId  String?
   derivedFrom    OrderItemAsset? @relation("AssetDerivation", fields: [derivedFromId], references: [id], onDelete: Cascade)
   derivatives    OrderItemAsset[] @relation("AssetDerivation")
 
   storage      StorageType   @default(s3)
 
-  // Для совместимости со старым локальным хранением:
   path         String?
 
-  // S3-метаданные:
   bucket       String?
   key          String?
   contentType  String?

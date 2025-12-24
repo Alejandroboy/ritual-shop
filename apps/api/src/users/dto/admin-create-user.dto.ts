@@ -28,6 +28,18 @@ export class AdminCreateUserDto {
   phone?: string | null;
 
   @IsOptional()
+  @IsString()
+  legalName?: string | null;
+
+  @IsOptional()
+  @IsString()
+  address?: string | null;
+
+  @IsOptional()
+  @IsString()
+  inn?: string | null;
+
+  @IsOptional()
   @IsEnum(Role)
   role?: Role;
 }

@@ -19,6 +19,7 @@ interface ExtendedWindow extends Window {
     background: string;
     frame: string;
     hasHoles: boolean;
+    customer: { legalName?: string; address?: string };
     deceased: {
       lastName: string;
       firstName: string;
@@ -30,21 +31,20 @@ interface ExtendedWindow extends Window {
 }
 
 export function OrderBlankButton({ order }: OrderBlankButtonProps) {
-  console.log('order', order);
-
   const [loading, setLoading] = useState(false);
   const sizeObject = order.items?.template.allowedSizes.filter(
     (item: { size: { id: string } }) => item.size.id === order.items.sizeId,
   );
   let sizeLabel = '';
   if (sizeObject) sizeLabel = sizeObject.length && sizeObject[0].size?.label;
-  if (!sizeObject) console.log('sizeLabel', sizeLabel, sizeObject);
   const orderData = {
     number: order.number,
     customerName: order.customerName,
     customerPhone: order.customerPhone,
     dateAccepted: order.createdAt,
     dateDelivery: order.dateDelivery,
+    organization: order?.customer?.legalName,
+    intakePoint: order?.customer?.address,
     approveNeeded: order.items?.approveNeeded,
     comment: order.items?.comment,
     label: order.items?.template?.label,

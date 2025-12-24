@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { adminApiFetch } from '@utils';
 
@@ -12,6 +12,9 @@ export default function CreateUserForm() {
     email: '',
     password: '',
     name: '',
+    legalName: '',
+    address: '',
+    inn: '',
     phone: '',
     role: 'CUSTOMER' as Role,
   });
@@ -34,6 +37,9 @@ export default function CreateUserForm() {
           password: form.password,
           name: form.name.trim() || null,
           phone: form.phone.trim() || null,
+          legalName: form.legalName.trim() || null,
+          address: form.address.trim() || null,
+          inn: form.inn.trim() || null,
           role: form.role,
         }),
       });
@@ -52,10 +58,11 @@ export default function CreateUserForm() {
         password: '',
         name: '',
         phone: '',
+        legalName: '',
+        address: '',
+        inn: '',
         role: 'CUSTOMER',
       });
-      // по желанию — сразу уходим в список
-      // router.push('/admin/users');
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : '';
       setError(message);
@@ -113,8 +120,38 @@ export default function CreateUserForm() {
             placeholder="+7 ... "
           />
         </label>
+        <label className="block">
+          <span className="text-sm font-medium">Организация</span>
+          <input
+            className="mt-1 w-full rounded-xl border p-3 outline-none"
+            type="text"
+            value={form.legalName}
+            onChange={(e) => setForm({ ...form, legalName: e.target.value })}
+            placeholder="ООО ..."
+          />
+        </label>
+        <label className="block">
+          <span className="text-sm font-medium">Адрес</span>
+          <input
+            className="mt-1 w-full rounded-xl border p-3 outline-none"
+            type="text"
+            value={form.address}
+            onChange={(e) => setForm({ ...form, address: e.target.value })}
+            placeholder="г. Москва..."
+          />
+        </label>
+        <label className="block">
+          <span className="text-sm font-medium">ИНН</span>
+          <input
+            className="mt-1 w-full rounded-xl border p-3 outline-none"
+            type="text"
+            value={form.inn}
+            onChange={(e) => setForm({ ...form, inn: e.target.value })}
+            placeholder="8457..."
+          />
+        </label>
 
-        <label className="block md:col-span-2">
+        <label className="block">
           <span className="text-sm font-medium">Роль</span>
           <select
             className="mt-1 w-full rounded-xl border p-3 outline-none bg-white"

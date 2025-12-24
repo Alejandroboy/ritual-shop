@@ -168,7 +168,7 @@ export default function AddToOrderForm({ tpl }: Props) {
               согласие
             </Link>
             &nbsp;на обработку персональных данных в соответствии с&nbsp;
-            <Link href="/pivacy" className="underline" target="_blank">
+            <Link href="/privacy" className="underline" target="_blank">
               политикой конфиденциальности
             </Link>
           </div>

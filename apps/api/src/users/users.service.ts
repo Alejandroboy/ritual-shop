@@ -6,6 +6,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma, Role, User } from '@prisma/client';
 import * as argon2 from 'argon2';
+import { AdminCreateUserDto } from './dto/admin-create-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -18,6 +19,9 @@ export class UsersService {
         email: true,
         name: true,
         phone: true,
+        legalName: true,
+        address: true,
+        inn: true,
         role: true,
         createdAt: true,
         updatedAt: true,
@@ -44,7 +48,6 @@ export class UsersService {
       },
     });
     if (!user) {
-      // чтобы не падать 500 при null
       throw new NotFoundException(`User ${id} not found`);
     }
     return user;
@@ -58,6 +61,9 @@ export class UsersService {
         email: true,
         name: true,
         phone: true,
+        legalName: true,
+        address: true,
+        inn: true,
         role: true,
         createdAt: true,
         updatedAt: true,
@@ -123,13 +129,7 @@ export class UsersService {
     return { items, total, skip, take };
   }
 
-  async adminCreate(dto: {
-    email: string;
-    password: string;
-    name?: string | null;
-    phone?: string | null;
-    role?: Role;
-  }) {
+  async adminCreate(dto: AdminCreateUserDto) {
     const exists = await this.findByEmail(dto.email);
     if (exists) throw new BadRequestException('Email already registered');
     const passwordHash = await argon2.hash(dto.password, {
@@ -141,6 +141,9 @@ export class UsersService {
         passwordHash,
         name: dto.name ?? null,
         phone: dto.phone ?? null,
+        legalName: dto.legalName ?? null,
+        address: dto.address ?? null,
+        inn: dto.inn ?? null,
         role: dto.role ?? 'CUSTOMER',
       },
     });

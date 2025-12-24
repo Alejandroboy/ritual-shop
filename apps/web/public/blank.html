@@ -14,7 +14,6 @@
 .body{
   background-color: #9e9e9e;
   background-image: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iNSIgaGVpZ2h0PSI1IiBmaWxsPSIjOWU5ZTllIj48L3JlY3Q+CjxwYXRoIGQ9Ik0wIDVMNSAwWk02IDRMNCA2Wk0tMSAxTDEgLTFaIiBzdHJva2U9IiM4ODgiIHN0cm9rZS13aWR0aD0iMSI+PC9wYXRoPgo8L3N2Zz4=);
-  /*position: absolute;*/
   top: 0;
   left: 0;
   bottom: 0;
@@ -27,7 +26,6 @@
   width: 894px;
   height: 1264px;
   margin: 13px auto;
-  /*box-shadow: 1px 1px 3px 1px #333;*/
   position: relative;
   background-color: white;
   overflow: hidden;
@@ -341,7 +339,6 @@ table {
 .table-seventh-center {
   border-bottom: 2px solid #000 !important;
 }
-/* Блок подписи заказчика */
 .signature-block {
   margin: 19px 54px 0;
   display: flex;
@@ -361,8 +358,6 @@ table {
   min-width: 260px;
   height: 1px;
 }
-
-/* Блок ВНИМАНИЕ */
 .warning-block {
   margin: 40px 44px 40px;
   font-family: ff5, serif;
@@ -397,12 +392,10 @@ table {
 }
 </style>
 <script>
-  // Функция, которая заполняет плейсхолдеры
   function fillFromOrder(order) {
     function formatDate(value) {
       if (!value) return '';
 
-      // Если пришла ISO-строка вида "1900-11-11T00:00:00.000Z"
       if (typeof value === 'string') {
         const isoMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
         if (isoMatch) {
@@ -410,13 +403,11 @@ table {
           return d + '.' + m + '.' + y; // ДД.ММ.ГГГГ
         }
 
-        // На всякий случай: любая другая дата-строка
         const ts = Date.parse(value);
         if (!Number.isNaN(ts)) {
           return new Date(ts).toLocaleDateString('ru-RU');
         }
 
-        // Если это вообще не дата — возвращаем как есть
         return value;
       }
 
@@ -428,26 +419,22 @@ table {
     }
     if (!order) return;
 
-    // Сюда маппишь реальные поля своего заказа
     const map = {
-      // заголовок
       orderNumber: order.number || order.publicId || '',
       dateAccepted: formatDate(order.dateAccepted) || formatDate(order.createdAt) || '',
       dateDelivery: formatDate(order.dateDelivery) || formatDate(order.deadline) || '',
       customer: `${order.customerName} ${order.customerPhone}`,
+      organization: order.organization,
+      intakePoint: order.intakePoint,
 
-      // ФИО
       deceasedLastName: order.deceased?.lastName || '',
       deceasedFirstName: order.deceased?.firstName || '',
       deceasedMiddleName: order.deceased?.middleName || '',
       comment: order.comment || '',
-
-      // Даты
       deceasedBirthDate: formatDate(order.deceased?.birthDate) || '',
       deceasedDeathDate: formatDate(order.deceased?.deathDate) || '',
     };
     const materialType = order.material; // 'metal', 'granite', 'glass', 'engraving'
-    console.log('order.material');
     if (materialType === "CERMET") map.materialCermet = order.label;
     if (materialType === "WHITE_CERAMIC_GRANITE" || materialType === "BLACK_CERAMIC_GRANITE") map.materialGranite = order.label;
     if (materialType === "GLASS") map.materialGlass = order.label;
@@ -457,12 +444,10 @@ table {
       map.frame = order.frame ?? '';
     }
 
-    // номер фона
     if (order.background) {
       map.background = order.background ??  '';
     }
 
-    // размер
     if (order.size) {
       map.size =
         order.size ??'';
@@ -474,7 +459,6 @@ table {
       if (order.holePattern === "FOUR_CORNERS") map.holePattern = '4шт по углам'
     }
 
-    // Заполняем все элементы с атрибутом data-field="..."
     document.querySelectorAll('[data-field]').forEach(function (el) {
       const field = el.getAttribute('data-field');
       if (!field) return;
@@ -486,18 +470,15 @@ table {
         el.textContent = '';
       }
     });
-    // 2) Согласование: да / нет
-    const approved = !!order.approveNeeded; // <-- тут подставь свою логику
+
+    const approved = !!order.approveNeeded;
 
     const approveSquares = document.querySelectorAll('.approve .approve-mark-square');
     if (approveSquares.length >= 2) {
-      // сначала снимаем галочки
       approveSquares.forEach(function (sq) {
         sq.classList.remove('checked');
       });
 
-      // если approved === true → ставим галку на первом квадрате («да»),
-      // иначе — на втором («нет»)
       const yesIndex = 0;
       const noIndex = 1;
 
@@ -508,9 +489,9 @@ table {
       }
     }
 
-    // 3) По аналогии можно сделать для блока "Отверстия: да / нет"
+
     const holesSquares = document.querySelectorAll('.holes .holes-mark-square');
-    const hasHoles = !!order.hasHoles; // или другая проверка — подставь свою
+    const hasHoles = !!order.hasHoles;
 
     if (holesSquares.length >= 2) {
       holesSquares.forEach(function (sq) {
@@ -528,13 +509,9 @@ table {
     }
   }
 
-  // Автоматическое заполнение и печать,
-  // если в окне уже лежит window.orderData
   window.addEventListener('load', function () {
     if (window.orderData) {
       fillFromOrder(window.orderData);
-
-      // небольшой таймаут, чтобы браузер успел отрисовать
       setTimeout(function () {
         window.print();
       }, 100);

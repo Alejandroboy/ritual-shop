@@ -47,7 +47,7 @@ export function OrderItemsDetails({
       <div className="text-sm">{data.templateCode}</div>
       <div className="text-sm">{data.templateLabel}</div>
       <div className="text-sm">Вид фона: {data.backgroundId}</div>
-      <div className="text-sm">Вид рамки: {data.frameId}</div>
+      {data.frameId && <div className="text-sm">Вид рамки: {data.frameId}</div>}
       {data.retouchNeeded && (
         <p>
           <b> Нужна ретушь!</b>

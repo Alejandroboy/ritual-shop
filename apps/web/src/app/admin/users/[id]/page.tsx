@@ -3,7 +3,7 @@
 import { useParams } from 'next/navigation';
 import useSWR from 'swr';
 import { adminApiFetch } from '@utils';
-import { CustomerOrder } from '../../../../types';
+import { CustomerOrder } from '@types';
 
 export default function UserDetails() {
   const { id } = useParams<{ id: string }>();
@@ -36,6 +36,24 @@ export default function UserDetails() {
           <div className="w-1/2">Телефон</div>
           <div className="w-1/2">{data.user.phone}</div>
         </div>
+        {data.user.legalName && (
+          <div className="flex w-96">
+            <div className="w-1/2">Организация</div>
+            <div className="w-1/2">{data.user.legalName}</div>
+          </div>
+        )}
+        {data.user.address && (
+          <div className="flex w-96">
+            <div className="w-1/2">Адрес</div>
+            <div className="w-1/2">{data.user.address}</div>
+          </div>
+        )}
+        {data.user.inn && (
+          <div className="flex w-96">
+            <div className="w-1/2">ИНН</div>
+            <div className="w-1/2">{data.user.inn}</div>
+          </div>
+        )}
         <div className="flex w-96">
           <div className="w-1/2">Статус</div>
           <div className="w-1/2">{data.user.role}</div>
@@ -64,17 +82,15 @@ export default function UserDetails() {
                   <div className="flex w-96">
                     <div className="w-1/2 text-right">Позиции:</div>
                     <div className="w-1/2 text-right">
-                      {order.items.map((item) => {
-                        return (
-                          <div key={item.id}>
-                            <p>{item.templateLabel}</p>
-                            <p>Размер: {item.sizeId}</p>
-                            <p>Вид рамки:{item.frameId}</p>
-                            <p>Вид фона: {item.backgroundId}</p>
-                            <p>Отверстия: {item.holePattern}</p>
-                          </div>
-                        );
-                      })}
+                      {order?.items && (
+                        <div key={order?.items.id}>
+                          <p>{order?.items.templateLabel}</p>
+                          <p>Размер: {order?.items.sizeId}</p>
+                          <p>Вид рамки:{order?.items.frameId}</p>
+                          <p>Вид фона: {order?.items.backgroundId}</p>
+                          <p>Отверстия: {order?.items.holePattern}</p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
