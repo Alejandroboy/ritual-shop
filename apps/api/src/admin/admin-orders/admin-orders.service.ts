@@ -103,7 +103,7 @@ export class AdminOrdersService {
               include: {
                 allowedSizes: {
                   include: {
-                    size: true, // чтобы сразу получить width/height/label
+                    size: true,
                   },
                 },
                 allowedFrames: { select: { frameId: true } },
@@ -173,14 +173,14 @@ export class AdminOrdersService {
       data: { orderStatus: dto.status },
     });
 
-    // if (prevOrder?.customerEmail) {
-    //   await this.email.orderStatusChanged(
-    //     prevOrder.customerEmail,
-    //     prevOrder?.number || '',
-    //     prevOrder.orderStatus,
-    //     dto.status,
-    //   );
-    // }
+    if (prevOrder?.customerEmail) {
+      await this.email.orderStatusChanged(
+        prevOrder.customerEmail,
+        prevOrder?.number || '',
+        prevOrder.orderStatus,
+        dto.status,
+      );
+    }
 
     if (user?.telegramChatId) {
       await this.telegram.orderStatusChanged(

@@ -163,7 +163,6 @@ export class CatalogService {
 
     if (!tpl) throw new NotFoundException('Template not found');
 
-    // лёгкий маппинг для фронта
     return {
       ...tpl,
       sizes: tpl.allowedSizes.map((x) => x.size),

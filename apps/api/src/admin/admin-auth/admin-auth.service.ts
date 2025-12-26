@@ -41,7 +41,6 @@ export class AdminAuthService {
   }
 
   async signRefresh(admin: User, jti: string) {
-    // (опционально) сохрани jti в Redis с TTL=7d и проверяй при refresh (ротация)
     return this.jwtService.signAsync(
       { sub: admin.id, jti },
       { expiresIn: REFRESH_TTL },

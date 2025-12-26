@@ -13,7 +13,6 @@ const holePatternLabel = labelOf<string>(holePatternLabels);
 const finishLabel = labelOf<string>(finishLabels);
 
 export default function AddToOrderForm({ tpl }: Props) {
-  console.log('tpl', tpl);
   const router = useRouter();
   const attachPendingToItem = useAppStore((s) => s.attachPendingToItem);
   const draftOrderId = useAppStore((s) => s.draftOrderId);
