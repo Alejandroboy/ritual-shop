@@ -12,7 +12,7 @@ export type CustomerOrder = {
   id: string;
   orderStatus: string;
   totalMinor: number;
-  items: CustomerOrderItem[] | [];
+  items: CustomerOrderItem;
 };
 
 export type CustomerOrderItem = {

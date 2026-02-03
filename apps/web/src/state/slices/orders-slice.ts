@@ -36,7 +36,7 @@ export type MyOrder = {
   createdAt: string;
   orderStatus: string;
   totalMinor: number;
-  items: MyOrderItem[];
+  items: MyOrderItem;
 };
 
 export type OrdersSlice = {
