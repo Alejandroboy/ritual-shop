@@ -2,7 +2,8 @@
 import { sizesEngraving, type TemplateConfig } from './shared.ts';
 import {
   ColorMode,
-  Coverage, Finish,
+  Coverage,
+  Finish,
   HolePattern,
   Material,
   Orientation,

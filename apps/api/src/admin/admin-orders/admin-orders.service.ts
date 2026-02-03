@@ -93,7 +93,6 @@ export class AdminOrdersService {
   }
 
   async getById(id: string) {
-
     return this.prisma.order.findUnique({
       where: { id },
       include: {
@@ -101,7 +100,7 @@ export class AdminOrdersService {
           include: {
             discussComments: {
               select: { id: true, text: true, date: true },
-              orderBy: { date: "desc" },
+              orderBy: { date: 'desc' },
             },
             assets: true,
             template: {

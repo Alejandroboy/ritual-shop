@@ -1,9 +1,4 @@
-import {
-  PrismaClient,
-  Material,
-  Coverage,
-  HolePattern,
-} from '@prisma/client';
+import { PrismaClient, Material, Coverage, HolePattern } from '@prisma/client';
 import { metalOvalHorTemplates } from './templates/cermet-oval-horizontal.ts';
 import { metalOvalVertTemplates } from './templates/cermet-oval-vertical.ts';
 import { metalRectVertTemplates } from './templates/cermet-rectangle-vertical.ts';
@@ -198,15 +193,15 @@ async function seedSizes() {
 // ================== FRAMES ==================
 
 async function seedFrames() {
-  const frames: {code: number, name: string}[] = [];
+  const frames: { code: number; name: string }[] = [];
 
-  frames.push({code: 0, name: 'Без рамки'});
+  frames.push({ code: 0, name: 'Без рамки' });
 
   for (let i = 1; i < 7; i += 1) {
     frames.push({
       code: i,
       name: `Рамка ${i}`,
-    })
+    });
   }
 
   await prisma.frame.createMany({

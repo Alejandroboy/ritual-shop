@@ -2,14 +2,17 @@
 import {
   ColorMode,
   Coverage,
-  Finish, HolePattern,
+  Finish,
+  HolePattern,
   Material,
   Orientation,
   Shape,
 } from '@prisma/client';
 import {
   sizesGrowthOval,
-  sizesGrowthRectArch, sizesWhiteBlackArchOval, sizesWhiteBlackRect,
+  sizesGrowthRectArch,
+  sizesWhiteBlackArchOval,
+  sizesWhiteBlackRect,
   type TemplateConfig,
 } from './shared.ts';
 
@@ -50,7 +53,9 @@ export const growthRectsTemplates: TemplateConfig[] = [
       perHolePrice: 350,
       basePrice: 0,
       sizePrice: PRICES_RECT_ARCH,
-      backgroundCodes: [300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 100, 200],
+      backgroundCodes: [
+        300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 100, 200,
+      ],
       holePatterns: [
         HolePattern.TWO_HORIZONTAL,
         HolePattern.TWO_VERTICAL,
@@ -64,7 +69,11 @@ export const growthRectsTemplates: TemplateConfig[] = [
       code: `${base}c`,
       label: `${bw.label}ц`,
       fullTitle: `Белый ростовой прямоугольный портрет ${bw.label}ц на керамограните`,
-      backgroundCodes: [300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 24, 3, 25, 16, 14, 26, 27, 28, 29, 30, 31, 32, 2, 8, 17, 6, 33, 15, 7, 5, 4, 34, 35, 36, 100, 200 ],
+      backgroundCodes: [
+        300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 24, 3, 25,
+        16, 14, 26, 27, 28, 29, 30, 31, 32, 2, 8, 17, 6, 33, 15, 7, 5, 4, 34,
+        35, 36, 100, 200,
+      ],
       colorMode: ColorMode.COLOR,
     };
     return [bw, color];
@@ -88,7 +97,9 @@ export const growthRectsTemplates: TemplateConfig[] = [
       perHolePrice: 350,
       basePrice: 0,
       sizePrice: PRICES_RECT_ARCH,
-      backgroundCodes: [300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 100, 200],
+      backgroundCodes: [
+        300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 100, 200,
+      ],
       holePatterns: [
         HolePattern.TWO_HORIZONTAL,
         HolePattern.TWO_VERTICAL,
@@ -102,7 +113,11 @@ export const growthRectsTemplates: TemplateConfig[] = [
       code: `${base}c`,
       label: `${bw.label}ц`,
       fullTitle: `Белый ростовой прямоугольный портрет ${bw.label}ц на керамограните`,
-      backgroundCodes: [300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 24, 3, 25, 16, 14, 26, 27, 28, 29, 30, 31, 32, 2, 8, 17, 6, 33, 15, 7, 5, 4, 34, 35, 36, 100, 200 ],
+      backgroundCodes: [
+        300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 24, 3, 25,
+        16, 14, 26, 27, 28, 29, 30, 31, 32, 2, 8, 17, 6, 33, 15, 7, 5, 4, 34,
+        35, 36, 100, 200,
+      ],
       colorMode: ColorMode.COLOR,
     };
     return [bw, color];
@@ -129,7 +144,9 @@ export const growthOvalTemplates: TemplateConfig[] = [
       perHolePrice: 350,
       basePrice: 0,
       sizePrice: PRICES_OVAL,
-      backgroundCodes: [300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 100, 200],
+      backgroundCodes: [
+        300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 100, 200,
+      ],
       holePatterns: [
         HolePattern.TWO_HORIZONTAL,
         HolePattern.TWO_VERTICAL,
@@ -143,7 +160,11 @@ export const growthOvalTemplates: TemplateConfig[] = [
       code: `${base}_oval_c`,
       label: `${base.replace('K', 'К')}ц овал`,
       fullTitle: `Белый ростовой портрет ${base.replace('K', 'К')}ц овал на керамограните`,
-      backgroundCodes: [300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 24, 3, 25, 16, 14, 26, 27, 28, 29, 30, 31, 32, 2, 8, 17, 6, 33, 15, 7, 5, 4, 34, 35, 36, 100, 200 ],
+      backgroundCodes: [
+        300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 24, 3, 25,
+        16, 14, 26, 27, 28, 29, 30, 31, 32, 2, 8, 17, 6, 33, 15, 7, 5, 4, 34,
+        35, 36, 100, 200,
+      ],
       colorMode: ColorMode.COLOR,
     };
     return [bw, color];
@@ -167,7 +188,9 @@ export const growthOvalTemplates: TemplateConfig[] = [
       perHolePrice: 350,
       basePrice: 0,
       sizePrice: PRICES_OVAL,
-      backgroundCodes: [300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 100, 200],
+      backgroundCodes: [
+        300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 100, 200,
+      ],
       holePatterns: [
         HolePattern.TWO_HORIZONTAL,
         HolePattern.TWO_VERTICAL,
@@ -181,7 +204,11 @@ export const growthOvalTemplates: TemplateConfig[] = [
       code: `${base}_oval_c`,
       label: `${base.replace('K', 'К')}ц овал`,
       fullTitle: `Белый ростовой портрет ${base.replace('K', 'К')}ц овал на керамограните`,
-      backgroundCodes: [300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 24, 3, 25, 16, 14, 26, 27, 28, 29, 30, 31, 32, 2, 8, 17, 6, 33, 15, 7, 5, 4, 34, 35, 36, 100, 200 ],
+      backgroundCodes: [
+        300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 24, 3, 25,
+        16, 14, 26, 27, 28, 29, 30, 31, 32, 2, 8, 17, 6, 33, 15, 7, 5, 4, 34,
+        35, 36, 100, 200,
+      ],
       colorMode: ColorMode.COLOR,
     };
     return [bw, color];
@@ -208,7 +235,9 @@ export const growthArchTemplates: TemplateConfig[] = [
       perHolePrice: 350,
       basePrice: 0,
       sizePrice: PRICES_RECT_ARCH,
-      backgroundCodes: [300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 100, 200],
+      backgroundCodes: [
+        300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 100, 200,
+      ],
       holePatterns: [
         HolePattern.TWO_HORIZONTAL,
         HolePattern.TWO_VERTICAL,
@@ -222,7 +251,11 @@ export const growthArchTemplates: TemplateConfig[] = [
       code: `${base}_arch_c`,
       label: `${base.replace('K', 'К')}ц арка`,
       fullTitle: `Белый ростовой портрет ${base.replace('K', 'К')}ц арка на керамограните`,
-      backgroundCodes: [300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 24, 3, 25, 16, 14, 26, 27, 28, 29, 30, 31, 32, 2, 8, 17, 6, 33, 15, 7, 5, 4, 34, 35, 36, 100, 200 ],
+      backgroundCodes: [
+        300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 24, 3, 25,
+        16, 14, 26, 27, 28, 29, 30, 31, 32, 2, 8, 17, 6, 33, 15, 7, 5, 4, 34,
+        35, 36, 100, 200,
+      ],
       colorMode: ColorMode.COLOR,
     };
     return [bw, color];
@@ -246,7 +279,9 @@ export const growthArchTemplates: TemplateConfig[] = [
       perHolePrice: 350,
       basePrice: 0,
       sizePrice: PRICES_RECT_ARCH,
-      backgroundCodes: [300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 100, 200],
+      backgroundCodes: [
+        300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 100, 200,
+      ],
       holePatterns: [
         HolePattern.TWO_HORIZONTAL,
         HolePattern.TWO_VERTICAL,
@@ -260,7 +295,11 @@ export const growthArchTemplates: TemplateConfig[] = [
       code: `${base}_arch_c`,
       label: `${base.replace('K', 'К')}ц арка`,
       fullTitle: `Белый ростовой портрет ${base.replace('K', 'К')}ц арка на керамограните`,
-      backgroundCodes: [300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 24, 3, 25, 16, 14, 26, 27, 28, 29, 30, 31, 32, 2, 8, 17, 6, 33, 15, 7, 5, 4, 34, 35, 36, 100, 200 ],
+      backgroundCodes: [
+        300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 24, 3, 25,
+        16, 14, 26, 27, 28, 29, 30, 31, 32, 2, 8, 17, 6, 33, 15, 7, 5, 4, 34,
+        35, 36, 100, 200,
+      ],
       colorMode: ColorMode.COLOR,
     };
     return [bw, color];

@@ -40,7 +40,9 @@ export const glassOvalTemplates: TemplateConfig[] = [
       perHolePrice: 350,
       basePrice: 0,
       sizePrice: PRICES,
-      backgroundCodes: [400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 100, 200],
+      backgroundCodes: [
+        400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 100, 200,
+      ],
       holePatterns: [
         HolePattern.TWO_HORIZONTAL,
         HolePattern.TWO_VERTICAL,
@@ -54,7 +56,11 @@ export const glassOvalTemplates: TemplateConfig[] = [
       code: `${base}_oval_c`,
       label: `${base.replace('St', 'Ст')}ц овал`,
       fullTitle: `Портрет на стекле ${base.replace('St', 'Ст')}ц овал`,
-      backgroundCodes: [400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 24, 3, 25, 16, 14, 26, 27, 28, 29, 30, 31, 32, 2, 8, 17, 6, 33, 15, 7, 5, 4, 34, 35, 36, 100, 200 ],
+      backgroundCodes: [
+        400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 24, 3, 25, 16,
+        14, 26, 27, 28, 29, 30, 31, 32, 2, 8, 17, 6, 33, 15, 7, 5, 4, 34, 35,
+        36, 100, 200,
+      ],
       colorMode: ColorMode.COLOR,
     };
     return [bw, color];
@@ -77,7 +83,9 @@ export const glassOvalTemplates: TemplateConfig[] = [
       perHolePrice: 350,
       basePrice: 0,
       sizePrice: PRICES,
-      backgroundCodes: [400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 100, 200],
+      backgroundCodes: [
+        400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 100, 200,
+      ],
       holePatterns: [
         HolePattern.TWO_HORIZONTAL,
         HolePattern.TWO_VERTICAL,
@@ -91,7 +99,11 @@ export const glassOvalTemplates: TemplateConfig[] = [
       code: `${base}_oval_c`,
       label: `${base.replace('St', 'Ст')}ц овал`,
       fullTitle: `Портрет на стекле ${base.replace('St', 'Ст')}ц овал`,
-      backgroundCodes: [400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 24, 3, 25, 16, 14, 26, 27, 28, 29, 30, 31, 32, 2, 8, 17, 6, 33, 15, 7, 5, 4, 34, 35, 36, 100, 200 ],
+      backgroundCodes: [
+        400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 24, 3, 25, 16,
+        14, 26, 27, 28, 29, 30, 31, 32, 2, 8, 17, 6, 33, 15, 7, 5, 4, 34, 35,
+        36, 100, 200,
+      ],
       colorMode: ColorMode.COLOR,
     };
     return [bw, color];

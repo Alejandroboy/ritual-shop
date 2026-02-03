@@ -19,8 +19,8 @@ export class OrdersItemsService {
         assets: true,
         discussComments: {
           select: { id: true, text: true, date: true },
-          orderBy: { date: "desc" },
-        }
+          orderBy: { date: 'desc' },
+        },
       },
     });
   }

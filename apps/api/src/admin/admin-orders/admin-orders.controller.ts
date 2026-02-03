@@ -24,9 +24,7 @@ export class AdminOrdersPingController {
 @UseGuards(AdminGuard)
 @Controller('admin/orders')
 export class AdminOrdersController {
-  constructor(
-    private readonly adminOrdersService: AdminOrdersService,
-  ) {}
+  constructor(private readonly adminOrdersService: AdminOrdersService) {}
 
   @Get('_ping')
   ping() {

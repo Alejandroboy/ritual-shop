@@ -76,7 +76,9 @@ export default function AddToOrderForm({ tpl }: Props) {
 
   async function submit() {
     if (!readAgreement) {
-      alert('Прочитайте правила оформления заказа и согласитесь с обработкой персональных данных');
+      alert(
+        'Прочитайте правила оформления заказа и согласитесь с обработкой персональных данных',
+      );
       return;
     }
     const orderId = await ensureOrder();
@@ -124,19 +126,21 @@ export default function AddToOrderForm({ tpl }: Props) {
 
   const renderCheckboxes = () => {
     if (!assetUploaded.length) {
-      return <div className="mb-[15px] flex">
-        <div className="cursor-pointer p-[15px] border rounded-xl block w-fit">
-          <label className="cursor-pointer" htmlFor="checkbox-approve">
-            <input
-              type="checkbox"
-              id="checkbox-approve"
-              checked={approveNeeded}
-              onChange={handleApproveClick}
-            />
-            &nbsp;Нужно согласование
-          </label>
+      return (
+        <div className="mb-[15px] flex">
+          <div className="cursor-pointer p-[15px] border rounded-xl block w-fit">
+            <label className="cursor-pointer" htmlFor="checkbox-approve">
+              <input
+                type="checkbox"
+                id="checkbox-approve"
+                checked={approveNeeded}
+                onChange={handleApproveClick}
+              />
+              &nbsp;Нужно согласование
+            </label>
+          </div>
         </div>
-      </div>
+      );
     }
     if (assetUploaded.length) {
       return (
@@ -231,20 +235,23 @@ export default function AddToOrderForm({ tpl }: Props) {
       <div className="grid sm:grid-cols-2 gap-3">
         <label className="text-sm">
           <div className="mb-1 text-neutral-600">Размер</div>
-          {availableSizes.length > 1 ? <select
-            className="border rounded-md px-2 py-1 bg-white w-full"
-            value={sizeId}
-            onChange={(e) =>
-              setSizeId(e.target.value ? Number(e.target.value) : '')
-            }
-          >
-            {availableSizes.map((s) => (
-              <option key={s.size.id} value={s.size.id}>
-                {s.size.label}
-              </option>
-            ))}
-          </select>:
-            <span>{availableSizes[0].size.label}</span>}
+          {availableSizes.length > 1 ? (
+            <select
+              className="border rounded-md px-2 py-1 bg-white w-full"
+              value={sizeId}
+              onChange={(e) =>
+                setSizeId(e.target.value ? Number(e.target.value) : '')
+              }
+            >
+              {availableSizes.map((s) => (
+                <option key={s.size.id} value={s.size.id}>
+                  {s.size.label}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <span>{availableSizes[0].size.label}</span>
+          )}
         </label>
 
         <label className="text-sm">
@@ -303,23 +310,26 @@ export default function AddToOrderForm({ tpl }: Props) {
         {needFinish && (
           <label className="text-sm">
             <div className="mb-1 text-neutral-600">Финиш</div>
-            {finishOptions.length > 1 ?<>
-              <select
-                className="border rounded-md px-2 py-1 bg-white w-full"
-                value={finish}
-                onChange={(e) => setFinish(e.target.value || '')}
-              >
-                {finishOptions.map((f) => {
-                  return (
-                    <option key={f} value={f}>
-                      {finishLabel(f)}
-                    </option>
-                  );
-                })}
-              </select>
-              *Выбор финиша обязателен*
-            </> : <span>{finishLabel(finishOptions[0])}</span>}
-
+            {finishOptions.length > 1 ? (
+              <>
+                <select
+                  className="border rounded-md px-2 py-1 bg-white w-full"
+                  value={finish}
+                  onChange={(e) => setFinish(e.target.value || '')}
+                >
+                  {finishOptions.map((f) => {
+                    return (
+                      <option key={f} value={f}>
+                        {finishLabel(f)}
+                      </option>
+                    );
+                  })}
+                </select>
+                *Выбор финиша обязателен*
+              </>
+            ) : (
+              <span>{finishLabel(finishOptions[0])}</span>
+            )}
           </label>
         )}
       </div>
