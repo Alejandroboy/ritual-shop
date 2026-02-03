@@ -59,6 +59,7 @@ export const blackCoupleTemplates: TemplateConfig[] = [
     sizePrice: PRICES_RECT,
     sizeLabels: sizesWhiteBlackRect,
     finishes: [Finish.MATTE, Finish.GLOSS],
+    backgroundCodes: [300],
     holePatterns: [
       HolePattern.TWO_HORIZONTAL,
       HolePattern.TWO_VERTICAL,
@@ -85,6 +86,7 @@ export const blackCoupleTemplates: TemplateConfig[] = [
     sizePrice: PRICES_ARCH,
     sizeLabels: sizesWhiteBlackArchOval,
     finishes: [Finish.MATTE, Finish.GLOSS],
+    backgroundCodes: [300],
     holePatterns: [
       HolePattern.TWO_HORIZONTAL,
       HolePattern.TWO_VERTICAL,
@@ -110,6 +112,7 @@ export const blackCoupleTemplates: TemplateConfig[] = [
     basePrice: 0,
     sizePrice: PRICES_OVAL,
     sizeLabels: sizesWhiteBlackArchOval,
+    backgroundCodes: [300],
     holePatterns: [
       HolePattern.TWO_HORIZONTAL,
       HolePattern.TWO_VERTICAL,

@@ -93,35 +93,16 @@ export class AdminOrdersService {
   }
 
   async getById(id: string) {
-    const ee = await this.prisma.order.findUnique({
-      where: { id },
-      include: {
-        items: {
-          include: {
-            assets: true,
-            template: {
-              include: {
-                allowedSizes: {
-                  include: {
-                    size: true,
-                  },
-                },
-                allowedFrames: { select: { frameId: true } },
-                allowedBackgrounds: { select: { backgroundId: true } },
-                allowedHoles: { select: { pattern: true } },
-              },
-            },
-          },
-        },
-        customer: true,
-      },
-    });
-    console.log('ee', ee);
+
     return this.prisma.order.findUnique({
       where: { id },
       include: {
         items: {
           include: {
+            discussComments: {
+              select: { id: true, text: true, date: true },
+              orderBy: { date: "desc" },
+            },
             assets: true,
             template: {
               include: {

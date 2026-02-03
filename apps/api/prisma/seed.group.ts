@@ -1,13 +1,8 @@
-// prisma/seed.ts
 import {
   PrismaClient,
   Material,
-  Shape,
-  Orientation,
-  ColorMode,
   Coverage,
   HolePattern,
-  Finish,
 } from '@prisma/client';
 import { metalOvalHorTemplates } from './templates/cermet-oval-horizontal.ts';
 import { metalOvalVertTemplates } from './templates/cermet-oval-vertical.ts';
@@ -20,7 +15,9 @@ import { heartTemplates } from './templates/cermet-heart.ts';
 import { whiteRectTemplates } from './templates/white-ceramo-granite-rectangle.ts';
 import { whiteOvalTemplates } from './templates/white-ceramo-granite-oval.ts';
 import { whiteArchTemplates } from './templates/white-ceramo-granite-arch.ts';
-import { growthTemplates } from './templates/growth-photoceramic.ts';
+import { growthRectsTemplates } from './templates/growth-photoceramic.ts';
+import { growthArchTemplates } from './templates/growth-photoceramic.ts';
+import { growthOvalTemplates } from './templates/growth-photoceramic.ts';
 import { glassRectTemplates } from './templates/glass-rectangle.ts';
 import { glassOvalTemplates } from './templates/glass-oval.ts';
 import { glassArchTemplates } from './templates/glass-arch.ts';
@@ -77,6 +74,7 @@ async function createTemplate(cfg: TemplateConfig) {
         sizeId: s.id,
         availableHolePattern: cfg.sizeHolePatterns?.[s.label] ?? defaultHoles,
         price: cfg.sizePrice?.[s.label] ?? defaultPrice,
+        skuCode: cfg.skuCodes?.[s.label] ?? null,
       })),
       skipDuplicates: true,
     });
@@ -200,10 +198,16 @@ async function seedSizes() {
 // ================== FRAMES ==================
 
 async function seedFrames() {
-  const frames = Array.from({ length: 6 }).map((_, i) => ({
-    code: i + 1,
-    name: `Рамка ${i + 1}`,
-  }));
+  const frames: {code: number, name: string}[] = [];
+
+  frames.push({code: 0, name: 'Без рамки'});
+
+  for (let i = 1; i < 7; i += 1) {
+    frames.push({
+      code: i,
+      name: `Рамка ${i}`,
+    })
+  }
 
   await prisma.frame.createMany({
     data: frames,
@@ -215,49 +219,45 @@ async function seedFrames() {
 
 async function seedBackgrounds() {
   const bgs: Array<{ code: number; name: string }> = [
-    // стр. 56
-    { code: 1, name: 'Светлый градиент' },
-    { code: 18, name: 'Светлый боке' },
-    { code: 12, name: 'Тёмный градиент' },
-    { code: 19, name: 'Светлый камень 1' },
-    { code: 20, name: 'Светлый камень 2' },
-    { code: 21, name: 'Тёмный камень' },
-    { code: 22, name: 'Серые полосы' },
-    { code: 13, name: 'Светлая крошка' },
-    { code: 10, name: 'Тёмная крошка' },
-    { code: 23, name: 'Светлое облако' },
-    { code: 9, name: 'Серые драпировки' },
-    { code: 11, name: 'Тёмный орнамент' },
-
-    // стр. 57
-    { code: 24, name: 'Бежевый светлый' },
-    { code: 3, name: 'Бежевый тёплый' },
-    { code: 25, name: 'Красный гранит' },
-    { code: 16, name: 'Тёплое облако' },
-    { code: 14, name: 'Тёплый дымчатый' },
-    { code: 26, name: 'Коричневый гранит' },
-    { code: 27, name: 'Золотой' },
-    { code: 28, name: 'Красная драпировка' },
-    { code: 29, name: 'Золотой боке' },
-    { code: 30, name: 'Берёзовая аллея (осень)' },
-    { code: 31, name: 'Осенний боке' },
-    { code: 32, name: 'Закат' },
-
-    // стр. 58
-    { code: 2, name: 'Небо мягкое' },
-    { code: 8, name: 'Небо с полосами' },
-    { code: 17, name: 'Тёмно-синее поле' },
-    { code: 6, name: 'Вертикальные полосы синие' },
-    { code: 33, name: 'Сине-зелёный боке' },
-    { code: 15, name: 'Ночное небо' },
-    { code: 7, name: 'Дневные облака' },
-    { code: 5, name: 'Листва сверху' },
-    { code: 4, name: 'Берёзовая аллея (лето)' },
-    { code: 34, name: 'Листва + лучи' },
-    { code: 35, name: 'Зелёный боке' },
-    { code: 36, name: 'Поле с дорогой' },
-
-    // стр. 59
+    { code: 300, name: 'Без фона' },
+    { code: 400, name: 'Фон как на фото' },
+    { code: 500, name: 'Свой вариант фона' },
+    { code: 1, name: 'Фон 1' },
+    { code: 18, name: 'Фон 18' },
+    { code: 12, name: 'Фон 12' },
+    { code: 19, name: 'Фон 19' },
+    { code: 20, name: 'Фон 20' },
+    { code: 21, name: 'Фон 21' },
+    { code: 22, name: 'Фон 22' },
+    { code: 13, name: 'Фон 13' },
+    { code: 10, name: 'Фон 10' },
+    { code: 23, name: 'Фон 23' },
+    { code: 9, name: 'Фон 9' },
+    { code: 11, name: 'Фон 11' },
+    { code: 24, name: 'Фон 24' },
+    { code: 3, name: 'Фон 3' },
+    { code: 25, name: 'Фон 25' },
+    { code: 16, name: 'Фон 16' },
+    { code: 14, name: 'Фон 14' },
+    { code: 26, name: 'Фон 26' },
+    { code: 27, name: 'Фон 27' },
+    { code: 28, name: 'Фон 28' },
+    { code: 29, name: 'Фон 29' },
+    { code: 30, name: 'Фон 30' },
+    { code: 31, name: 'Фон 31' },
+    { code: 32, name: 'Фон 32' },
+    { code: 2, name: 'Фон 2' },
+    { code: 8, name: 'Фон 8' },
+    { code: 17, name: 'Фон 17' },
+    { code: 6, name: 'Фон 6' },
+    { code: 33, name: 'Фон 33' },
+    { code: 15, name: 'Фон 15' },
+    { code: 7, name: 'Фон 7' },
+    { code: 5, name: 'Фон 5' },
+    { code: 4, name: 'Фон 4' },
+    { code: 34, name: 'Фон 34' },
+    { code: 35, name: 'Фон 35' },
+    { code: 36, name: 'Фон 36' },
     { code: 100, name: 'Белый фон' },
     { code: 200, name: 'Чёрный фон' },
   ];
@@ -298,7 +298,9 @@ async function seedTemplates() {
     ...whiteRectTemplates,
     ...whiteOvalTemplates,
     ...whiteArchTemplates,
-    ...growthTemplates,
+    ...growthArchTemplates,
+    ...growthOvalTemplates,
+    ...growthRectsTemplates,
     ...glassRectTemplates,
     ...glassOvalTemplates,
     ...glassArchTemplates,

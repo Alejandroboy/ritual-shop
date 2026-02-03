@@ -89,4 +89,5 @@ export type TemplateConfig = {
   frameCodes?: number[]; // коды рамок (1..6)
   backgroundCodes?: number[]; // если нужны конкретные фоны, иначе все
   finishes?: Finish[]; // допустимые финиши
+  skuCodes?: Record<string, string>;
 };

@@ -38,6 +38,7 @@ export const glassArchTemplates: TemplateConfig[] = [
       supportsHoles: true,
       sizeLabels: sizesStdGlass,
       sizePrice: PRICES,
+      backgroundCodes: [400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 100, 200],
       perHolePrice: 350,
       basePrice: 0,
       holePatterns: [
@@ -53,6 +54,7 @@ export const glassArchTemplates: TemplateConfig[] = [
       code: `${base}_arch_c`,
       label: `${base.replace('St', 'Ст')}ц арка`,
       fullTitle: `Портрет на стекле ${base.replace('St', 'Ст')}ц арка`,
+      backgroundCodes: [400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 24, 3, 25, 16, 14, 26, 27, 28, 29, 30, 31, 32, 2, 8, 17, 6, 33, 15, 7, 5, 4, 34, 35, 36, 100, 200 ],
       colorMode: ColorMode.COLOR,
     };
     return [bw, color];
@@ -74,6 +76,7 @@ export const glassArchTemplates: TemplateConfig[] = [
       sizeLabels: sizesStdGlass,
       sizePrice: PRICES,
       perHolePrice: 350,
+      backgroundCodes: [400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 100, 200],
       basePrice: 0,
       holePatterns: [
         HolePattern.TWO_HORIZONTAL,
@@ -88,6 +91,7 @@ export const glassArchTemplates: TemplateConfig[] = [
       code: `${base}_arch_c`,
       label: `${base.replace('St', 'Ст')}ц арка`,
       fullTitle: `Портрет на стекле ${base.replace('St', 'Ст')}ц арка`,
+      backgroundCodes: [400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 24, 3, 25, 16, 14, 26, 27, 28, 29, 30, 31, 32, 2, 8, 17, 6, 33, 15, 7, 5, 4, 34, 35, 36, 100, 200 ],
       colorMode: ColorMode.COLOR,
     };
     return [bw, color];

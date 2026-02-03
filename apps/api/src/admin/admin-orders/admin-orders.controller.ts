@@ -25,7 +25,6 @@ export class AdminOrdersPingController {
 @Controller('admin/orders')
 export class AdminOrdersController {
   constructor(
-    private prisma: PrismaService,
     private readonly adminOrdersService: AdminOrdersService,
   ) {}
 

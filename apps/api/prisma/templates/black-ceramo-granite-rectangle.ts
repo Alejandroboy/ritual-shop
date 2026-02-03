@@ -39,6 +39,7 @@ export const blackTextTemplates: TemplateConfig[] = blackTextBases.map(
     perHolePrice: 350,
     basePrice: 0,
     finishes: [Finish.MATTE, Finish.GLOSS],
+    backgroundCodes: [300],
     holePatterns: [
       HolePattern.TWO_HORIZONTAL,
       HolePattern.TWO_VERTICAL,

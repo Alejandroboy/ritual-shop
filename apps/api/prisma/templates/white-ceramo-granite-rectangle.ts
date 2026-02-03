@@ -43,6 +43,7 @@ export const whiteRectTemplates: TemplateConfig[] = [
       perHolePrice: 350,
       basePrice: 0,
       sizePrice: PRICES_RECT,
+      backgroundCodes: [300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 100, 200],
       holePatterns: [
         HolePattern.TWO_HORIZONTAL,
         HolePattern.TWO_VERTICAL,
@@ -56,6 +57,7 @@ export const whiteRectTemplates: TemplateConfig[] = [
       code: `${base}c`,
       label: `${bw.label}ц`,
       fullTitle: `Белый прямоугольный портрет ${bw.label}ц на керамограните`,
+      backgroundCodes: [300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 24, 3, 25, 16, 14, 26, 27, 28, 29, 30, 31, 32, 2, 8, 17, 6, 33, 15, 7, 5, 4, 34, 35, 36, 100, 200 ],
       colorMode: ColorMode.COLOR,
     };
     return [bw, color];
@@ -79,6 +81,7 @@ export const whiteRectTemplates: TemplateConfig[] = [
       perHolePrice: 350,
       basePrice: 0,
       sizePrice: PRICES_RECT,
+      backgroundCodes: [300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 100, 200],
       holePatterns: [
         HolePattern.TWO_HORIZONTAL,
         HolePattern.TWO_VERTICAL,
@@ -92,6 +95,7 @@ export const whiteRectTemplates: TemplateConfig[] = [
       code: `${base}c`,
       label: `${bw.label}ц`,
       fullTitle: `Белый прямоугольный портрет ${bw.label}ц на керамограните`,
+      backgroundCodes: [300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 24, 3, 25, 16, 14, 26, 27, 28, 29, 30, 31, 32, 2, 8, 17, 6, 33, 15, 7, 5, 4, 34, 35, 36, 100, 200 ],
       colorMode: ColorMode.COLOR,
     };
     return [bw, color];
@@ -114,6 +118,7 @@ export const whiteRectTemplates: TemplateConfig[] = [
       perHolePrice: 350,
       basePrice: 0,
       sizePrice: PRICES_RECT,
+      backgroundCodes: [300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 100, 200],
       holePatterns: [
         HolePattern.TWO_HORIZONTAL,
         HolePattern.TWO_VERTICAL,
@@ -127,6 +132,7 @@ export const whiteRectTemplates: TemplateConfig[] = [
       code: `${base}c`,
       label: `${bw.label}ц`,
       fullTitle: `Белый прямоугольный портрет ${bw.label}ц на керамограните`,
+      backgroundCodes: [300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 24, 3, 25, 16, 14, 26, 27, 28, 29, 30, 31, 32, 2, 8, 17, 6, 33, 15, 7, 5, 4, 34, 35, 36, 100, 200 ],
       colorMode: ColorMode.COLOR,
     };
     return [bw, color];
@@ -150,6 +156,7 @@ export const whiteRectTemplates: TemplateConfig[] = [
     perHolePrice: 350,
     basePrice: 0,
     sizePrice: PRICES_RECT,
+    backgroundCodes: [300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 24, 3, 25, 16, 14, 26, 27, 28, 29, 30, 31, 32, 2, 8, 17, 6, 33, 15, 7, 5, 4, 34, 35, 36, 100, 200 ],
     holePatterns: [
       HolePattern.TWO_HORIZONTAL,
       HolePattern.TWO_VERTICAL,
@@ -175,6 +182,7 @@ export const whiteRectTemplates: TemplateConfig[] = [
     perHolePrice: 350,
     basePrice: 0,
     sizePrice: PRICES_RECT,
+    backgroundCodes: [300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 24, 3, 25, 16, 14, 26, 27, 28, 29, 30, 31, 32, 2, 8, 17, 6, 33, 15, 7, 5, 4, 34, 35, 36, 100, 200 ],
     holePatterns: [
       HolePattern.TWO_HORIZONTAL,
       HolePattern.TWO_VERTICAL,
@@ -182,7 +190,6 @@ export const whiteRectTemplates: TemplateConfig[] = [
       HolePattern.NONE,
     ],
   },
-  // декоративные K11–K14
   ...['K11', 'K12', 'K13', 'K14'].map<TemplateConfig>((base) => ({
     code: base,
     label: base.replace('K', 'К'),
@@ -201,6 +208,7 @@ export const whiteRectTemplates: TemplateConfig[] = [
     perHolePrice: 350,
     basePrice: 0,
     sizePrice: PRICES_RECT,
+    backgroundCodes: [300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 24, 3, 25, 16, 14, 26, 27, 28, 29, 30, 31, 32, 2, 8, 17, 6, 33, 15, 7, 5, 4, 34, 35, 36, 100, 200 ],
     holePatterns: [
       HolePattern.TWO_HORIZONTAL,
       HolePattern.TWO_VERTICAL,

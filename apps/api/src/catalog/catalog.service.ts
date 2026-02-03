@@ -133,7 +133,9 @@ export class CatalogService {
             price: true,
             size: {
               select: { id: true, label: true, widthCm: true, heightCm: true },
+
             },
+            skuCode: true,
             availableHolePattern: true,
           },
         },
@@ -178,7 +180,7 @@ export class CatalogService {
       defaults: {
         sizeId: tpl.allowedSizes[0]?.size.id ?? null,
         holePattern: tpl.allowedHoles[0]?.pattern ?? null,
-        frameId: tpl.allowedFrames[0]?.frame.id ?? null,
+        frameId: (tpl.material === 'CERMET' && tpl.shape === 'OVAL') || (tpl.material === 'CERMET' && tpl.shape === 'RECTANGLE')? 0 : tpl.allowedFrames[0]?.frame.id,
         backgroundId: tpl.allowedBackgrounds[0]?.background.id ?? null,
       },
     };

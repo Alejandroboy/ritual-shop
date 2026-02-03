@@ -5,7 +5,7 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
 }
 
@@ -110,11 +110,11 @@ enum ApprovalStage {
 
 // ====== СПРАВОЧНИКИ ======
 model Size {
-  id       Int    @id @default(autoincrement())
-  widthCm  Int
-  heightCm Int
-  label    String
-  priceMinor Int  @default(0)
+  id         Int    @id @default(autoincrement())
+  widthCm    Int
+  heightCm   Int
+  label      String
+  priceMinor Int    @default(0)
 
   allowedForTemplates TemplateSize[]
   OrderItem           OrderItem[]
@@ -144,18 +144,18 @@ model Background {
 // ====== КАТАЛОГ ШАБЛОНОВ ======
 
 model Template {
-  id    String @id @default(cuid())
-  code  String @unique
-  label String
-  fullTitle   String?
+  id        String  @id @default(cuid())
+  code      String  @unique
+  label     String
+  fullTitle String?
 
-  material      Material
-  shape       Shape
-  orientation Orientation?
-  colorMode   ColorMode
-  coverage    Coverage     @default(NORMAL)
-  perHolePrice Int @default(0)
-  inscribed Boolean?
+  material     Material
+  shape        Shape
+  orientation  Orientation?
+  colorMode    ColorMode
+  coverage     Coverage     @default(NORMAL)
+  perHolePrice Int          @default(0)
+  inscribed    Boolean?
 
   supportsFrame      Boolean @default(false)
   requiresBackground Boolean @default(false)
@@ -175,7 +175,7 @@ model Template {
 
   items OrderItem[]
 
-  variants      TemplateVariant[]
+  variants TemplateVariant[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -185,12 +185,14 @@ model Template {
 }
 
 model TemplateSize {
-  templateId String
-  sizeId     Int
+  templateId           String
+  sizeId               Int
   availableHolePattern HolePattern[] @default([])
-  price Int @default(0)
-  template Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
-  size     Size     @relation(fields: [sizeId], references: [id], onDelete: Restrict)
+  price                Int           @default(0)
+  template             Template      @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  skuCode              String?
+  size                 Size          @relation(fields: [sizeId], references: [id], onDelete: Restrict)
+
   @@id([templateId, sizeId])
 }
 
@@ -199,6 +201,7 @@ model TemplateHole {
   pattern    HolePattern
 
   template Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
   @@id([templateId, pattern])
 }
 
@@ -232,12 +235,12 @@ model TemplateFinish {
 }
 
 model TemplateVariant {
-  templateId   String
-  holePattern  HolePattern
+  templateId  String
+  holePattern HolePattern
 
-  template     Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  template Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
 
-  finishRequired Boolean   @default(false)
+  finishRequired Boolean @default(false)
 
   allowedFinishes TemplateVariantFinish[]
 
@@ -245,9 +248,9 @@ model TemplateVariant {
 }
 
 model FinishVariant {
-  id    Int    @id @default(autoincrement())
-  code  String @unique
-  label String
+  id       Int                     @id @default(autoincrement())
+  code     String                  @unique
+  label    String
   variants TemplateVariantFinish[]
 }
 
@@ -257,7 +260,7 @@ model TemplateVariantFinish {
   finishId    Int
 
   variant TemplateVariant @relation(fields: [templateId, holePattern], references: [templateId, holePattern], onDelete: Cascade)
-  finish  FinishVariant          @relation(fields: [finishId], references: [id], onDelete: Cascade)
+  finish  FinishVariant   @relation(fields: [finishId], references: [id], onDelete: Cascade)
 
   @@id([templateId, holePattern, finishId])
 }
@@ -265,27 +268,26 @@ model TemplateVariantFinish {
 // ====== ЗАКАЗЫ ======
 
 model Order {
-  id            String    @id @default(cuid())
-  number        String    @unique
+  id            String      @id @default(cuid())
+  number        String      @unique
   customerName  String?
   customerPhone String?
   customerEmail String?
   intakePoint   String?
   delivery      String?
   intakeDate    DateTime?
-  approveNeeded Boolean   @default(false)
+  approveNeeded Boolean     @default(false)
   orderStatus   OrderStatus @default(DRAFT)
-  orderNumber   String? @unique
-  currency   Currency @default(RUB)
+  orderNumber   String?     @unique
+  currency      Currency    @default(RUB)
 
   items OrderItem?
 
   customerId String?
-  customer   User?    @relation("CustomerOrders", fields: [customerId], references: [id])
+  customer   User?   @relation("CustomerOrders", fields: [customerId], references: [id])
 
-  managerId  String?
-  manager    User?    @relation("ManagerOrders", fields: [managerId], references: [id])
-
+  managerId String?
+  manager   User?   @relation("ManagerOrders", fields: [managerId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -300,17 +302,18 @@ model OrderItem {
   orderId    String @unique
   templateId String
 
-  sizeId       Int?
-  holePattern  HolePattern?
-  frameId      Int?
-  backgroundId Int?
-  finish       Finish?
-  comment      String?
-  discussComment      String?
-  approveNeeded Boolean   @default(false)
-  retouchNeeded Boolean   @default(false)
-  approvalStage ApprovalStage @default(NOT_STARTED)
-  approved     Boolean @default(false)
+  sizeId          Int?
+  holePattern     HolePattern?
+  frameId         Int?
+  backgroundId    Int?
+  finish          Finish?
+  comment         String?
+  discussComment  String?
+  discussComments DiscussComment[]
+  approveNeeded   Boolean          @default(false)
+  retouchNeeded   Boolean          @default(false)
+  approvalStage   ApprovalStage    @default(NOT_STARTED)
+  approved        Boolean          @default(false)
 
   templateCode  String
   templateLabel String
@@ -323,16 +326,16 @@ model OrderItem {
   background Background? @relation(fields: [backgroundId], references: [id], onDelete: Restrict)
 
   persons OrderItemPerson[]
-  assets    OrderItemAsset[]   @relation("OrderItemToAssets")
+  assets  OrderItemAsset[]  @relation("OrderItemToAssets")
 
   dateOfBirth DateTime?
   dateOfDeath DateTime?
-  firstName String?
-  middleName String?
-  lastName String?
+  firstName   String?
+  middleName  String?
+  lastName    String?
 
   managerActionNeeded Boolean?
-  userActionNeeded Boolean?
+  userActionNeeded    Boolean?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -345,37 +348,37 @@ model OrderItem {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
+  id           String  @id @default(cuid())
+  email        String  @unique
   passwordHash String
   name         String?
   phone        String?
   legalName    String?
   address      String?
   inn          String?
-  role         Role     @default(CUSTOMER)
+  role         Role    @default(CUSTOMER)
 
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   customerOrders Order[] @relation("CustomerOrders")
   managedOrders  Order[] @relation("ManagerOrders")
 
-  notifyChannel   NotifyChannel?
-  telegramChatId  String?
+  notifyChannel  NotifyChannel?
+  telegramChatId String?
 
   refreshSessions RefreshSession[]
 }
 
 model RefreshSession {
-  id         String   @id @default(cuid())
-  userId     String
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tokenHash  String
-  userAgent  String?
-  ip         String?
-  expiresAt  DateTime
-  createdAt  DateTime @default(now())
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String
+  userAgent String?
+  ip        String?
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 }
 
 model OrderItemPerson {
@@ -395,34 +398,34 @@ model OrderItemPerson {
 }
 
 model OrderItemAsset {
-  id           String        @id @default(cuid())
-  orderItemId  String
+  id          String @id @default(cuid())
+  orderItemId String
 
-  orderItem    OrderItem     @relation("OrderItemToAssets", fields: [orderItemId], references: [id], onDelete: Cascade)
+  orderItem OrderItem @relation("OrderItemToAssets", fields: [orderItemId], references: [id], onDelete: Cascade)
 
-  stage        AssetStage  @default(ORIGINAL)
+  stage AssetStage @default(ORIGINAL)
 
-  derivedFromId  String?
-  derivedFrom    OrderItemAsset? @relation("AssetDerivation", fields: [derivedFromId], references: [id], onDelete: Cascade)
-  derivatives    OrderItemAsset[] @relation("AssetDerivation")
+  derivedFromId String?
+  derivedFrom   OrderItemAsset?  @relation("AssetDerivation", fields: [derivedFromId], references: [id], onDelete: Cascade)
+  derivatives   OrderItemAsset[] @relation("AssetDerivation")
 
-  storage      StorageType   @default(s3)
+  storage StorageType @default(s3)
 
-  path         String?
+  path String?
 
-  bucket       String?
-  key          String?
-  contentType  String?
-  size         Int?
-  etag         String?
+  bucket      String?
+  key         String?
+  contentType String?
+  size        Int?
+  etag        String?
 
-  kind         AssetKind      @default(PHOTO)
-  primary      Boolean        @default(false)
+  kind    AssetKind @default(PHOTO)
+  primary Boolean   @default(false)
 
   originalName String?
   fileName     String?
 
-  createdAt    DateTime      @default(now())
+  createdAt DateTime @default(now())
 
   @@index([orderItemId, createdAt])
 }
@@ -430,4 +433,12 @@ model OrderItemAsset {
 model MaterialHolePrice {
   material     Material @id
   perHoleMinor Int      @default(0)
+}
+
+model DiscussComment {
+  id          String     @id @default(cuid())
+  text        String
+  date        DateTime   @default(now())
+  OrderItem   OrderItem? @relation(fields: [orderItemId], references: [id])
+  orderItemId String?
 }

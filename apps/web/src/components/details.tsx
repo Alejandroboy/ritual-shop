@@ -58,63 +58,79 @@ export function OrderItemsDetails({
           <b>Нужно согласование!</b>
         </p>
       )}
-      {pairs.map(({ original, retouch }) => (
-        <div key={original.id} className="rounded-2xl shadow p-4">
-          <div className="mb-2">Оригинал</div>
-          <AssetThumb
-            asset={{
-              id: original.id,
-              originalName: original.originalName,
-              contentType: original.contentType,
-            }}
-            size={180}
-            primary={original.primary}
-          />
-          {data.approveNeeded && data.approvalStage && (
-            <p>{approvalStageLabel(data.approvalStage)}</p>
-          )}
-          <div className="font-medium">Ретушь</div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-2">
-            {retouch && (
-              <AssetThumb
-                key={retouch.id}
-                asset={{
-                  id: retouch.id,
-                  originalName: retouch.originalName,
-                  contentType: retouch.contentType,
-                }}
-                size={140}
-                primary={retouch.primary}
-              />
+      {data.retouchNeeded === false && data.approveNeeded === false ? <>
+        {pairs.map(({ original, retouch }) => (
+          <div key={original.id} className="rounded-2xl shadow p-4">
+            <AssetThumb
+              asset={{
+                id: original.id,
+                originalName: original.originalName,
+                contentType: original.contentType,
+              }}
+              size={180}
+              primary={original.primary}
+            />
+          </div>
+        ))}
+      </> : <>
+        {pairs.map(({ original, retouch }) => (
+          <div key={original.id} className="rounded-2xl shadow p-4">
+            <div className="mb-2">Оригинал</div>
+            <AssetThumb
+              asset={{
+                id: original.id,
+                originalName: original.originalName,
+                contentType: original.contentType,
+              }}
+              size={180}
+              primary={original.primary}
+            />
+            {data.approveNeeded && data.approvalStage && (
+              <p>{approvalStageLabel(data.approvalStage)}</p>
+            )}
+            <div className="font-medium">Ретушь</div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-2">
+              {retouch && (
+                <AssetThumb
+                  key={retouch.id}
+                  asset={{
+                    id: retouch.id,
+                    originalName: retouch.originalName,
+                    contentType: retouch.contentType,
+                  }}
+                  size={140}
+                  primary={retouch.primary}
+                />
+              )}
+            </div>
+            {data.userActionNeeded && !data.managerActionNeeded && (
+              <span>Ожидание пользователя</span>
+            )}
+            {data.discussComment && !data.userActionNeeded && (
+              <div>
+                <div>Комментарий по ретуши:</div>
+                <div>{data.discussComment}</div>
+              </div>
+            )}
+            {data.approved ? (
+              <p>
+                <b>Согласовано</b>
+              </p>
+            ) : (
+              <div className="mt-3 flex items-center justify-between">
+                <UploadAsset
+                  orderId={id}
+                  itemId={itemId}
+                  mode="retouch"
+                  sourceAssetId={original.id}
+                  onDone={reload}
+                  userId={userId}
+                />
+              </div>
             )}
           </div>
-          {data.userActionNeeded && !data.managerActionNeeded && (
-            <span>Ожидание пользователя</span>
-          )}
-          {data.discussComment && !data.userActionNeeded && (
-            <div>
-              <div>Комментарий по ретуши:</div>
-              <div>{data.discussComment}</div>
-            </div>
-          )}
-          {data.approved ? (
-            <p>
-              <b>Согласовано</b>
-            </p>
-          ) : (
-            <div className="mt-3 flex items-center justify-between">
-              <UploadAsset
-                orderId={id}
-                itemId={itemId}
-                mode="retouch"
-                sourceAssetId={original.id}
-                onDone={reload}
-                userId={userId}
-              />
-            </div>
-          )}
-        </div>
-      ))}
+        ))}
+      </>}
     </div>
   );
 }

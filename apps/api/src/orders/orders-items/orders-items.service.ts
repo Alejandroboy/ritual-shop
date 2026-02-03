@@ -17,6 +17,10 @@ export class OrdersItemsService {
       include: {
         size: true,
         assets: true,
+        discussComments: {
+          select: { id: true, text: true, date: true },
+          orderBy: { date: "desc" },
+        }
       },
     });
   }
@@ -74,6 +78,11 @@ export class OrdersItemsService {
         managerActionNeeded: true,
         userActionNeeded: false,
         discussComment: text,
+        discussComments: {
+          create: {
+            text,
+          },
+        },
       },
     });
   }

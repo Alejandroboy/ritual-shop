@@ -75,6 +75,10 @@ export default function AddToOrderForm({ tpl }: Props) {
   }, [holePattern, tpl.allowedFinishes]);
 
   async function submit() {
+    if (!readAgreement) {
+      alert('Прочитайте правила оформления заказа и согласитесь с обработкой персональных данных');
+      return;
+    }
     const orderId = await ensureOrder();
     const payload = {
       dateOfBirth,
@@ -119,6 +123,21 @@ export default function AddToOrderForm({ tpl }: Props) {
   }
 
   const renderCheckboxes = () => {
+    if (!assetUploaded.length) {
+      return <div className="mb-[15px] flex">
+        <div className="cursor-pointer p-[15px] border rounded-xl block w-fit">
+          <label className="cursor-pointer" htmlFor="checkbox-approve">
+            <input
+              type="checkbox"
+              id="checkbox-approve"
+              checked={approveNeeded}
+              onChange={handleApproveClick}
+            />
+            &nbsp;Нужно согласование
+          </label>
+        </div>
+      </div>
+    }
     if (assetUploaded.length) {
       return (
         <div className="mb-[15px] flex">
@@ -187,7 +206,7 @@ export default function AddToOrderForm({ tpl }: Props) {
           <div className="flex gap-2">
             <button
               onClick={submit}
-              className="px-4 py-2 rounded-md bg-neutral-900 text-white"
+              className={`px-4 py-2 rounded-md bg-neutral-900 text-white ${readAgreement ? '' : 'opacity-25 cursor-not-allowed'}`}
             >
               Добавить в заказ
             </button>
@@ -212,7 +231,7 @@ export default function AddToOrderForm({ tpl }: Props) {
       <div className="grid sm:grid-cols-2 gap-3">
         <label className="text-sm">
           <div className="mb-1 text-neutral-600">Размер</div>
-          <select
+          {availableSizes.length > 1 ? <select
             className="border rounded-md px-2 py-1 bg-white w-full"
             value={sizeId}
             onChange={(e) =>
@@ -224,7 +243,8 @@ export default function AddToOrderForm({ tpl }: Props) {
                 {s.size.label}
               </option>
             ))}
-          </select>
+          </select>:
+            <span>{availableSizes[0].size.label}</span>}
         </label>
 
         <label className="text-sm">
@@ -254,7 +274,7 @@ export default function AddToOrderForm({ tpl }: Props) {
             >
               {tpl.frames.map((f) => (
                 <option key={f.id} value={f.id}>
-                  Рамка {f.code}
+                  {f.name}
                 </option>
               ))}
             </select>
@@ -273,7 +293,7 @@ export default function AddToOrderForm({ tpl }: Props) {
             >
               {tpl.backgrounds.map((b) => (
                 <option key={b.id} value={b.id}>
-                  Фон {b.code}
+                  {b.name}
                 </option>
               ))}
             </select>
@@ -283,20 +303,23 @@ export default function AddToOrderForm({ tpl }: Props) {
         {needFinish && (
           <label className="text-sm">
             <div className="mb-1 text-neutral-600">Финиш</div>
-            <select
-              className="border rounded-md px-2 py-1 bg-white w-full"
-              value={finish}
-              onChange={(e) => setFinish(e.target.value || '')}
-            >
-              {finishOptions.map((f) => {
-                return (
-                  <option key={f} value={f}>
-                    {finishLabel(f)}
-                  </option>
-                );
-              })}
-            </select>
-            *Выбор финиша обязателен*
+            {finishOptions.length > 1 ?<>
+              <select
+                className="border rounded-md px-2 py-1 bg-white w-full"
+                value={finish}
+                onChange={(e) => setFinish(e.target.value || '')}
+              >
+                {finishOptions.map((f) => {
+                  return (
+                    <option key={f} value={f}>
+                      {finishLabel(f)}
+                    </option>
+                  );
+                })}
+              </select>
+              *Выбор финиша обязателен*
+            </> : <span>{finishLabel(finishOptions[0])}</span>}
+
           </label>
         )}
       </div>

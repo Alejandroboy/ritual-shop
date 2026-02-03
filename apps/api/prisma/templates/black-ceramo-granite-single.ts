@@ -114,6 +114,7 @@ export const blackSingleTemplates: TemplateConfig[] = [
     perHolePrice: 350,
     sizeLabels: sizesWhiteBlackArchOval,
     finishes: [Finish.MATTE, Finish.GLOSS],
+    backgroundCodes: [300],
     holePatterns: [
       HolePattern.TWO_HORIZONTAL,
       HolePattern.TWO_VERTICAL,

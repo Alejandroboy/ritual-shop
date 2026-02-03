@@ -2,7 +2,7 @@
 import { sizesEngraving, type TemplateConfig } from './shared.ts';
 import {
   ColorMode,
-  Coverage,
+  Coverage, Finish,
   HolePattern,
   Material,
   Orientation,
@@ -32,11 +32,13 @@ export const engravingTemplates: TemplateConfig[] = engravingBases.map(
     coverage: Coverage.NORMAL,
     supportsFrame: false,
     requiresBackground: false,
-    requiresFinish: false,
+    requiresFinish: true,
     supportsHoles: true,
     perHolePrice: 350,
     sizeLabels: sizesEngraving,
     sizePrice: PRICES,
+    backgroundCodes: [300],
+    finishes: [Finish.GLOSS],
     holePatterns: [
       HolePattern.TWO_HORIZONTAL,
       HolePattern.TWO_VERTICAL,
