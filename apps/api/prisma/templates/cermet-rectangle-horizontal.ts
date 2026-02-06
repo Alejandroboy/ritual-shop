@@ -42,6 +42,7 @@ export const metalRectHorTemplates: TemplateConfig[] =
       supportsHoles: true,
       sizeLabels: sizesMetalRectHor,
       frameCodes: [0, 1, 2, 3, 4, 5, 6],
+      singlePerson: base !== 'T5' && base !== 'T6' && base !== 'T9',
       perHolePrice: 0,
       basePrice: 0,
       sizePrice: PRICES,

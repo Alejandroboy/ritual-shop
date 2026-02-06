@@ -30,6 +30,7 @@ export const archMetalTemplates: TemplateConfig[] = archMetalBases.flatMap(
       supportsHoles: true,
       sizeLabels: sizeArchMetal,
       perHolePrice: 0,
+      singlePerson:  base !== 'A3',
       sizePrice: PRICES,
       holePatterns: [HolePattern.NONE, HolePattern.TWO_HORIZONTAL],
       inscribed: index !== 0,

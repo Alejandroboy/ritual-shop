@@ -45,6 +45,7 @@ export const metalOvalHorTemplates: TemplateConfig[] =
       supportsHoles: true,
       basePrice: 0,
       perHolePrice: 0,
+      singlePerson: base !== 'F5' && base !== 'F6' && base !== 'F13',
       sizePrice: PRICES,
       sizeHolePatterns: SIZE_HOLES,
       sizeLabels: sizesOvalHor,

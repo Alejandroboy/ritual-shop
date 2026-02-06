@@ -44,10 +44,26 @@ export function OrderItemsDetails({
 
   return (
     <div className="p-3 my-2">
-      <div className="text-sm">{data.templateCode}</div>
-      <div className="text-sm">{data.templateLabel}</div>
+      <div className="text-sm">{data.templateFullTitle? data.templateFullTitle: data.templateLabel}</div>
       <div className="text-sm">Вид фона: {data.backgroundId}</div>
+      <div className="text-sm">Размер: {data.size?.label}</div>
       {data.frameId && <div className="text-sm">Вид рамки: {data.frameId}</div>}
+      {data.firstName ? <div>
+        <div>Данные для надписи</div>
+        {data.firstName && <div className="text-sm pl-[15px]">Имя: {data.firstName}</div>}
+        {data.middleName && <div className="text-sm pl-[15px]">Отчество: {data.middleName}</div>}
+        {data.lastName && <div className="text-sm pl-[15px]">Фамилия: {data.lastName}</div>}
+        {data.dateOfBirth && <div className="text-sm pl-[15px]">Дата рождения: {data.dateOfBirth}</div>}
+        {data.dateOfDeath && <div className="text-sm pl-[15px]">Дата смерти: {data.dateOfDeath}</div>}
+      </div> : ''}
+      {data.firstNameSecondPerson ? <div>
+        <div>Данные для надписи второго человека</div>
+        {data.firstNameSecondPerson && <div className="text-sm pl-[15px]">Имя: {data.firstNameSecondPerson}</div>}
+        {data.middleNameSecondPerson && <div className="text-sm pl-[15px]">Отчество: {data.middleNameSecondPerson}</div>}
+        {data.lastNameSecondPerson && <div className="text-sm pl-[15px]">Фамилия: {data.lastNameSecondPerson}</div>}
+        {data.dateOfBirthSecondPerson && <div className="text-sm pl-[15px]">Дата рождения: {data.dateOfBirthSecondPerson}</div>}
+        {data.dateOfDeathSecondPerson && <div className="text-sm pl-[15px]">Дата смерти: {data.dateOfDeathSecondPerson}</div>}
+      </div> : ''}
       {data.retouchNeeded && (
         <p>
           <b> Нужна ретушь!</b>

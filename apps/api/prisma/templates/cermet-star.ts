@@ -32,6 +32,7 @@ export const starTemplates: TemplateConfig[] = starBases.flatMap(
       perHolePrice: 0,
       basePrice: 0,
       sizePrice: PRICES,
+      singlePerson: base !== 'D2' && base !== 'D3',
       holePatterns: [HolePattern.NONE, HolePattern.TWO_HORIZONTAL],
       inscribed: index !== 0,
     };

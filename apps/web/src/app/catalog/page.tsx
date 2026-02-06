@@ -34,7 +34,7 @@ export default async function CatalogPage({
     if (Array.isArray(v)) v.forEach((x) => q.append(k, x));
     else if (v) q.set(k, v);
   }
-  if (!q.has('pageSize')) q.set('pageSize', '38');
+  if (!q.has('pageSize')) q.set('pageSize', '300');
 
   const data = await api<ListResp>(`/catalog/templates?${q.toString()}`);
 

@@ -11,20 +11,29 @@ interface OrderItemProps {
   comment?: string | null;
   id?: string;
   templateLabel?: string;
+  templateFullTitle?: string | null;
   backgroundId?: string;
   frameId?: string;
   dateOfBirth?: string;
+  dateOfBirthSecondPerson?: string;
   dateOfDeath?: string;
+  dateOfDeathSecondPerson?: string;
   sizeLabel?: string | null;
   firstName?: string;
+  firstNameSecondPerson?: string;
   middleName?: string;
+  middleNameSecondPerson?: string;
   lastName?: string;
+  lastNameSecondPerson?: string;
   approveNeeded?: boolean;
   approvalStage?: string;
   approved?: boolean;
   managerActionNeeded?: boolean;
   userActionNeeded?: boolean;
   userId: string;
+  size: {
+    label: string;
+  }
 }
 
 const approvalStageLabel = labelOf<string>(approvalStageLabels);
@@ -33,18 +42,27 @@ export const OrderItem = ({
   id,
   userId,
   dateOfBirth,
+  frameId,
+  dateOfBirthSecondPerson,
   dateOfDeath,
+  dateOfDeathSecondPerson,
   templateLabel,
+  templateFullTitle,
   sizeLabel,
   firstName,
+  firstNameSecondPerson,
   middleName,
+  middleNameSecondPerson,
   lastName,
+  lastNameSecondPerson,
   comment,
   approveNeeded,
   approvalStage,
   approved,
   managerActionNeeded,
   userActionNeeded,
+  backgroundId,
+  size
 }: OrderItemProps) => {
   const updateApprove = useAppStore((s) => s.updateApprove);
   const updateComment = useAppStore((s) => s.updateComment);
@@ -205,8 +223,11 @@ export const OrderItem = ({
   };
   return (
     <div className="space-y-2">
-      <div className="font-medium">{templateLabel}</div>
-      <div className="text-sm text-gray-600">{sizeLabel}</div>
+      <div className="font-medium">{templateFullTitle? templateFullTitle: templateLabel}</div>
+      {backgroundId ? <div className="text-sm text-gray-600">Фон: {backgroundId}</div> : ''}
+      {size?.label ? <div className="text-sm text-gray-600">Размер: {size.label}</div> : ''}
+      {frameId ? <div className="text-sm text-gray-600">Рамка: {frameId}</div> : ''}
+      {firstNameSecondPerson && <div>Первый человек</div>}
       {firstName && <div className="text-sm text-gray-600">{firstName}</div>}
       {middleName && <div className="text-sm text-gray-600">{middleName}</div>}
       {lastName && <div className="text-sm text-gray-600">{lastName}</div>}
@@ -230,8 +251,31 @@ export const OrderItem = ({
             })}
         </div>
       )}
-      {comment && <div className="text-sm text-gray-600">{comment}</div>}
-
+      {firstNameSecondPerson && <div>Второй человек</div>}
+      {firstNameSecondPerson && <div className="text-sm text-gray-600">{firstNameSecondPerson}</div>}
+      {middleNameSecondPerson && <div className="text-sm text-gray-600">{middleNameSecondPerson}</div>}
+      {lastNameSecondPerson && <div className="text-sm text-gray-600">{lastNameSecondPerson}</div>}
+      {dateOfBirthSecondPerson && (
+        <div className="text-sm text-gray-600">
+          {birthDate &&
+            birthDate.toLocaleString('ru-RU', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            })}
+        </div>
+      )}
+      {dateOfDeathSecondPerson && (
+        <div className="text-sm text-gray-600">
+          {deathDay &&
+            deathDay.toLocaleString('ru-RU', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            })}
+        </div>
+      )}
+      {comment && <div className="text-sm text-gray-600">Комментарий:"{comment}"</div>}
       {pairs.map(({ original, retouch }) => (
         <div key={original.id} className="rounded-2xl shadow p-4">
           <div className="mb-2">Оригинал</div>

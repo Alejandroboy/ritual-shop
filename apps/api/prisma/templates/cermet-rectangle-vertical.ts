@@ -30,7 +30,7 @@ export const metalRectVertTemplates: TemplateConfig[] =
   metalRectVertBases.flatMap((base, index) => {
     const bw: TemplateConfig = {
       code: base,
-      label: base.replace('T', 'Т'), // T1 -> Т1
+      label: base.replace('T', 'Т'),
       fullTitle: `Вертикальная табличка ${base.replace('T', 'Т')}`,
       material: Material.CERMET,
       shape: Shape.RECTANGLE,

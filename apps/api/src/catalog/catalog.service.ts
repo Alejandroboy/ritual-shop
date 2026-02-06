@@ -124,6 +124,7 @@ export class CatalogService {
         requiresBackground: true,
         requiresFinish: true,
         supportsHoles: true,
+        singlePerson: true,
         personsMin: true,
         personsMax: true,
         notes: true,

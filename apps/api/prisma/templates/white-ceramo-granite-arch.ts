@@ -84,6 +84,7 @@ export const whiteArchTemplates: TemplateConfig[] = [
       perHolePrice: 350,
       basePrice: 0,
       sizePrice: PRICES_ARCH,
+      singlePerson: base !== 'K5' && base !== 'K6',
       backgroundCodes: [
         300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 100, 200,
       ],

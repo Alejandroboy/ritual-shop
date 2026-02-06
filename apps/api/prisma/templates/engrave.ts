@@ -39,6 +39,7 @@ export const engravingTemplates: TemplateConfig[] = engravingBases.map(
     sizeLabels: sizesEngraving,
     sizePrice: PRICES,
     backgroundCodes: [300],
+    singlePerson: base !== 'G5' && base!== 'G6',
     finishes: [Finish.GLOSS],
     holePatterns: [
       HolePattern.TWO_HORIZONTAL,

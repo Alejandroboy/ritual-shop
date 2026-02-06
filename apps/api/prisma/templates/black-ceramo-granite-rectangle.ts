@@ -40,6 +40,7 @@ export const blackTextTemplates: TemplateConfig[] = blackTextBases.map(
     basePrice: 0,
     finishes: [Finish.MATTE, Finish.GLOSS],
     backgroundCodes: [300],
+    singlePerson: base !== 'KCh6',
     holePatterns: [
       HolePattern.TWO_HORIZONTAL,
       HolePattern.TWO_VERTICAL,

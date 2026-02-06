@@ -59,7 +59,15 @@ export class AddOrderItemDto {
 
   @IsOptional()
   @IsString()
+  dateOfBirthSecondPerson: string;
+
+  @IsOptional()
+  @IsString()
   dateOfDeath: string;
+
+  @IsOptional()
+  @IsString()
+  dateOfDeathSecondPerson: string;
 
   @IsOptional()
   @IsString()
@@ -67,9 +75,21 @@ export class AddOrderItemDto {
 
   @IsOptional()
   @IsString()
+  firstNameSecondPerson: string;
+
+  @IsOptional()
+  @IsString()
   middleName: string;
 
   @IsOptional()
   @IsString()
+  middleNameSecondPerson: string;
+
+  @IsOptional()
+  @IsString()
   lastName: string;
+
+  @IsOptional()
+  @IsString()
+  lastNameSecondPerson: string;
 }

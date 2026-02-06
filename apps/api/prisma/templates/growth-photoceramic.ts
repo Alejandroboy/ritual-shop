@@ -97,6 +97,7 @@ export const growthRectsTemplates: TemplateConfig[] = [
       perHolePrice: 350,
       basePrice: 0,
       sizePrice: PRICES_RECT_ARCH,
+      singlePerson: base !== 'K5_r' && base !== 'K6_r',
       backgroundCodes: [
         300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 100, 200,
       ],
@@ -188,6 +189,7 @@ export const growthOvalTemplates: TemplateConfig[] = [
       perHolePrice: 350,
       basePrice: 0,
       sizePrice: PRICES_OVAL,
+      singlePerson: base !== 'K5_r' && base !== 'K6_r',
       backgroundCodes: [
         300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 100, 200,
       ],

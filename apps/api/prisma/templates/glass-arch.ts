@@ -82,6 +82,7 @@ export const glassArchTemplates: TemplateConfig[] = [
       sizeLabels: sizesStdGlass,
       sizePrice: PRICES,
       perHolePrice: 350,
+      singlePerson: base !== 'St5',
       backgroundCodes: [
         400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 100, 200,
       ],

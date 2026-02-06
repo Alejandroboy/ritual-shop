@@ -87,6 +87,7 @@ export const whiteRectTemplates: TemplateConfig[] = [
       perHolePrice: 350,
       basePrice: 0,
       sizePrice: PRICES_RECT,
+      singlePerson: base !== 'K5' && base !== 'K6',
       backgroundCodes: [
         300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 100, 200,
       ],
@@ -203,6 +204,7 @@ export const whiteRectTemplates: TemplateConfig[] = [
     finishes: [Finish.MATTE, Finish.GLOSS],
     perHolePrice: 350,
     basePrice: 0,
+    singlePerson: true,
     sizePrice: PRICES_RECT,
     backgroundCodes: [
       300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 24, 3, 25,

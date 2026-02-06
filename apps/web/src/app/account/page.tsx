@@ -32,9 +32,7 @@ export default function AccountPage() {
         const message = e instanceof Error ? e.message : '';
 
         const status: number = isExtendError(e)
-          ? typeof e.status === 'string'
-            ? Number.parseInt(e.status, 10) || 0
-            : (e.status ?? 0)
+          ? Number.parseInt(e.status, 10) || 0
           : /\b401\b|\bunauth/i.test(message)
             ? 401
             : 0;
@@ -87,6 +85,7 @@ export default function AccountPage() {
           <div className="text-sm text-gray-600">Нет заказов</div>
         ) : (
           myOrders.map((order, index) => {
+            console.log('order',order.items);
             const createdAt = new Date(order.createdAt);
             return (
               <div key={order.id} className="border rounded-xl p-4 space-y-3">

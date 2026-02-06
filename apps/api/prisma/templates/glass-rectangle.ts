@@ -77,6 +77,7 @@ export const glassRectTemplates: TemplateConfig[] = [
       sizeLabels: sizesStdGlass,
       perHolePrice: 350,
       basePrice: 0,
+      singlePerson: base !== 'St5',
       holePatterns: [
         HolePattern.TWO_HORIZONTAL,
         HolePattern.TWO_VERTICAL,

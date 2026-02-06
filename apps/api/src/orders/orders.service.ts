@@ -286,11 +286,17 @@ export class OrdersService {
         templateId: tpl.id,
         templateCode: tpl.code,
         templateLabel: tpl.label,
+        templateFullTitle: tpl.fullTitle,
         dateOfBirth: asDate(dto.dateOfBirth),
+        dateOfBirthSecondPerson: asDate(dto.dateOfBirthSecondPerson),
         dateOfDeath: asDate(dto.dateOfDeath),
+        dateOfDeathSecondPerson: asDate(dto.dateOfDeathSecondPerson),
         firstName: dto.firstName,
+        firstNameSecondPerson: dto.firstNameSecondPerson,
         middleName: dto.middleName,
+        middleNameSecondPerson: dto.middleNameSecondPerson,
         lastName: dto.lastName,
+        lastNameSecondPerson: dto.lastNameSecondPerson,
         sizeId: dto.sizeId,
         holePattern: dto.holePattern,
         frameId: dto.frameId,
@@ -594,23 +600,23 @@ export class OrdersService {
     });
 
     // Письма
-    try {
-      await this.mailer.sendOrderCreatedToManager(result);
-      if (result.customerEmail)
-        await this.mailer.sendOrderCreatedToClient(result);
-    } catch (e) {
-      console.error('MAIL_ERROR', e);
-    }
-    if (result.customerEmail) {
-      await this.email.orderPlaced(
-        result.customerEmail || '',
-        result.number || '',
-      );
-    }
-
-    if (user?.notifyChannel === 'TELEGRAM') {
-      await this.telegram.orderPlaced(user.telegramChatId, result.number);
-    }
+    // try {
+    //   await this.mailer.sendOrderCreatedToManager(result);
+    //   if (result.customerEmail)
+    //     await this.mailer.sendOrderCreatedToClient(result);
+    // } catch (e) {
+    //   console.error('MAIL_ERROR', e);
+    // }
+    // if (result.customerEmail) {
+    //   await this.email.orderPlaced(
+    //     result.customerEmail || '',
+    //     result.number || '',
+    //   );
+    // }
+    //
+    // if (user?.notifyChannel === 'TELEGRAM') {
+    //   await this.telegram.orderPlaced(user.telegramChatId, result.number);
+    // }
 
     return result;
   }

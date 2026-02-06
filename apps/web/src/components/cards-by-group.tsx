@@ -34,7 +34,7 @@ export const CardsByGroup = async ({
   }
   if (orientation) queryString.set('orientation', orientation);
   if (coverage) queryString.set('coverage', coverage);
-  queryString.set('pageSize', '100');
+  queryString.set('pageSize', '300');
 
   const data = await api<ListResp>(
     `/catalog/templates?${queryString.toString()}`,

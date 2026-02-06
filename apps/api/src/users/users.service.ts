@@ -80,7 +80,9 @@ export class UsersService {
             id: true,
             orderStatus: true,
             createdAt: true,
-            items: true,
+            items: {
+              include: { size: true },
+            },
           },
           take: 10,
           orderBy: { createdAt: 'desc' },

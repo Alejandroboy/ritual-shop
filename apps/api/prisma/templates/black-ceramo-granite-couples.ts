@@ -58,6 +58,7 @@ export const blackCoupleTemplates: TemplateConfig[] = [
     basePrice: 0,
     sizePrice: PRICES_RECT,
     sizeLabels: sizesWhiteBlackRect,
+    singlePerson: base !== 'KCh4',
     finishes: [Finish.MATTE, Finish.GLOSS],
     backgroundCodes: [300],
     holePatterns: [

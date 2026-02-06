@@ -166,6 +166,7 @@ model Template {
   personsMax Int @default(1)
 
   notes String?
+  singlePerson Boolean @default(true)
 
   allowedSizes       TemplateSize[]
   allowedHoles       TemplateHole[]
@@ -317,6 +318,7 @@ model OrderItem {
 
   templateCode  String
   templateLabel String
+  templateFullTitle String?
 
   order    Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   template Template @relation(fields: [templateId], references: [id], onDelete: Restrict)
@@ -333,6 +335,12 @@ model OrderItem {
   firstName   String?
   middleName  String?
   lastName    String?
+
+  dateOfBirthSecondPerson DateTime?
+  dateOfDeathSecondPerson DateTime?
+  firstNameSecondPerson   String?
+  middleNameSecondPerson  String?
+  lastNameSecondPerson    String?
 
   managerActionNeeded Boolean?
   userActionNeeded    Boolean?

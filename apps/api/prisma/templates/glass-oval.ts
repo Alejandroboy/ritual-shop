@@ -83,6 +83,7 @@ export const glassOvalTemplates: TemplateConfig[] = [
       perHolePrice: 350,
       basePrice: 0,
       sizePrice: PRICES,
+      singlePerson: base !== 'St5',
       backgroundCodes: [
         400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 100, 200,
       ],

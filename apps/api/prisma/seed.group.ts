@@ -42,6 +42,7 @@ async function createTemplate(cfg: TemplateConfig) {
       label: cfg.label,
       material: cfg.material,
       shape: cfg.shape,
+      singlePerson: cfg.singlePerson ?? true,
       orientation: cfg.orientation ?? null,
       colorMode: cfg.colorMode,
       coverage: cfg.coverage ?? Coverage.NORMAL,
@@ -253,8 +254,8 @@ async function seedBackgrounds() {
     { code: 34, name: 'Фон 34' },
     { code: 35, name: 'Фон 35' },
     { code: 36, name: 'Фон 36' },
-    { code: 100, name: 'Белый фон' },
-    { code: 200, name: 'Чёрный фон' },
+    { code: 100, name: 'Фон 100 (белый)' },
+    { code: 200, name: 'Фон 200 (чёрный)' },
   ];
 
   await prisma.background.createMany({
