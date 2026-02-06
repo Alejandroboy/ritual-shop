@@ -85,7 +85,7 @@ export default function AccountPage() {
           <div className="text-sm text-gray-600">Нет заказов</div>
         ) : (
           myOrders.map((order, index) => {
-            console.log('order',order.items);
+            console.log('order', order.items);
             const createdAt = new Date(order.createdAt);
             return (
               <div key={order.id} className="border rounded-xl p-4 space-y-3">

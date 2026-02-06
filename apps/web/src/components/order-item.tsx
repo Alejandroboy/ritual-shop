@@ -33,7 +33,7 @@ interface OrderItemProps {
   userId: string;
   size: {
     label: string;
-  }
+  };
 }
 
 const approvalStageLabel = labelOf<string>(approvalStageLabels);
@@ -62,7 +62,7 @@ export const OrderItem = ({
   managerActionNeeded,
   userActionNeeded,
   backgroundId,
-  size
+  size,
 }: OrderItemProps) => {
   const updateApprove = useAppStore((s) => s.updateApprove);
   const updateComment = useAppStore((s) => s.updateComment);
@@ -223,10 +223,24 @@ export const OrderItem = ({
   };
   return (
     <div className="space-y-2">
-      <div className="font-medium">{templateFullTitle? templateFullTitle: templateLabel}</div>
-      {backgroundId ? <div className="text-sm text-gray-600">Фон: {backgroundId}</div> : ''}
-      {size?.label ? <div className="text-sm text-gray-600">Размер: {size.label}</div> : ''}
-      {frameId ? <div className="text-sm text-gray-600">Рамка: {frameId}</div> : ''}
+      <div className="font-medium">
+        {templateFullTitle ? templateFullTitle : templateLabel}
+      </div>
+      {backgroundId ? (
+        <div className="text-sm text-gray-600">Фон: {backgroundId}</div>
+      ) : (
+        ''
+      )}
+      {size?.label ? (
+        <div className="text-sm text-gray-600">Размер: {size.label}</div>
+      ) : (
+        ''
+      )}
+      {frameId ? (
+        <div className="text-sm text-gray-600">Рамка: {frameId}</div>
+      ) : (
+        ''
+      )}
       {firstNameSecondPerson && <div>Первый человек</div>}
       {firstName && <div className="text-sm text-gray-600">{firstName}</div>}
       {middleName && <div className="text-sm text-gray-600">{middleName}</div>}
@@ -252,9 +266,15 @@ export const OrderItem = ({
         </div>
       )}
       {firstNameSecondPerson && <div>Второй человек</div>}
-      {firstNameSecondPerson && <div className="text-sm text-gray-600">{firstNameSecondPerson}</div>}
-      {middleNameSecondPerson && <div className="text-sm text-gray-600">{middleNameSecondPerson}</div>}
-      {lastNameSecondPerson && <div className="text-sm text-gray-600">{lastNameSecondPerson}</div>}
+      {firstNameSecondPerson && (
+        <div className="text-sm text-gray-600">{firstNameSecondPerson}</div>
+      )}
+      {middleNameSecondPerson && (
+        <div className="text-sm text-gray-600">{middleNameSecondPerson}</div>
+      )}
+      {lastNameSecondPerson && (
+        <div className="text-sm text-gray-600">{lastNameSecondPerson}</div>
+      )}
       {dateOfBirthSecondPerson && (
         <div className="text-sm text-gray-600">
           {birthDate &&
@@ -275,7 +295,9 @@ export const OrderItem = ({
             })}
         </div>
       )}
-      {comment && <div className="text-sm text-gray-600">Комментарий:"{comment}"</div>}
+      {comment && (
+        <div className="text-sm text-gray-600">Комментарий:"{comment}"</div>
+      )}
       {pairs.map(({ original, retouch }) => (
         <div key={original.id} className="rounded-2xl shadow p-4">
           <div className="mb-2">Оригинал</div>

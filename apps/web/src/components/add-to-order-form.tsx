@@ -36,10 +36,14 @@ export default function AddToOrderForm({ tpl }: Props) {
   const [firstName, setFirstName] = useState<string>('');
   const [middleName, setMiddleName] = useState<string>('');
   const [lastName, setLastName] = useState<string>('');
-  const [dateOfBirthSecondPerson, setDateOfBirthSecondPerson] = useState<string>('');
-  const [dateOfDeathSecondPerson, setDateOfDeathSecondPerson] = useState<string>('');
-  const [firstNameSecondPerson, setFirstNameSecondPerson] = useState<string>('');
-  const [middleNameSecondPerson, setMiddleNameSecondPerson] = useState<string>('');
+  const [dateOfBirthSecondPerson, setDateOfBirthSecondPerson] =
+    useState<string>('');
+  const [dateOfDeathSecondPerson, setDateOfDeathSecondPerson] =
+    useState<string>('');
+  const [firstNameSecondPerson, setFirstNameSecondPerson] =
+    useState<string>('');
+  const [middleNameSecondPerson, setMiddleNameSecondPerson] =
+    useState<string>('');
   const [lastNameSecondPerson, setLastNameSecondPerson] = useState<string>('');
   const [approveNeeded, setApproveNeeded] = useState<boolean>(false);
   const [retouchNeeded, setRetouchNeeded] = useState<boolean>(false);
@@ -241,56 +245,58 @@ export default function AddToOrderForm({ tpl }: Props) {
   );
 
   const renderSecondPersonFields = () => {
-    return <>
+    return (
+      <>
         <div>Данные второго человека</div>
         <div className="grid sm:grid-cols-2 gap-3">
-        <label className="text-sm">
-          <span className="block mb-1 text-neutral-600">Дата Рождения</span>
-          <input
-            type="date"
-            className="border rounded-md px-2 py-1 bg-white"
-            value={dateOfBirthSecondPerson}
-            onChange={(e) => setDateOfBirthSecondPerson(e.target.value)}
-          />
-        </label>
-        <label className="text-sm">
-          <span className="block mb-1 text-neutral-600">Дата смерти</span>
-          <input
-            type="date"
-            className="border rounded-md px-2 py-1 bg-white"
-            value={dateOfDeathSecondPerson}
-            onChange={(e) => setDateOfDeathSecondPerson(e.target.value)}
-          />
-        </label>
-        <label className="text-sm">
-          <span className="block mb-1 text-neutral-600">Имя</span>
-          <input
-            className="border rounded-md px-2 py-1 bg-white min-w-64"
-            value={firstNameSecondPerson}
-            onChange={(e) => setFirstNameSecondPerson(e.target.value)}
-          />
-        </label>
-        <label className="text-sm">
-              <span className="block mb-1 text-neutral-600">
-                Отчество (если есть)
-              </span>
-          <input
-            className="border rounded-md px-2 py-1 bg-white min-w-64"
-            value={middleNameSecondPerson}
-            onChange={(e) => setMiddleNameSecondPerson(e.target.value)}
-          />
-        </label>
-        <label className="text-sm">
-          <span className="block mb-1 text-neutral-600">Фамилия</span>
-          <input
-            className="border rounded-md px-2 py-1 bg-white min-w-64"
-            value={lastNameSecondPerson}
-            onChange={(e) => setLastNameSecondPerson(e.target.value)}
-          />
-        </label>
-      </div>
-        </>
-  }
+          <label className="text-sm">
+            <span className="block mb-1 text-neutral-600">Дата Рождения</span>
+            <input
+              type="date"
+              className="border rounded-md px-2 py-1 bg-white"
+              value={dateOfBirthSecondPerson}
+              onChange={(e) => setDateOfBirthSecondPerson(e.target.value)}
+            />
+          </label>
+          <label className="text-sm">
+            <span className="block mb-1 text-neutral-600">Дата смерти</span>
+            <input
+              type="date"
+              className="border rounded-md px-2 py-1 bg-white"
+              value={dateOfDeathSecondPerson}
+              onChange={(e) => setDateOfDeathSecondPerson(e.target.value)}
+            />
+          </label>
+          <label className="text-sm">
+            <span className="block mb-1 text-neutral-600">Имя</span>
+            <input
+              className="border rounded-md px-2 py-1 bg-white min-w-64"
+              value={firstNameSecondPerson}
+              onChange={(e) => setFirstNameSecondPerson(e.target.value)}
+            />
+          </label>
+          <label className="text-sm">
+            <span className="block mb-1 text-neutral-600">
+              Отчество (если есть)
+            </span>
+            <input
+              className="border rounded-md px-2 py-1 bg-white min-w-64"
+              value={middleNameSecondPerson}
+              onChange={(e) => setMiddleNameSecondPerson(e.target.value)}
+            />
+          </label>
+          <label className="text-sm">
+            <span className="block mb-1 text-neutral-600">Фамилия</span>
+            <input
+              className="border rounded-md px-2 py-1 bg-white min-w-64"
+              value={lastNameSecondPerson}
+              onChange={(e) => setLastNameSecondPerson(e.target.value)}
+            />
+          </label>
+        </div>
+      </>
+    );
+  };
 
   return (
     <div className="border rounded-xl p-4 bg-white space-y-3">
