@@ -31,7 +31,7 @@ interface OrderItemProps {
   managerActionNeeded?: boolean;
   userActionNeeded?: boolean;
   userId: string;
-  size: {
+  size?: {
     label: string;
   };
 }
@@ -48,7 +48,6 @@ export const OrderItem = ({
   dateOfDeathSecondPerson,
   templateLabel,
   templateFullTitle,
-  sizeLabel,
   firstName,
   firstNameSecondPerson,
   middleName,
