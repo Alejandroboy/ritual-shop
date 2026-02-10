@@ -22,7 +22,7 @@ import { blackTextTemplates } from './templates/black-ceramo-granite-rectangle.t
 import { engravingTemplates } from './templates/engrave.ts';
 import { type TemplateConfig } from './templates/shared.ts';
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({});
 
 // ================== HELPERS ==================
 
