@@ -26,6 +26,8 @@ ENV DATABASE_URL="postgresql://ritual:f8bc908e-80af-41b7-88ec-386b1bf0d31f@db:54
 COPY --from=dependencies /app/node_modules ./node_modules
 COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=build /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=build /app/prisma ./prisma
+COPY --from=build /app/prisma.config.ts ./prisma.config.ts
 COPY package.json yarn.lock  ./
 
 COPY --from=build /app/dist ./dist
