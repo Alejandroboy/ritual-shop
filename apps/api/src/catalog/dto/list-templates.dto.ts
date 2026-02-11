@@ -50,6 +50,6 @@ export class ListTemplatesQuery {
   pageSize?: number;
 
   // сортировка (по умолчанию по коду)
-  @IsOptional() @IsString() orderBy: 'code' | 'label' = 'code';
-  @IsOptional() @IsString() order: 'asc' | 'desc' = 'asc';
+  @IsOptional() @IsString() orderBy: 'code' | 'label';
+  @IsOptional() @IsString() order: 'asc' | 'desc';
 }

@@ -12,7 +12,10 @@ export default function Home() {
     { name: 'Горизонтальные овалы ', group: 'gorizontalnye-ovaly' },
     { name: 'Вертикальные таблички ', group: 'vertikalnye-tablichki' },
     { name: 'Горизонтальные таблички ', group: 'gorizontalnye-tablichki' },
-    { name: 'Таблички полная затяжка', group: 'tablichki-polnaya-zatyazka' },
+    {
+      name: 'Овалы и таблички полная затяжка',
+      group: 'tablichki-polnaya-zatyazka',
+    },
     { name: 'Фигурные таблички', group: 'figurnye-tablichki' },
   ];
   const portraits = [
@@ -42,7 +45,7 @@ export default function Home() {
         </div>
       </div>
       <div>
-        <h2 className="mb-[15px]">Портреты на керамограните</h2>
+        <h2 className="mb-[15px]">Портреты на памятники</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {portraits.map((item) => {
             return (

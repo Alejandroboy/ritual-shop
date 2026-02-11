@@ -4,6 +4,8 @@ import {
   sizeArchMetal,
   sizeHeart,
   sizesMetalFullWrap,
+  sizesOvalHor,
+  sizesOvalVert,
   type TemplateConfig,
 } from './shared.ts';
 import {
@@ -91,7 +93,7 @@ export const metalFullTemplates: TemplateConfig[] = [
     const bw: TemplateConfig = {
       code: base,
       label: base.replace('T', 'Т'),
-      fullTitle: `Фигурная табличка ${base.replace('T', 'Т')} полное покрытие`,
+      fullTitle: `Горизонтальная табличка ${base.replace('T', 'Т')} полное покрытие`,
       material: Material.CERMET,
       shape: Shape.RECTANGLE,
       orientation: Orientation.HORIZONTAL,
@@ -107,13 +109,21 @@ export const metalFullTemplates: TemplateConfig[] = [
       sizePrice: PRICES_HOR,
       sizeLabels: sizesMetalFullWrap,
       holePatterns: [HolePattern.NONE, HolePattern.TWO_HORIZONTAL],
+      backgroundCodes: [
+        400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 100, 200,
+      ],
       inscribed: index !== 0,
     };
     const color: TemplateConfig = {
       ...bw,
       code: `${base}c`,
       label: `${bw.label}ц`,
-      fullTitle: `Фигурная табличка ${bw.label}ц полное покрытие`,
+      fullTitle: `Горизонтальная табличка ${bw.label}ц полное покрытие`,
+      backgroundCodes: [
+        300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 24, 3, 25,
+        16, 14, 26, 27, 28, 29, 30, 31, 32, 2, 8, 17, 6, 33, 15, 7, 5, 4, 34,
+        35, 36,
+      ],
       colorMode: ColorMode.COLOR,
     };
     return [bw, color];
@@ -137,6 +147,9 @@ export const metalFullTemplates: TemplateConfig[] = [
       sizePrice: PRICES_HEART,
       sizeLabels: sizeHeart,
       holePatterns: [HolePattern.NONE, HolePattern.TWO_VERTICAL],
+      backgroundCodes: [
+        400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 100, 200,
+      ],
       inscribed: index !== 0,
     };
     const color: TemplateConfig = {
@@ -144,6 +157,11 @@ export const metalFullTemplates: TemplateConfig[] = [
       code: `${base}c`,
       label: `${bw.label}ц`,
       fullTitle: `Фигурная табличка "сердце" ${bw.label}ц полное покрытие`,
+      backgroundCodes: [
+        300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 24, 3, 25,
+        16, 14, 26, 27, 28, 29, 30, 31, 32, 2, 8, 17, 6, 33, 15, 7, 5, 4, 34,
+        35, 36,
+      ],
       colorMode: ColorMode.COLOR,
     };
     return [bw, color];
@@ -152,7 +170,7 @@ export const metalFullTemplates: TemplateConfig[] = [
     const bw: TemplateConfig = {
       code: base,
       label: base.replace('T', 'Т'),
-      fullTitle: `Фигурная табличка ${base.replace('T', 'Т')} полное покрытие`,
+      fullTitle: `Вертикальная табличка ${base.replace('T', 'Т')} полное покрытие`,
       material: Material.CERMET,
       shape: Shape.RECTANGLE,
       orientation: Orientation.VERTICAL,
@@ -169,13 +187,21 @@ export const metalFullTemplates: TemplateConfig[] = [
       sizePrice: PRICES_VERT,
       sizeLabels: sizesMetalFullWrap,
       holePatterns: [HolePattern.NONE, HolePattern.TWO_VERTICAL],
+      backgroundCodes: [
+        400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 100, 200,
+      ],
       inscribed: index !== 0,
     };
     const color: TemplateConfig = {
       ...bw,
       code: `${base}c`,
       label: `${bw.label}ц`,
-      fullTitle: `Фигурная табличка ${bw.label}ц полное покрытие`,
+      fullTitle: `Вертикальная табличка ${bw.label}ц полное покрытие`,
+      backgroundCodes: [
+        300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 24, 3, 25,
+        16, 14, 26, 27, 28, 29, 30, 31, 32, 2, 8, 17, 6, 33, 15, 7, 5, 4, 34,
+        35, 36,
+      ],
       colorMode: ColorMode.COLOR,
     };
     return [bw, color];
@@ -198,8 +224,11 @@ export const metalFullTemplates: TemplateConfig[] = [
       basePrice: 0,
       sizeHolePatterns: SIZE_HOLES_VERT_OVAL,
       sizePrice: PRICES_VERT_OVAL,
-      sizeLabels: sizeArchMetal,
+      sizeLabels: sizesOvalVert,
       holePatterns: [HolePattern.NONE, HolePattern.TWO_HORIZONTAL],
+      backgroundCodes: [
+        400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 100, 200,
+      ],
       inscribed: index !== 0,
     };
     const color: TemplateConfig = {
@@ -207,6 +236,11 @@ export const metalFullTemplates: TemplateConfig[] = [
       code: `${base}c`,
       label: `${bw.label}ц`,
       fullTitle: `Вертикальный овал ${base.replace('F', 'Ф')}ц полное покрытие`,
+      backgroundCodes: [
+        300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 24, 3, 25,
+        16, 14, 26, 27, 28, 29, 30, 31, 32, 2, 8, 17, 6, 33, 15, 7, 5, 4, 34,
+        35, 36,
+      ],
       colorMode: ColorMode.COLOR,
     };
     return [bw, color];
@@ -215,7 +249,7 @@ export const metalFullTemplates: TemplateConfig[] = [
   ...metalFullOvalHorizontal.flatMap((base, index) => {
     const bw: TemplateConfig = {
       code: base,
-      label: base.replace('A', 'А'),
+      label: base.replace('F', 'Ф'),
       fullTitle: `Горизонтальный овал ${base.replace('F', 'Ф')} полное покрытие`,
       material: Material.CERMET,
       shape: Shape.OVAL,
@@ -230,8 +264,11 @@ export const metalFullTemplates: TemplateConfig[] = [
       basePrice: 0,
       sizeHolePatterns: SIZE_HOLES_HOR_OVAL,
       sizePrice: PRICES_HOR_OVAL,
-      sizeLabels: sizeArchMetal,
+      sizeLabels: sizesOvalHor,
       holePatterns: [HolePattern.NONE, HolePattern.TWO_HORIZONTAL],
+      backgroundCodes: [
+        400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 100, 200,
+      ],
       inscribed: index !== 0,
     };
     const color: TemplateConfig = {
@@ -242,7 +279,7 @@ export const metalFullTemplates: TemplateConfig[] = [
       backgroundCodes: [
         300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 24, 3, 25,
         16, 14, 26, 27, 28, 29, 30, 31, 32, 2, 8, 17, 6, 33, 15, 7, 5, 4, 34,
-        35, 36, 100, 200,
+        35, 36,
       ],
       colorMode: ColorMode.COLOR,
     };
@@ -267,6 +304,9 @@ export const metalFullTemplates: TemplateConfig[] = [
       sizePrice: PRICES_ARCH,
       sizeLabels: sizeArchMetal,
       holePatterns: [HolePattern.NONE, HolePattern.TWO_HORIZONTAL],
+      backgroundCodes: [
+        400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 100, 200,
+      ],
       inscribed: index !== 0,
     };
     const color: TemplateConfig = {
@@ -277,7 +317,7 @@ export const metalFullTemplates: TemplateConfig[] = [
       backgroundCodes: [
         300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 24, 3, 25,
         16, 14, 26, 27, 28, 29, 30, 31, 32, 2, 8, 17, 6, 33, 15, 7, 5, 4, 34,
-        35, 36, 100, 200,
+        35, 36,
       ],
       colorMode: ColorMode.COLOR,
     };

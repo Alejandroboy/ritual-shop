@@ -39,10 +39,6 @@ export const CardsByGroup = async ({
   const data = await api<ListResp>(
     `/catalog/templates?${queryString.toString()}`,
   );
-  console.log('data', queryString.toString());
-  console.log('coverage', coverage);
-  console.log('orientation', orientation);
-  console.log('shape', shape);
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
       {data.items.map((t) => (

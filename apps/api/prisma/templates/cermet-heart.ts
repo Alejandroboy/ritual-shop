@@ -34,7 +34,10 @@ export const heartTemplates: TemplateConfig[] = [
       perHolePrice: 0,
       sizePrice: PRICES,
       holePatterns: [HolePattern.NONE, HolePattern.TWO_VERTICAL],
-      inscribed: index !== 0,
+      backgroundCodes: [
+        300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 100, 200,
+      ],
+      inscribed: index !== 0 && index !== 2,
     };
     const color: TemplateConfig = {
       ...bw,

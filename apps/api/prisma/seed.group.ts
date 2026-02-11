@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { PrismaClient, Material, Coverage, HolePattern } from '@prisma/client';
 import { metalOvalHorTemplates } from './templates/cermet-oval-horizontal.ts';
 import { metalOvalVertTemplates } from './templates/cermet-oval-vertical.ts';

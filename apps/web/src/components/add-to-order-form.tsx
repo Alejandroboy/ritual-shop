@@ -240,9 +240,9 @@ export default function AddToOrderForm({ tpl }: Props) {
       return <div>Пожалуйста загрузите другое изображение</div>;
     }
   };
-  const availableSizes = tpl.allowedSizes.filter((item) =>
-    item.availableHolePattern.includes(holePattern),
-  );
+  const availableSizes = tpl.allowedSizes
+    .filter((item) => item.availableHolePattern.includes(holePattern))
+    .sort((a, b) => a.size.widthCm - b.size.widthCm);
 
   const renderSecondPersonFields = () => {
     return (
@@ -298,9 +298,60 @@ export default function AddToOrderForm({ tpl }: Props) {
     );
   };
 
+  console.log('availableSizes', availableSizes);
   return (
     <div className="border rounded-xl p-4 bg-white space-y-3">
       <div className="grid sm:grid-cols-2 gap-3">
+        {tpl.supportsFrame && (
+          <label className="text-sm">
+            <div className="mb-1 text-neutral-600">Рамка</div>
+            <select
+              className="border rounded-md px-2 py-1 bg-white w-full"
+              value={frameId}
+              onChange={(e) =>
+                setFrameId(e.target.value ? Number(e.target.value) : '')
+              }
+            >
+              {tpl.frames.map((f) => (
+                <option key={f.id} value={f.id}>
+                  {f.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+        {tpl.requiresBackground && (
+          <label className="text-sm">
+            <div className="mb-1 text-neutral-600">Фон</div>
+            <select
+              className="border rounded-md px-2 py-1 bg-white w-full"
+              value={backgroundId}
+              onChange={(e) =>
+                setBackgroundId(e.target.value ? Number(e.target.value) : '')
+              }
+            >
+              {tpl.backgrounds.map((b) => (
+                <option key={b.id} value={b.id}>
+                  {b.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+        <label className="text-sm">
+          <div className="mb-1 text-neutral-600">Отверстия</div>
+          <select
+            className="border rounded-md px-2 py-1 bg-white w-full"
+            value={holePattern}
+            onChange={(e) => setHolePattern(e.target.value || '')}
+          >
+            {tpl.holes.map((h) => (
+              <option key={h} value={h}>
+                {holePatternLabel(h)}
+              </option>
+            ))}
+          </select>
+        </label>
         <label className="text-sm">
           <div className="mb-1 text-neutral-600">Размер</div>
           {availableSizes.length > 1 ? (
@@ -321,60 +372,6 @@ export default function AddToOrderForm({ tpl }: Props) {
             <span>{availableSizes[0].size.label}</span>
           )}
         </label>
-
-        <label className="text-sm">
-          <div className="mb-1 text-neutral-600">Отверстия</div>
-          <select
-            className="border rounded-md px-2 py-1 bg-white w-full"
-            value={holePattern}
-            onChange={(e) => setHolePattern(e.target.value || '')}
-          >
-            {tpl.holes.map((h) => (
-              <option key={h} value={h}>
-                {holePatternLabel(h)}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        {tpl.supportsFrame && (
-          <label className="text-sm">
-            <div className="mb-1 text-neutral-600">Рамка</div>
-            <select
-              className="border rounded-md px-2 py-1 bg-white w-full"
-              value={frameId}
-              onChange={(e) =>
-                setFrameId(e.target.value ? Number(e.target.value) : '')
-              }
-            >
-              {tpl.frames.map((f) => (
-                <option key={f.id} value={f.id}>
-                  {f.name}
-                </option>
-              ))}
-            </select>
-          </label>
-        )}
-
-        {tpl.requiresBackground && (
-          <label className="text-sm">
-            <div className="mb-1 text-neutral-600">Фон</div>
-            <select
-              className="border rounded-md px-2 py-1 bg-white w-full"
-              value={backgroundId}
-              onChange={(e) =>
-                setBackgroundId(e.target.value ? Number(e.target.value) : '')
-              }
-            >
-              {tpl.backgrounds.map((b) => (
-                <option key={b.id} value={b.id}>
-                  {b.name}
-                </option>
-              ))}
-            </select>
-          </label>
-        )}
-
         {needFinish && (
           <label className="text-sm">
             <div className="mb-1 text-neutral-600">Финиш</div>
@@ -475,7 +472,7 @@ export default function AddToOrderForm({ tpl }: Props) {
         </div>
       </div>
       <div>
-        Ознакомтесь с&nbsp;
+        Ознакомьтесь с&nbsp;
         <Link href="/rules" className="underline" target="_blank">
           правилами оформления заказа
         </Link>

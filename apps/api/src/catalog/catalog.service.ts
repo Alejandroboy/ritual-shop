@@ -164,6 +164,66 @@ export class CatalogService {
     });
 
     if (!tpl) throw new NotFoundException('Template not found');
+    const defaultSizeId = () => {
+      if (tpl.material === 'CERMET' && tpl.shape === 'OVAL') {
+        return 10;
+      }
+      if (tpl.allowedSizes[0]?.size.id) {
+        return tpl.allowedSizes[0]?.size.id;
+      }
+
+      return null;
+    };
+
+    const defaultHolePattern = () => {
+      if (
+        tpl.material === 'CERMET' &&
+        tpl.shape === 'OVAL' &&
+        tpl.orientation === 'HORIZONTAL'
+      ) {
+        return 'TWO_VERTICAL';
+      }
+
+      if (
+        tpl.material === 'CERMET' &&
+        tpl.shape === 'OVAL' &&
+        tpl.orientation === 'VERTICAL'
+      ) {
+        return 'TWO_HORIZONTAL';
+      }
+
+      if (
+        tpl.material === 'CERMET' &&
+        tpl.shape === 'RECTANGLE' &&
+        tpl.orientation === 'HORIZONTAL'
+      ) {
+        return 'TWO_HORIZONTAL';
+      }
+
+      if (
+        tpl.material === 'CERMET' &&
+        tpl.shape === 'RECTANGLE' &&
+        tpl.orientation === 'VERTICAL'
+      ) {
+        return 'TWO_VERTICAL';
+      }
+
+      if (tpl.material === 'CERMET' && tpl.shape === 'HEART') {
+        return 'TWO_VERTICAL';
+      }
+
+      if (
+        tpl.material === 'CERMET' &&
+        (tpl.shape === 'STAR' || tpl.shape === 'ARCH')
+      ) {
+        return 'TWO_HORIZONTAL';
+      }
+
+      if (tpl.allowedHoles[0]?.pattern) {
+        return tpl.allowedHoles[0]?.pattern;
+      }
+      return null;
+    };
 
     return {
       ...tpl,
@@ -178,8 +238,8 @@ export class CatalogService {
       })),
       // можно подсказать дефолты
       defaults: {
-        sizeId: tpl.allowedSizes[0]?.size.id ?? null,
-        holePattern: tpl.allowedHoles[0]?.pattern ?? null,
+        sizeId: defaultSizeId(),
+        holePattern: defaultHolePattern(),
         frameId:
           (tpl.material === 'CERMET' && tpl.shape === 'OVAL') ||
           (tpl.material === 'CERMET' && tpl.shape === 'RECTANGLE')

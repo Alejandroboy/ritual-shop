@@ -33,6 +33,9 @@ export const archMetalTemplates: TemplateConfig[] = archMetalBases.flatMap(
       singlePerson: base !== 'A3',
       sizePrice: PRICES,
       holePatterns: [HolePattern.NONE, HolePattern.TWO_HORIZONTAL],
+      backgroundCodes: [
+        300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 100, 200,
+      ],
       inscribed: index !== 0,
     };
     const color: TemplateConfig = {

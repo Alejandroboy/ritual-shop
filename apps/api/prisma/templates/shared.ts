@@ -11,7 +11,7 @@ import {
 export const sizesOvalHor = ['9×12', '13×18', '17×22', '21×27'];
 export const sizesOvalVert = ['9×12', '13×18', '17×22', '21×27'];
 export const sizesMetalRectVert = ['13×19', '17×22', '18×24', '20×30', '24×30'];
-export const sizesMetalRectHor = ['17×22', '20×30', '24×30', '30×40', '16×45'];
+export const sizesMetalRectHor = ['13×19', '17×22', '18×24', '20×30', '24×30'];
 export const sizesMetalFullWrap = ['13×19', '17×22'];
 export const sizeStar = ['18×24'];
 export const sizeArchMetal = ['17×24'];
