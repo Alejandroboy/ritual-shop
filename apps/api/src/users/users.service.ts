@@ -21,6 +21,7 @@ export class UsersService {
         phone: true,
         legalName: true,
         address: true,
+        kontragentId: true,
         inn: true,
         role: true,
         createdAt: true,
@@ -38,8 +39,18 @@ export class UsersService {
             id: true,
             orderStatus: true,
             createdAt: true,
+            includedInInvoice: true,
+            invoiceId: true,
+            invoiceName: true,
             items: {
-              include: { assets: true },
+              include: {
+                assets: true,
+                template: {
+                  include: {
+                    allowedSizes: true,
+                  },
+                },
+              },
             },
           },
           take: 10,
@@ -66,6 +77,7 @@ export class UsersService {
         inn: true,
         role: true,
         createdAt: true,
+        kontragentId: true,
         updatedAt: true,
         telegramChatId: true,
         notifyChannel: true,
@@ -90,6 +102,7 @@ export class UsersService {
       },
     });
     if (!user) throw new NotFoundException('User not found');
+    console.log('user', user);
     return user;
   }
 

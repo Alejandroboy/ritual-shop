@@ -8,7 +8,6 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AdminGuard } from '../../common/admin.guard';
-import { PrismaService } from '../../prisma/prisma.service';
 import { AdminOrdersService } from './admin-orders.service';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { AdminOrdersQueryDto } from './dto/admin-orders.query.dto';

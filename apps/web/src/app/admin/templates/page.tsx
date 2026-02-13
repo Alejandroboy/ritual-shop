@@ -2,7 +2,7 @@
 import useSWR from 'swr';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Template } from '../../../types';
+import { Template } from '@types';
 
 async function api(url: string) {
   const r = await fetch(url, { credentials: 'include', cache: 'no-store' });

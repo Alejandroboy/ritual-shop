@@ -4,12 +4,98 @@ import { useParams } from 'next/navigation';
 import useSWR from 'swr';
 import { adminApiFetch } from '@utils';
 import { CustomerOrder } from '@types';
+import Link from 'next/link';
 
 export default function UserDetails() {
   const { id } = useParams<{ id: string }>();
   const { data } = useSWR(`/api/admin/users/${id}`, (u) =>
     adminApiFetch(u).then((r) => r.json()),
   );
+
+  const renderKontragent = () => {
+    if (data?.user.kontragentId) {
+      return (
+        <div className="flex justify-between">
+          <div>Можно выставлять счета </div>
+          <div>
+            <Link
+              href={`/admin/users/${id}/invoice`}
+              className="bg-[#f1f1f1] border rounded-md p-[10px] cursor-pointer inline-block"
+            >
+              Сформировать счет
+            </Link>
+          </div>
+        </div>
+      );
+    }
+    return (
+      <div>
+        Добавить контрагентом для выставления счетов:{' '}
+        <div
+          onClick={syncContrAgent}
+          className="bg-[#f1f1f1] border rounded-md p-[10px] cursor-pointer inline-block"
+        >
+          Добавить
+        </div>
+      </div>
+    );
+  };
+  async function syncContrAgent() {
+    await fetch(`/api/sync/${data.user.inn}/${id}`, {
+      method: 'GET',
+      credentials: 'include',
+    });
+  }
+
+  const renderOrders = () => {
+    if (data?.user?.customerOrders.length > 0) {
+      return (
+        <div>
+          Заказы:
+          {data?.user?.customerOrders.map((order: CustomerOrder) => {
+            const createdAt = new Date(order.createdAt);
+            return (
+              <div key={order.id}>
+                <div className="flex w-96">
+                  <div className="w-1/2 text-right">Статус:</div>
+                  <div className="w-1/2 text-right">{order.orderStatus}</div>
+                </div>
+                <div className="flex w-96">
+                  <div className="w-1/2 text-right">Добавлен в счет:</div>
+                  <div className="w-1/2 text-right">
+                    {order.includedInInvoice
+                      ? `№${order.invoiceName}`
+                      : 'Не добавлен'}
+                  </div>
+                </div>
+                <div className="flex w-96">
+                  <div className="w-1/2 text-right">Создан:</div>
+                  <div className="w-1/2 text-right">
+                    {createdAt.toLocaleString('ru-RU')}
+                  </div>
+                </div>
+                <div className="flex w-96">
+                  <div className="w-1/2 text-right">Позиции:</div>
+                  <div className="w-1/2 text-right">
+                    {order?.items && (
+                      <div key={order?.items.id}>
+                        <p>{order?.items.templateLabel}</p>
+                        <p>Размер: {order?.items.sizeId}</p>
+                        <p>Вид рамки:{order?.items.frameId}</p>
+                        <p>Вид фона: {order?.items.backgroundId}</p>
+                        <p>Отверстия: {order?.items.holePattern}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      );
+    }
+    return null;
+  };
 
   if (data && data.user) {
     const createdAt = new Date(data.user.createdAt);
@@ -62,42 +148,8 @@ export default function UserDetails() {
           <div className="w-1/2">Изменен</div>
           <div className="w-1/2">{updatedAt.toLocaleString('ru-RU')}</div>
         </div>
-        {data?.user?.customerOrders.length && (
-          <div>
-            Заказы:
-            {data?.user?.customerOrders.map((order: CustomerOrder) => {
-              const createdAt = new Date(order.createdAt);
-              return (
-                <div key={order.id}>
-                  <div className="flex w-96">
-                    <div className="w-1/2 text-right">Статус:</div>
-                    <div className="w-1/2 text-right">{order.orderStatus}</div>
-                  </div>
-                  <div className="flex w-96">
-                    <div className="w-1/2 text-right">Создан:</div>
-                    <div className="w-1/2 text-right">
-                      {createdAt.toLocaleString('ru-RU')}
-                    </div>
-                  </div>
-                  <div className="flex w-96">
-                    <div className="w-1/2 text-right">Позиции:</div>
-                    <div className="w-1/2 text-right">
-                      {order?.items && (
-                        <div key={order?.items.id}>
-                          <p>{order?.items.templateLabel}</p>
-                          <p>Размер: {order?.items.sizeId}</p>
-                          <p>Вид рамки:{order?.items.frameId}</p>
-                          <p>Вид фона: {order?.items.backgroundId}</p>
-                          <p>Отверстия: {order?.items.holePattern}</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
+        {renderKontragent()}
+        {renderOrders()}
       </div>
     );
   }

@@ -1,7 +1,7 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Refs } from '../../../../types';
+import { Refs } from '@types';
 
 async function api(url: string, init?: RequestInit) {
   const r = await fetch(url, {

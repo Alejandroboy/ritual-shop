@@ -83,6 +83,10 @@ export class AddOrderItemDto {
 
   @IsOptional()
   @IsString()
+  skuCode: string;
+
+  @IsOptional()
+  @IsString()
   middleNameSecondPerson: string;
 
   @IsOptional()

@@ -52,6 +52,7 @@ export type OrderSlice = {
     middleNameSecondPerson?: string;
     lastNameSecondPerson?: string;
     templateCodeSecondPerson?: string;
+    skuCode?: string;
     sizeId?: number;
     frameId?: number;
     backgroundId?: number;
@@ -99,7 +100,6 @@ export const createOrderSlice: OrderCreator = (set, get, _api): OrderSlice => ({
 
   addItem: async (payload) => {
     const orderId = await get().ensureOrder();
-    console.log('createOrderSlice payload', payload);
     return api<OrderItem>(`/orders/${orderId}/items`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

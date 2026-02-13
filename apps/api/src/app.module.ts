@@ -17,10 +17,16 @@ import { S3Module } from './s3/s3.module';
 import { AssetsModule } from './assets/assets.module';
 import { TelegramModule } from './notifications/telegram/telegram.module';
 import { OrdersItemsModule } from './orders/orders-items/orders-items.module';
+import { DaDataModule } from './integrations/da-data/da-data.module';
+import { MoySkladModule } from './integrations/moy-sklad/moy-sklad.module';
+import { SyncModule } from './sync/sync.module';
 
 @Module({
   imports: [
     OrdersItemsModule,
+    DaDataModule,
+    MoySkladModule,
+    SyncModule,
     S3Module,
     AssetsModule,
     AdminUsersModule,

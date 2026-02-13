@@ -1,5 +1,5 @@
 'use client';
-import React, { SyntheticEvent, useMemo, useState } from 'react';
+import React, { SyntheticEvent, useEffect, useMemo, useState } from 'react';
 import type { TemplateDetails } from '@types';
 import { UploadAsset } from './upload-assets';
 import { useAppStore } from '@state';
@@ -50,9 +50,11 @@ export default function AddToOrderForm({ tpl }: Props) {
   const [readAgreement, setReadAgreement] = useState<boolean>(false);
 
   const [sizeId, setSizeId] = useState<number | ''>(tpl.defaults.sizeId ?? '');
-  //В коде расчёта цены: total = size.priceMinor + holesCount(material) * perHoleMinor.
   let price = tpl.allowedSizes.filter((item) => item.size.id === sizeId)[0]
     ?.price;
+  let scuCode = tpl.allowedSizes.filter((item) => item.size.id === sizeId)[0]
+    ?.skuCode;
+  const [skuCode, setSkuCode] = useState<string>(scuCode ?? '');
   const [holePattern, setHolePattern] = useState<string | ''>(
     tpl.defaults.holePattern ?? '',
   );
@@ -82,6 +84,12 @@ export default function AddToOrderForm({ tpl }: Props) {
   const finishOptions = useMemo(() => {
     return tpl.allowedFinishes.map((v) => v.finish);
   }, [holePattern, tpl.allowedFinishes]);
+  useEffect(() => {
+    const scuCode = tpl.allowedSizes.filter(
+      (item) => item.size.id === sizeId,
+    )[0]?.skuCode;
+    setSkuCode(scuCode ?? '');
+  }, [sizeId]);
 
   async function submit() {
     if (!readAgreement) {
@@ -102,6 +110,7 @@ export default function AddToOrderForm({ tpl }: Props) {
       firstNameSecondPerson,
       middleNameSecondPerson,
       lastNameSecondPerson,
+      skuCode,
       templateCode: tpl.code,
       sizeId: sizeId || undefined,
       holePattern: holePattern || undefined,
@@ -298,7 +307,6 @@ export default function AddToOrderForm({ tpl }: Props) {
     );
   };
 
-  console.log('availableSizes', availableSizes);
   return (
     <div className="border rounded-xl p-4 bg-white space-y-3">
       <div className="grid sm:grid-cols-2 gap-3">

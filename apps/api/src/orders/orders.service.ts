@@ -280,11 +280,12 @@ export class OrdersService {
       );
     }
 
-    const item = await this.prisma.orderItem.create({
+    return this.prisma.orderItem.create({
       data: {
         orderId,
         templateId: tpl.id,
         templateCode: tpl.code,
+        skuCode: dto.skuCode,
         templateLabel: tpl.label,
         templateFullTitle: tpl.fullTitle,
         dateOfBirth: asDate(dto.dateOfBirth),
@@ -312,8 +313,6 @@ export class OrdersService {
         background: true,
       },
     });
-
-    return item;
   }
 
   async addAsset(orderId: string, itemId: string, dto: AddAssetDto) {
@@ -600,23 +599,23 @@ export class OrdersService {
     });
 
     // Письма
-    // try {
-    //   await this.mailer.sendOrderCreatedToManager(result);
-    //   if (result.customerEmail)
-    //     await this.mailer.sendOrderCreatedToClient(result);
-    // } catch (e) {
-    //   console.error('MAIL_ERROR', e);
-    // }
-    // if (result.customerEmail) {
-    //   await this.email.orderPlaced(
-    //     result.customerEmail || '',
-    //     result.number || '',
-    //   );
-    // }
-    //
-    // if (user?.notifyChannel === 'TELEGRAM') {
-    //   await this.telegram.orderPlaced(user.telegramChatId, result.number);
-    // }
+    try {
+      await this.mailer.sendOrderCreatedToManager(result);
+      if (result.customerEmail)
+        await this.mailer.sendOrderCreatedToClient(result);
+    } catch (e) {
+      console.error('MAIL_ERROR', e);
+    }
+    if (result.customerEmail) {
+      await this.email.orderPlaced(
+        result.customerEmail || '',
+        result.number || '',
+      );
+    }
+
+    if (user?.notifyChannel === 'TELEGRAM') {
+      await this.telegram.orderPlaced(user.telegramChatId, result.number);
+    }
 
     return result;
   }

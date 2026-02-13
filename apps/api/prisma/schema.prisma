@@ -280,6 +280,9 @@ model Order {
   orderStatus   OrderStatus @default(DRAFT)
   orderNumber   String?     @unique
   currency      Currency    @default(RUB)
+  includedInInvoice Boolean @default(false)
+  invoiceId String?
+  invoiceName String?
 
   items OrderItem?
 
@@ -314,6 +317,7 @@ model OrderItem {
   retouchNeeded   Boolean          @default(false)
   approvalStage   ApprovalStage    @default(NOT_STARTED)
   approved        Boolean          @default(false)
+  skuCode         String?
 
   templateCode  String
   templateLabel String
@@ -363,6 +367,7 @@ model User {
   legalName    String?
   address      String?
   inn          String?
+  kontragentId String?
   role         Role    @default(CUSTOMER)
 
   createdAt DateTime @default(now())

@@ -91,6 +91,7 @@ export type TemplateDetails = TemplateListItem & {
   inscribed: boolean | null;
   singlePerson: boolean;
   allowedSizes: {
+    skuCode?: string;
     size: { id: number; label: string; widthCm: number; heightCm: number };
     price: number;
     availableHolePattern: string[];

@@ -92,6 +92,7 @@ export default function OrderDetail() {
         <p>{data?.customerEmail}</p>
         <p>{data?.customerPhone}</p>
       </div>
+      {data?.includedInInvoice && <div>Включен в счет {data.invoiceName}</div>}
       <div>
         {itemId && (
           <OrderItemsDetails itemId={itemId} userId={data?.customer?.id} />

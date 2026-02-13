@@ -9,6 +9,8 @@ export type User = {
 
 export type CustomerOrder = {
   createdAt: string;
+  includedInInvoice: boolean;
+  invoiceName: string;
   id: string;
   orderStatus: string;
   totalMinor: number;
@@ -28,6 +30,11 @@ export type CustomerOrderItem = {
   sizeId: string;
   template: {
     label: string;
+    fullTitle: string;
+    allowedSizes: {
+      sizeId: string;
+      price: number;
+    }[];
   };
   size: {
     id: string;
