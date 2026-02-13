@@ -28,7 +28,7 @@ export const whiteRectTemplates: TemplateConfig[] = [
     const bw: TemplateConfig = {
       code: base,
       label: base.replace('K', 'К'),
-      fullTitle: `Белый прямоугольный портрет ${base.replace('K', 'К')} на керамограните`,
+      fullTitle: `Портрет ${base.replace('K', 'К')} прямоугольный на белом керамограните`,
       material: Material.WHITE_CERAMIC_GRANITE,
       shape: Shape.RECTANGLE,
       orientation: Orientation.VERTICAL,
@@ -58,7 +58,7 @@ export const whiteRectTemplates: TemplateConfig[] = [
       ...bw,
       code: `${base}c`,
       label: `${bw.label}ц`,
-      fullTitle: `Белый прямоугольный портрет ${bw.label}ц на керамограните`,
+      fullTitle: `Портрет ${bw.label}ц прямоугольный на белом керамограните`,
       backgroundCodes: [
         300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 24, 3, 25,
         16, 14, 26, 27, 28, 29, 30, 31, 32, 2, 8, 17, 6, 33, 15, 7, 5, 4, 34,
@@ -72,7 +72,7 @@ export const whiteRectTemplates: TemplateConfig[] = [
     const bw: TemplateConfig = {
       code: base,
       label: base.replace('K', 'К'),
-      fullTitle: `Белый прямоугольный портрет ${base.replace('K', 'К')} на керамограните`,
+      fullTitle: `Портрет ${base.replace('K', 'К')} прямоугольный на белом керамограните`,
       material: Material.WHITE_CERAMIC_GRANITE,
       shape: Shape.RECTANGLE,
       orientation: Orientation.HORIZONTAL,
@@ -103,7 +103,7 @@ export const whiteRectTemplates: TemplateConfig[] = [
       ...bw,
       code: `${base}c`,
       label: `${bw.label}ц`,
-      fullTitle: `Белый прямоугольный портрет ${bw.label}ц на керамограните`,
+      fullTitle: `Портрет ${bw.label}ц прямоугольный на белом керамограните`,
       backgroundCodes: [
         300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 24, 3, 25,
         16, 14, 26, 27, 28, 29, 30, 31, 32, 2, 8, 17, 6, 33, 15, 7, 5, 4, 34,
@@ -117,7 +117,7 @@ export const whiteRectTemplates: TemplateConfig[] = [
     const bw: TemplateConfig = {
       code: base,
       label: base.replace('K', 'К'),
-      fullTitle: `Белый прямоугольный портрет ${base.replace('K', 'К')} на керамограните`,
+      fullTitle: `Портрет ${base.replace('K', 'К')} прямоугольный на белом керамограните`,
       material: Material.WHITE_CERAMIC_GRANITE,
       shape: Shape.RECTANGLE,
       orientation: Orientation.VERTICAL,
@@ -131,6 +131,7 @@ export const whiteRectTemplates: TemplateConfig[] = [
       perHolePrice: 350,
       basePrice: 0,
       sizePrice: PRICES_RECT,
+      inscribed: true,
       backgroundCodes: [
         300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 100, 200,
       ],
@@ -146,7 +147,7 @@ export const whiteRectTemplates: TemplateConfig[] = [
       ...bw,
       code: `${base}c`,
       label: `${bw.label}ц`,
-      fullTitle: `Белый прямоугольный портрет ${bw.label}ц на керамограните`,
+      fullTitle: `Портрет ${bw.label}ц прямоугольный на белом керамограните`,
       backgroundCodes: [
         300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 24, 3, 25,
         16, 14, 26, 27, 28, 29, 30, 31, 32, 2, 8, 17, 6, 33, 15, 7, 5, 4, 34,
@@ -160,7 +161,7 @@ export const whiteRectTemplates: TemplateConfig[] = [
   {
     code: 'K9',
     label: 'К9',
-    fullTitle: `Белый прямоугольный портрет К9 на керамограните`,
+    fullTitle: `Портрет К9 прямоугольный на белом керамограните`,
     material: Material.WHITE_CERAMIC_GRANITE,
     shape: Shape.RECTANGLE,
     orientation: Orientation.VERTICAL,
@@ -175,6 +176,7 @@ export const whiteRectTemplates: TemplateConfig[] = [
     perHolePrice: 350,
     basePrice: 0,
     sizePrice: PRICES_RECT,
+    inscribed: true,
     backgroundCodes: [
       300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 24, 3, 25,
       16, 14, 26, 27, 28, 29, 30, 31, 32, 2, 8, 17, 6, 33, 15, 7, 5, 4, 34, 35,
@@ -190,7 +192,7 @@ export const whiteRectTemplates: TemplateConfig[] = [
   {
     code: 'K10',
     label: 'К10',
-    fullTitle: `Белый прямоугольный портрет К10 на керамограните`,
+    fullTitle: `Портрет К10 прямоугольный на белом керамограните`,
     material: Material.WHITE_CERAMIC_GRANITE,
     shape: Shape.RECTANGLE,
     orientation: Orientation.HORIZONTAL,
@@ -204,7 +206,7 @@ export const whiteRectTemplates: TemplateConfig[] = [
     finishes: [Finish.MATTE, Finish.GLOSS],
     perHolePrice: 350,
     basePrice: 0,
-    singlePerson: true,
+    inscribed: true,
     sizePrice: PRICES_RECT,
     backgroundCodes: [
       300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 24, 3, 25,
@@ -221,7 +223,7 @@ export const whiteRectTemplates: TemplateConfig[] = [
   ...['K11', 'K12', 'K13', 'K14'].map<TemplateConfig>((base) => ({
     code: base,
     label: base.replace('K', 'К'),
-    fullTitle: `Белый прямоугольный портрет ${base.replace('K', 'К')} на керамограните`,
+    fullTitle: `Портрет ${base.replace('K', 'К')} прямоугольный на белом керамограните`,
     material: Material.WHITE_CERAMIC_GRANITE,
     shape: Shape.RECTANGLE,
     orientation: Orientation.VERTICAL,
@@ -236,11 +238,8 @@ export const whiteRectTemplates: TemplateConfig[] = [
     perHolePrice: 350,
     basePrice: 0,
     sizePrice: PRICES_RECT,
-    backgroundCodes: [
-      300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 24, 3, 25,
-      16, 14, 26, 27, 28, 29, 30, 31, 32, 2, 8, 17, 6, 33, 15, 7, 5, 4, 34, 35,
-      36, 100, 200,
-    ],
+    backgroundCodes: [300],
+    inscribed: true,
     holePatterns: [
       HolePattern.TWO_HORIZONTAL,
       HolePattern.TWO_VERTICAL,

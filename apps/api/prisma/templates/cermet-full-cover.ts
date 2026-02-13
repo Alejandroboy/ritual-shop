@@ -17,8 +17,8 @@ import {
   Shape,
 } from '@prisma/client';
 
-const metalFullBasesHorizontal = ['T10', 'T11'];
-const metalFullBasesVertical = ['T12', 'T13'];
+const metalFullBasesHorizontal = ['T12', 'T13'];
+const metalFullBasesVertical = ['T10', 'T11'];
 const archMetalFullBases = ['A4', 'A5'];
 const heartBasesFull = ['C4', 'C5'];
 const metalFullOvalHorizontal = ['F14', 'F15'];

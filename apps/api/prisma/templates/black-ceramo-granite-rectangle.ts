@@ -24,7 +24,7 @@ export const blackTextTemplates: TemplateConfig[] = blackTextBases.map(
   (base) => ({
     code: base,
     label: base.replace('KCh', 'КЧ'),
-    fullTitle: `Черный прямоугольный портрет ${base.replace('KCh', 'КЧ')} на керамограните`,
+    fullTitle: `Портрет ${base.replace('KCh', 'КЧ')} прямоугольный на черном керамограните`,
     material: Material.BLACK_CERAMIC_GRANITE,
     shape: Shape.RECTANGLE,
     orientation: Orientation.VERTICAL,
@@ -40,6 +40,7 @@ export const blackTextTemplates: TemplateConfig[] = blackTextBases.map(
     basePrice: 0,
     finishes: [Finish.MATTE, Finish.GLOSS],
     backgroundCodes: [300],
+    inscribed: true,
     singlePerson: base !== 'KCh6',
     holePatterns: [
       HolePattern.TWO_HORIZONTAL,

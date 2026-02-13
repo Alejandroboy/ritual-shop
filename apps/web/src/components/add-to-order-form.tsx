@@ -310,6 +310,31 @@ export default function AddToOrderForm({ tpl }: Props) {
   return (
     <div className="border rounded-xl p-4 bg-white space-y-3">
       <div className="grid sm:grid-cols-2 gap-3">
+        {needFinish && (
+          <label className="text-sm">
+            <div className="mb-1 text-neutral-600">Финиш</div>
+            {finishOptions.length > 1 ? (
+              <>
+                <select
+                  className="border rounded-md px-2 py-1 bg-white w-full"
+                  value={finish}
+                  onChange={(e) => setFinish(e.target.value || '')}
+                >
+                  {finishOptions.map((f) => {
+                    return (
+                      <option key={f} value={f}>
+                        {finishLabel(f)}
+                      </option>
+                    );
+                  })}
+                </select>
+                *Выбор финиша обязателен*
+              </>
+            ) : (
+              <span>{finishLabel(finishOptions[0])}</span>
+            )}
+          </label>
+        )}
         {tpl.supportsFrame && (
           <label className="text-sm">
             <div className="mb-1 text-neutral-600">Рамка</div>
@@ -331,19 +356,23 @@ export default function AddToOrderForm({ tpl }: Props) {
         {tpl.requiresBackground && (
           <label className="text-sm">
             <div className="mb-1 text-neutral-600">Фон</div>
-            <select
-              className="border rounded-md px-2 py-1 bg-white w-full"
-              value={backgroundId}
-              onChange={(e) =>
-                setBackgroundId(e.target.value ? Number(e.target.value) : '')
-              }
-            >
-              {tpl.backgrounds.map((b) => (
-                <option key={b.id} value={b.id}>
-                  {b.name}
-                </option>
-              ))}
-            </select>
+            {tpl.backgrounds.length > 1 ? (
+              <select
+                className="border rounded-md px-2 py-1 bg-white w-full"
+                value={backgroundId}
+                onChange={(e) =>
+                  setBackgroundId(e.target.value ? Number(e.target.value) : '')
+                }
+              >
+                {tpl.backgrounds.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.name}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <span>{tpl.backgrounds[0].name}</span>
+            )}
           </label>
         )}
         <label className="text-sm">
@@ -380,31 +409,6 @@ export default function AddToOrderForm({ tpl }: Props) {
             <span>{availableSizes[0].size.label}</span>
           )}
         </label>
-        {needFinish && (
-          <label className="text-sm">
-            <div className="mb-1 text-neutral-600">Финиш</div>
-            {finishOptions.length > 1 ? (
-              <>
-                <select
-                  className="border rounded-md px-2 py-1 bg-white w-full"
-                  value={finish}
-                  onChange={(e) => setFinish(e.target.value || '')}
-                >
-                  {finishOptions.map((f) => {
-                    return (
-                      <option key={f} value={f}>
-                        {finishLabel(f)}
-                      </option>
-                    );
-                  })}
-                </select>
-                *Выбор финиша обязателен*
-              </>
-            ) : (
-              <span>{finishLabel(finishOptions[0])}</span>
-            )}
-          </label>
-        )}
       </div>
       {tpl.inscribed && (
         <>

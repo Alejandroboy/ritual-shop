@@ -48,7 +48,7 @@ export const blackSingleTemplates: TemplateConfig[] = [
   ...blackSingleBases.map<TemplateConfig>((base, index) => ({
     code: base,
     label: base.replace('KCh', 'КЧ'),
-    fullTitle: `Черный прямоугольный портрет ${base.replace('KCh', 'КЧ')} на керамограните`,
+    fullTitle: `Портрет ${base.replace('KCh', 'КЧ')} прямоугольный на черном керамограните`,
     material: Material.BLACK_CERAMIC_GRANITE,
     shape: Shape.RECTANGLE,
     orientation: Orientation.VERTICAL,
@@ -74,7 +74,7 @@ export const blackSingleTemplates: TemplateConfig[] = [
   ...blackSingleBases.map<TemplateConfig>((base, index) => ({
     code: `${base}_arch`,
     label: `${base.replace('KCh', 'КЧ')} арка`,
-    fullTitle: `Черный портрет ${base.replace('KCh', 'КЧ')} арка на керамограните`,
+    fullTitle: `Портрет ${base.replace('KCh', 'КЧ')} арка на черном керамограните`,
     material: Material.BLACK_CERAMIC_GRANITE,
     shape: Shape.ARCH,
     orientation: Orientation.VERTICAL,
@@ -100,7 +100,7 @@ export const blackSingleTemplates: TemplateConfig[] = [
   ...blackSingleBases.map<TemplateConfig>((base, index) => ({
     code: `${base}_oval`,
     label: `${base.replace('KCh', 'КЧ')} овал`,
-    fullTitle: `Черный портрет ${base.replace('KCh', 'КЧ')} овал на керамограните`,
+    fullTitle: `Портрет ${base.replace('KCh', 'КЧ')} овал на черном керамограните`,
     material: Material.BLACK_CERAMIC_GRANITE,
     shape: Shape.OVAL,
     orientation: Orientation.VERTICAL,

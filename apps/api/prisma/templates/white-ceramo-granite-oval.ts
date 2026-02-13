@@ -25,7 +25,7 @@ export const whiteOvalTemplates: TemplateConfig[] = [
     const bw: TemplateConfig = {
       code: `${base}_oval`,
       label: `${base.replace('K', 'К')} овал`,
-      fullTitle: `Белый портрет ${base.replace('K', 'К')} овал на керамограните`,
+      fullTitle: `Портрет ${base.replace('K', 'К')} овал на белом керамограните`,
       material: Material.WHITE_CERAMIC_GRANITE,
       shape: Shape.OVAL,
       orientation: Orientation.VERTICAL,
@@ -55,7 +55,7 @@ export const whiteOvalTemplates: TemplateConfig[] = [
       ...bw,
       code: `${base}_oval_c`,
       label: `${base.replace('K', 'К')}ц овал`,
-      fullTitle: `Белый портрет ${base.replace('K', 'К')}ц овал на керамограните`,
+      fullTitle: `Портрет ${base.replace('K', 'К')}ц овал на белом керамограните`,
       backgroundCodes: [
         300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 24, 3, 25,
         16, 14, 26, 27, 28, 29, 30, 31, 32, 2, 8, 17, 6, 33, 15, 7, 5, 4, 34,
@@ -69,7 +69,7 @@ export const whiteOvalTemplates: TemplateConfig[] = [
     const bw: TemplateConfig = {
       code: `${base}_oval`,
       label: `${base.replace('K', 'К')} овал`,
-      fullTitle: `Белый портрет ${base.replace('K', 'К')} овал на керамограните`,
+      fullTitle: `Портрет ${base.replace('K', 'К')} овал на белом керамограните`,
       material: Material.WHITE_CERAMIC_GRANITE,
       shape: Shape.OVAL,
       orientation: Orientation.HORIZONTAL,
@@ -100,7 +100,7 @@ export const whiteOvalTemplates: TemplateConfig[] = [
       ...bw,
       code: `${base}_oval_c`,
       label: `${base.replace('K', 'К')}ц овал`,
-      fullTitle: `Белый портрет ${base.replace('K', 'К')}ц овал на керамограните`,
+      fullTitle: `Портрет ${base.replace('K', 'К')}ц овал на белом керамограните`,
       backgroundCodes: [
         300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 24, 3, 25,
         16, 14, 26, 27, 28, 29, 30, 31, 32, 2, 8, 17, 6, 33, 15, 7, 5, 4, 34,

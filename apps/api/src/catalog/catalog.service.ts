@@ -177,6 +177,13 @@ export class CatalogService {
 
     const defaultHolePattern = () => {
       if (
+        tpl.material === 'BLACK_CERAMIC_GRANITE' ||
+        tpl.material === 'WHITE_CERAMIC_GRANITE' ||
+        tpl.material === 'GROWTH_PHOTOCERAMICS'
+      ) {
+        return 'NONE';
+      }
+      if (
         tpl.material === 'CERMET' &&
         tpl.shape === 'OVAL' &&
         tpl.orientation === 'HORIZONTAL'

@@ -44,7 +44,7 @@ export const blackCoupleTemplates: TemplateConfig[] = [
   ...blackCoupleBases.map<TemplateConfig>((base, index) => ({
     code: base,
     label: base.replace('KCh', 'КЧ'),
-    fullTitle: `Черный прямоугольный портрет ${base.replace('KCh', 'КЧ')} на керамограните`,
+    fullTitle: `Портрет ${base.replace('KCh', 'КЧ')} прямоугольный на черном керамограните`,
     material: Material.BLACK_CERAMIC_GRANITE,
     shape: Shape.RECTANGLE,
     orientation: Orientation.HORIZONTAL,
@@ -72,7 +72,7 @@ export const blackCoupleTemplates: TemplateConfig[] = [
   ...blackCoupleBases.map<TemplateConfig>((base, index) => ({
     code: `${base}_arch`,
     label: `${base.replace('KCh', 'КЧ')} арка`,
-    fullTitle: `Черный портрет ${base.replace('KCh', 'КЧ')} арка на керамограните`,
+    fullTitle: `Портрет ${base.replace('KCh', 'КЧ')} арка на черном керамограните`,
     material: Material.BLACK_CERAMIC_GRANITE,
     shape: Shape.ARCH,
     orientation: Orientation.VERTICAL,
@@ -88,6 +88,7 @@ export const blackCoupleTemplates: TemplateConfig[] = [
     sizeLabels: sizesWhiteBlackArchOval,
     finishes: [Finish.MATTE, Finish.GLOSS],
     backgroundCodes: [300],
+    singlePerson: base !== 'KCh4',
     holePatterns: [
       HolePattern.TWO_HORIZONTAL,
       HolePattern.TWO_VERTICAL,
@@ -99,7 +100,7 @@ export const blackCoupleTemplates: TemplateConfig[] = [
   ...blackCoupleBases.map<TemplateConfig>((base, index) => ({
     code: `${base}_oval`,
     label: `${base.replace('KCh', 'КЧ')} овал`,
-    fullTitle: `Черный портрет ${base.replace('KCh', 'КЧ')} овал на керамограните`,
+    fullTitle: `Портрет ${base.replace('KCh', 'КЧ')} овал на черном керамограните`,
     material: Material.BLACK_CERAMIC_GRANITE,
     shape: Shape.OVAL,
     orientation: Orientation.VERTICAL,
@@ -114,6 +115,7 @@ export const blackCoupleTemplates: TemplateConfig[] = [
     sizePrice: PRICES_OVAL,
     sizeLabels: sizesWhiteBlackArchOval,
     backgroundCodes: [300],
+    singlePerson: base !== 'KCh4',
     holePatterns: [
       HolePattern.TWO_HORIZONTAL,
       HolePattern.TWO_VERTICAL,
