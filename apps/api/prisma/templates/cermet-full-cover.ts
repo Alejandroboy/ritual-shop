@@ -171,43 +171,6 @@ export const metalFullTemplates: TemplateConfig[] = [
     };
     return [bw, color];
   }),
-  ...metalFullBasesHorizontal.flatMap((base, index) => {
-    const bw: TemplateConfig = {
-      code: base,
-      label: base.replace('T', 'Т'),
-      fullTitle: `Горизонтальная табличка ${base.replace('T', 'Т')} полное покрытие`,
-      material: Material.CERMET,
-      shape: Shape.RECTANGLE,
-      orientation: Orientation.HORIZONTAL,
-      colorMode: ColorMode.BW,
-      coverage: Coverage.FULL_WRAP,
-      supportsFrame: false,
-      requiresBackground: true,
-      requiresFinish: false,
-      supportsHoles: true,
-      perHolePrice: 0,
-      basePrice: 0,
-      sizeHolePatterns: SIZE_HOLES_HOR,
-      sizePrice: PRICES_HOR,
-      sizeLabels: sizesMetalFullWrap,
-      holePatterns: [HolePattern.NONE, HolePattern.TWO_HORIZONTAL],
-      backgroundCodes: [400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11],
-      inscribed: index !== 0,
-    };
-    const color: TemplateConfig = {
-      ...bw,
-      code: `${base}c`,
-      label: `${bw.label}ц`,
-      fullTitle: `Горизонтальная табличка ${bw.label}ц полное покрытие`,
-      backgroundCodes: [
-        400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 24, 3, 25, 16,
-        14, 26, 27, 28, 29, 30, 31, 32, 2, 8, 17, 6, 33, 15, 7, 5, 4, 34, 35,
-        36,
-      ],
-      colorMode: ColorMode.COLOR,
-    };
-    return [bw, color];
-  }),
   ...metalFullBasesVertical.flatMap((base, index) => {
     const bw: TemplateConfig = {
       code: base,
@@ -237,6 +200,43 @@ export const metalFullTemplates: TemplateConfig[] = [
       code: `${base}c`,
       label: `${bw.label}ц`,
       fullTitle: `Вертикальная табличка ${bw.label}ц полное покрытие`,
+      backgroundCodes: [
+        400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 24, 3, 25, 16,
+        14, 26, 27, 28, 29, 30, 31, 32, 2, 8, 17, 6, 33, 15, 7, 5, 4, 34, 35,
+        36,
+      ],
+      colorMode: ColorMode.COLOR,
+    };
+    return [bw, color];
+  }),
+  ...metalFullBasesHorizontal.flatMap((base, index) => {
+    const bw: TemplateConfig = {
+      code: base,
+      label: base.replace('T', 'Т'),
+      fullTitle: `Горизонтальная табличка ${base.replace('T', 'Т')} полное покрытие`,
+      material: Material.CERMET,
+      shape: Shape.RECTANGLE,
+      orientation: Orientation.HORIZONTAL,
+      colorMode: ColorMode.BW,
+      coverage: Coverage.FULL_WRAP,
+      supportsFrame: false,
+      requiresBackground: true,
+      requiresFinish: false,
+      supportsHoles: true,
+      perHolePrice: 0,
+      basePrice: 0,
+      sizeHolePatterns: SIZE_HOLES_HOR,
+      sizePrice: PRICES_HOR,
+      sizeLabels: sizesMetalFullWrap,
+      holePatterns: [HolePattern.NONE, HolePattern.TWO_HORIZONTAL],
+      backgroundCodes: [400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11],
+      inscribed: index !== 0,
+    };
+    const color: TemplateConfig = {
+      ...bw,
+      code: `${base}c`,
+      label: `${bw.label}ц`,
+      fullTitle: `Горизонтальная табличка ${bw.label}ц полное покрытие`,
       backgroundCodes: [
         400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 24, 3, 25, 16,
         14, 26, 27, 28, 29, 30, 31, 32, 2, 8, 17, 6, 33, 15, 7, 5, 4, 34, 35,
