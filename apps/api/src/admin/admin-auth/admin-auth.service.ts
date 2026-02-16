@@ -22,7 +22,6 @@ export class AdminAuthService {
   async validate(email: string, password: string): Promise<User | null> {
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (!user) return null;
-    console.log('user', user);
     const ok = await argon2.verify(user.passwordHash, password);
     return ok ? user : null;
   }

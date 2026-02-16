@@ -27,6 +27,20 @@ const PRICES_RECT: Record<string, number> = {
   '30×40': 2700,
   '30х60': 2700,
 };
+
+const sizeFinishRectanglePrice: Record<
+  string,
+  Partial<Record<Finish, number>>
+> = {
+  '13×18': { MATTE: 1500, GLOSS: 2000 },
+  '15×20': { MATTE: 1800, GLOSS: 2300 },
+  '20×25': { MATTE: 2200, GLOSS: 2800 },
+  '20×30': { MATTE: 2600, GLOSS: 3100 },
+  '25х30': { MATTE: 2700, GLOSS: 3200 },
+  '30×40': { MATTE: 2800, GLOSS: 3300 },
+  '30х60': { MATTE: 2900, GLOSS: 3200 },
+};
+
 const PRICES_ARCH: Record<string, number> = {
   '13×18': 1500,
   '15×20': 1800,
@@ -34,6 +48,15 @@ const PRICES_ARCH: Record<string, number> = {
   '20×30': 2600,
   '25х30': 2700,
   '30×40': 2700,
+};
+
+const sizeFinishArchPrice: Record<string, Partial<Record<Finish, number>>> = {
+  '13×18': { MATTE: 1500, GLOSS: 2000 },
+  '15×20': { MATTE: 1800, GLOSS: 2300 },
+  '20×25': { MATTE: 2200, GLOSS: 2700 },
+  '20×30': { MATTE: 2600, GLOSS: 3100 },
+  '25х30': { MATTE: 2700, GLOSS: 3200 },
+  '30×40': { MATTE: 2800, GLOSS: 3300 },
 };
 const PRICES_OVAL: Record<string, number> = {
   '13×18': 1500,
@@ -43,8 +66,16 @@ const PRICES_OVAL: Record<string, number> = {
   '25х30': 2700,
   '30×40': 2700,
 };
+const sizeFinishOvalPrice: Record<string, Partial<Record<Finish, number>>> = {
+  '13×18': { MATTE: 1500, GLOSS: 2000 },
+  '15×20': { MATTE: 1800, GLOSS: 2300 },
+  '20×25': { MATTE: 2200, GLOSS: 2700 },
+  '20×30': { MATTE: 2600, GLOSS: 3100 },
+  '25х30': { MATTE: 2700, GLOSS: 3200 },
+  '30×40': { MATTE: 2800, GLOSS: 3300 },
+};
+
 export const blackSingleTemplates: TemplateConfig[] = [
-  // прямоугольники
   ...blackSingleBases.map<TemplateConfig>((base, index) => ({
     code: base,
     label: base.replace('KCh', 'КЧ'),
@@ -59,6 +90,7 @@ export const blackSingleTemplates: TemplateConfig[] = [
     requiresFinish: true,
     supportsHoles: true,
     sizePrice: PRICES_RECT,
+    sizeFinishPrice: sizeFinishRectanglePrice,
     perHolePrice: 350,
     sizeLabels: sizesWhiteBlackRect,
     finishes: [Finish.MATTE, Finish.GLOSS],
@@ -70,7 +102,6 @@ export const blackSingleTemplates: TemplateConfig[] = [
     ],
     inscribed: index !== 0,
   })),
-  // арка
   ...blackSingleBases.map<TemplateConfig>((base, index) => ({
     code: `${base}_arch`,
     label: `${base.replace('KCh', 'КЧ')} арка`,
@@ -85,6 +116,7 @@ export const blackSingleTemplates: TemplateConfig[] = [
     requiresFinish: true,
     supportsHoles: true,
     sizePrice: PRICES_ARCH,
+    sizeFinishPrice: sizeFinishArchPrice,
     perHolePrice: 350,
     sizeLabels: sizesWhiteBlackArchOval,
     finishes: [Finish.MATTE, Finish.GLOSS],
@@ -111,6 +143,7 @@ export const blackSingleTemplates: TemplateConfig[] = [
     requiresFinish: true,
     supportsHoles: true,
     sizePrice: PRICES_OVAL,
+    sizeFinishPrice: sizeFinishOvalPrice,
     perHolePrice: 350,
     sizeLabels: sizesWhiteBlackArchOval,
     finishes: [Finish.MATTE, Finish.GLOSS],

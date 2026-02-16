@@ -82,6 +82,7 @@ export type TemplateConfig = {
   singlePerson?: boolean;
 
   sizeLabels: string[]; // "13×18" и т.п.
+  sizeFinishPrice?: Record<string, Partial<Record<Finish, number>>>;
   holePatterns?: HolePattern[]; // если нужен нестандартный набор
   sizeHolePatterns?: Record<string, HolePattern[]>;
   perHolePrice: number;

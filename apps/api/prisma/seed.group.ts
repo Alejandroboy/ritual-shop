@@ -1,5 +1,11 @@
 import 'dotenv/config';
-import { PrismaClient, Material, Coverage, HolePattern } from '@prisma/client';
+import {
+  PrismaClient,
+  Material,
+  Coverage,
+  HolePattern,
+  Finish,
+} from '@prisma/client';
 import { metalOvalHorTemplates } from './templates/cermet-oval-horizontal.ts';
 import { metalOvalVertTemplates } from './templates/cermet-oval-vertical.ts';
 import { metalRectVertTemplates } from './templates/cermet-rectangle-vertical.ts';
@@ -8,12 +14,16 @@ import { metalFullTemplates } from './templates/cermet-full-cover.ts';
 import { starTemplates } from './templates/cermet-star.ts';
 import { archMetalTemplates } from './templates/cermet-arch.ts';
 import { heartTemplates } from './templates/cermet-heart.ts';
-import { whiteRectTemplates } from './templates/white-ceramo-granite-rectangle.ts';
+import {
+  whiteExtra,
+  whiteRectTemplates,
+} from './templates/white-ceramo-granite-rectangle.ts';
 import { whiteOvalTemplates } from './templates/white-ceramo-granite-oval.ts';
 import { whiteArchTemplates } from './templates/white-ceramo-granite-arch.ts';
-import { growthRectsTemplates } from './templates/growth-photoceramic.ts';
-import { growthArchTemplates } from './templates/growth-photoceramic.ts';
-import { growthOvalTemplates } from './templates/growth-photoceramic.ts';
+import {
+  growthHorizontal,
+  growthVertical,
+} from './templates/growth-photoceramic.ts';
 import { glassRectTemplates } from './templates/glass-rectangle.ts';
 import { glassOvalTemplates } from './templates/glass-oval.ts';
 import { glassArchTemplates } from './templates/glass-arch.ts';
@@ -73,6 +83,11 @@ async function createTemplate(cfg: TemplateConfig) {
     const sizes = await prisma.size.findMany({
       where: { label: { in: cfg.sizeLabels } },
     });
+
+    await prisma.templateSize.deleteMany({
+      where: { templateId: template.id },
+    });
+
     await prisma.templateSize.createMany({
       data: sizes.map((s) => ({
         templateId: template.id,
@@ -83,6 +98,42 @@ async function createTemplate(cfg: TemplateConfig) {
       })),
       skipDuplicates: true,
     });
+  }
+
+  if (cfg.finishes?.length && cfg.sizeFinishPrice) {
+    const sizes = await prisma.size.findMany({
+      where: { label: { in: cfg.sizeLabels } },
+    });
+
+    await prisma.templateSizeFinishPrice.deleteMany({
+      where: { templateId: template.id },
+    });
+
+    const rows: Array<{
+      templateId: string;
+      sizeId: number;
+      finish: Finish;
+      price: number;
+    }> = [];
+
+    for (const s of sizes) {
+      const perFinish = cfg.sizeFinishPrice[s.label];
+      if (!perFinish) continue;
+
+      for (const finish of cfg.finishes) {
+        const price = perFinish[finish];
+        if (price == null) continue;
+
+        rows.push({ templateId: template.id, sizeId: s.id, finish, price });
+      }
+    }
+
+    if (rows.length) {
+      await prisma.templateSizeFinishPrice.createMany({
+        data: rows,
+        skipDuplicates: true,
+      });
+    }
   }
 
   // отверстия
@@ -303,9 +354,9 @@ async function seedTemplates() {
     ...whiteRectTemplates,
     ...whiteOvalTemplates,
     ...whiteArchTemplates,
-    ...growthArchTemplates,
-    ...growthOvalTemplates,
-    ...growthRectsTemplates,
+    ...whiteExtra,
+    ...growthVertical,
+    ...growthHorizontal,
     ...glassRectTemplates,
     ...glassOvalTemplates,
     ...glassArchTemplates,

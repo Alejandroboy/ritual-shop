@@ -20,6 +20,20 @@ const PRICES_RECT: Record<string, number> = {
   '30×40': 2700,
   '30х60': 2700,
 };
+
+const sizeFinishRectanglePrice: Record<
+  string,
+  Partial<Record<Finish, number>>
+> = {
+  '13×18': { MATTE: 1500, GLOSS: 2000 },
+  '15×20': { MATTE: 1800, GLOSS: 2300 },
+  '20×25': { MATTE: 2200, GLOSS: 2700 },
+  '20×30': { MATTE: 2600, GLOSS: 3100 },
+  '25х30': { MATTE: 2800, GLOSS: 3300 },
+  '30×40': { MATTE: 2900, GLOSS: 3400 },
+  '30х60': { MATTE: 3000, GLOSS: 3500 },
+};
+
 export const blackTextTemplates: TemplateConfig[] = blackTextBases.map(
   (base) => ({
     code: base,
@@ -36,6 +50,7 @@ export const blackTextTemplates: TemplateConfig[] = blackTextBases.map(
     supportsHoles: true,
     sizeLabels: sizesWhiteBlackRect,
     sizePrice: PRICES_RECT,
+    sizeFinishPrice: sizeFinishRectanglePrice,
     perHolePrice: 350,
     basePrice: 0,
     finishes: [Finish.MATTE, Finish.GLOSS],

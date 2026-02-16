@@ -20,6 +20,15 @@ const PRICES_ARCH: Record<string, number> = {
   '25х30': 2700,
   '30×40': 2700,
 };
+
+const sizeFinishArchPrice: Record<string, Partial<Record<Finish, number>>> = {
+  '13×18': { GLOSS: 1500, MATTE: 1100 },
+  '15×20': { GLOSS: 1800, MATTE: 1400 },
+  '20×25': { GLOSS: 2200, MATTE: 1800 },
+  '20×30': { GLOSS: 2600, MATTE: 2200 },
+  '25х30': { GLOSS: 2700, MATTE: 2300 },
+  '30×40': { GLOSS: 2900, MATTE: 2500 },
+};
 export const whiteArchTemplates: TemplateConfig[] = [
   ...whiteArchBasesVert.flatMap((base, index) => {
     const bw: TemplateConfig = {
@@ -40,6 +49,7 @@ export const whiteArchTemplates: TemplateConfig[] = [
       perHolePrice: 350,
       basePrice: 0,
       sizePrice: PRICES_ARCH,
+      sizeFinishPrice: sizeFinishArchPrice,
       backgroundCodes: [
         300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 100, 200,
       ],
@@ -85,6 +95,7 @@ export const whiteArchTemplates: TemplateConfig[] = [
       basePrice: 0,
       sizePrice: PRICES_ARCH,
       singlePerson: base !== 'K5' && base !== 'K6',
+      sizeFinishPrice: sizeFinishArchPrice,
       backgroundCodes: [
         300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 100, 200,
       ],

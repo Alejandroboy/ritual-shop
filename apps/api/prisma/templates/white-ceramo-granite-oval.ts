@@ -20,6 +20,15 @@ const PRICES_OVAL: Record<string, number> = {
   '25х30': 2700,
   '30×40': 2700,
 };
+
+const sizeFinishOvalPrice: Record<string, Partial<Record<Finish, number>>> = {
+  '13×18': { MATTE: 1500, GLOSS: 2000 },
+  '15×20': { MATTE: 1800, GLOSS: 2300 },
+  '20×25': { MATTE: 2200, GLOSS: 2700 },
+  '20×30': { MATTE: 2600, GLOSS: 3100 },
+  '25х30': { MATTE: 2700, GLOSS: 3200 },
+  '30×40': { MATTE: 3000, GLOSS: 3500 },
+};
 export const whiteOvalTemplates: TemplateConfig[] = [
   ...whiteOvalBasesVert.flatMap((base, index) => {
     const bw: TemplateConfig = {
@@ -40,6 +49,7 @@ export const whiteOvalTemplates: TemplateConfig[] = [
       perHolePrice: 350,
       basePrice: 0,
       sizePrice: PRICES_OVAL,
+      sizeFinishPrice: sizeFinishOvalPrice,
       backgroundCodes: [
         300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 100, 200,
       ],
@@ -84,6 +94,7 @@ export const whiteOvalTemplates: TemplateConfig[] = [
       perHolePrice: 350,
       basePrice: 0,
       sizePrice: PRICES_OVAL,
+      sizeFinishPrice: sizeFinishOvalPrice,
       singlePerson: base !== 'K5' && base !== 'K6',
       backgroundCodes: [
         300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 100, 200,

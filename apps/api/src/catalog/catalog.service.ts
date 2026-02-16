@@ -129,6 +129,13 @@ export class CatalogService {
         personsMax: true,
         notes: true,
         perHolePrice: true,
+        finishPrices: {
+          select: {
+            price: true,
+            finish: true,
+            sizeId: true,
+          },
+        },
         allowedSizes: {
           select: {
             price: true,
@@ -174,6 +181,15 @@ export class CatalogService {
 
       return null;
     };
+
+    const finishPricesBySizeId = tpl.finishPrices.reduce<
+      Record<number, Record<string, number>>
+    >((acc, row) => {
+      if (!row.sizeId) return acc;
+      acc[row.sizeId] ??= {};
+      acc[row.sizeId][row.finish] = row.price;
+      return acc;
+    }, {});
 
     const defaultHolePattern = () => {
       if (
@@ -238,13 +254,16 @@ export class CatalogService {
       holes: tpl.allowedHoles.map((x) => x.pattern),
       frames: tpl.allowedFrames.map((x) => x.frame),
       backgrounds: tpl.allowedBackgrounds.map((x) => x.background),
+      finishPricesBySizeId: tpl.requiresFinish
+        ? finishPricesBySizeId
+        : undefined,
       variants: tpl.variants.map((v) => ({
         holePattern: v.holePattern,
         finishRequired: v.finishRequired,
         finishes: v.allowedFinishes.map((f) => f.finish),
       })),
-      // можно подсказать дефолты
       defaults: {
+        ...(tpl.requiresFinish ? { finish: 'MATTE' } : {}),
         sizeId: defaultSizeId(),
         holePattern: defaultHolePattern(),
         frameId:

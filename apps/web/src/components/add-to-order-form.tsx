@@ -49,9 +49,31 @@ export default function AddToOrderForm({ tpl }: Props) {
   const [retouchNeeded, setRetouchNeeded] = useState<boolean>(false);
   const [readAgreement, setReadAgreement] = useState<boolean>(false);
 
-  const [sizeId, setSizeId] = useState<number | ''>(tpl.defaults.sizeId ?? '');
-  let price = tpl.allowedSizes.filter((item) => item.size.id === sizeId)[0]
-    ?.price;
+  const [sizeId, setSizeId] = useState<number>(tpl.defaults.sizeId ?? 0);
+  const price = () => {
+    let price;
+    if (
+      tpl.requiresFinish &&
+      Object.keys(tpl.finishPricesBySizeId).length !== 0
+    ) {
+      price = tpl.finishPricesBySizeId[sizeId]?.[finish] || 0;
+    } else {
+      price = tpl.allowedSizes.filter((item) => item.size.id === sizeId)[0]
+        ?.price;
+    }
+
+    if (tpl.perHolePrice && holePattern) {
+      const firstFour = holePattern.slice(0, 4);
+      if (firstFour.includes('TWO') && price) {
+        price += tpl.perHolePrice * 2;
+      }
+      if (firstFour.includes('FOUR') && price) {
+        price += tpl.perHolePrice * 4;
+      }
+    }
+
+    return price;
+  };
   let scuCode = tpl.allowedSizes.filter((item) => item.size.id === sizeId)[0]
     ?.skuCode;
   const [skuCode, setSkuCode] = useState<string>(scuCode ?? '');
@@ -59,22 +81,13 @@ export default function AddToOrderForm({ tpl }: Props) {
     tpl.defaults.holePattern ?? '',
   );
 
-  if (tpl.perHolePrice && holePattern) {
-    const firstFour = holePattern.slice(0, 4);
-    if (firstFour.includes('TWO') && price) {
-      price += tpl.perHolePrice * 2;
-    }
-    if (firstFour.includes('FOUR') && price) {
-      price += tpl.perHolePrice * 4;
-    }
-  }
   const [frameId, setFrameId] = useState<number | ''>(
     tpl.defaults.frameId ?? '',
   );
   const [backgroundId, setBackgroundId] = useState<number | ''>(
     tpl.defaults.backgroundId ?? '',
   );
-  const [finish, setFinish] = useState<string | ''>('');
+  const [finish, setFinish] = useState<string | ''>(tpl.defaults.finish ?? '');
   const [comment, setComment] = useState('');
 
   const needFinish =
@@ -249,9 +262,9 @@ export default function AddToOrderForm({ tpl }: Props) {
       return <div>Пожалуйста загрузите другое изображение</div>;
     }
   };
-  const availableSizes = tpl.allowedSizes
-    .filter((item) => item.availableHolePattern.includes(holePattern))
-    .sort((a, b) => a.size.widthCm - b.size.widthCm);
+  const availableSizes = tpl.allowedSizes.filter((item) =>
+    item.availableHolePattern.includes(holePattern),
+  );
 
   const renderSecondPersonFields = () => {
     return (
@@ -396,7 +409,7 @@ export default function AddToOrderForm({ tpl }: Props) {
               className="border rounded-md px-2 py-1 bg-white w-full"
               value={sizeId}
               onChange={(e) =>
-                setSizeId(e.target.value ? Number(e.target.value) : '')
+                setSizeId(e.target.value ? Number(e.target.value) : 0)
               }
             >
               {availableSizes.map((s) => (
@@ -480,7 +493,8 @@ export default function AddToOrderForm({ tpl }: Props) {
 
       <div className="flex justify-between">
         <div>
-          Итоговая цена: {Number.isFinite(price) ? price : 0}&nbsp;&#8381;
+          Итоговая цена: {Number.isFinite(price()) ? price() : 0}
+          &nbsp;&#8381;
         </div>
       </div>
       <div>

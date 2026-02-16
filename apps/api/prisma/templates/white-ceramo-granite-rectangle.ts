@@ -23,6 +23,19 @@ const PRICES_RECT: Record<string, number> = {
   '30х60': 2900,
 };
 
+const sizeFinishRectanglePrice: Record<
+  string,
+  Partial<Record<Finish, number>>
+> = {
+  '13×18': { MATTE: 1500, GLOSS: 2000 },
+  '15×20': { MATTE: 1800, GLOSS: 2300 },
+  '20×25': { MATTE: 2200, GLOSS: 2700 },
+  '20×30': { MATTE: 2600, GLOSS: 3100 },
+  '25х30': { MATTE: 2700, GLOSS: 3200 },
+  '30×40': { MATTE: 2800, GLOSS: 3300 },
+  '30х60': { MATTE: 2900, GLOSS: 3400 },
+};
+
 export const whiteRectTemplates: TemplateConfig[] = [
   ...whiteRectSingleBases.flatMap((base, index) => {
     const bw: TemplateConfig = {
@@ -43,6 +56,7 @@ export const whiteRectTemplates: TemplateConfig[] = [
       perHolePrice: 350,
       basePrice: 0,
       sizePrice: PRICES_RECT,
+      sizeFinishPrice: sizeFinishRectanglePrice,
       backgroundCodes: [
         300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 100, 200,
       ],
@@ -87,6 +101,7 @@ export const whiteRectTemplates: TemplateConfig[] = [
       perHolePrice: 350,
       basePrice: 0,
       sizePrice: PRICES_RECT,
+      sizeFinishPrice: sizeFinishRectanglePrice,
       singlePerson: base !== 'K5' && base !== 'K6',
       backgroundCodes: [
         300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 100, 200,
@@ -113,6 +128,9 @@ export const whiteRectTemplates: TemplateConfig[] = [
     };
     return [bw, color];
   }),
+];
+
+export const whiteExtra: TemplateConfig[] = [
   ...whiteRectExtraBases.flatMap((base) => {
     const bw: TemplateConfig = {
       code: base,
@@ -131,6 +149,7 @@ export const whiteRectTemplates: TemplateConfig[] = [
       perHolePrice: 350,
       basePrice: 0,
       sizePrice: PRICES_RECT,
+      sizeFinishPrice: sizeFinishRectanglePrice,
       inscribed: true,
       backgroundCodes: [
         300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 100, 200,
@@ -157,7 +176,6 @@ export const whiteRectTemplates: TemplateConfig[] = [
     };
     return [bw, color];
   }),
-  // текстовые K9, K10
   {
     code: 'K9',
     label: 'К9',
@@ -176,6 +194,7 @@ export const whiteRectTemplates: TemplateConfig[] = [
     perHolePrice: 350,
     basePrice: 0,
     sizePrice: PRICES_RECT,
+    sizeFinishPrice: sizeFinishRectanglePrice,
     inscribed: true,
     backgroundCodes: [
       300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 24, 3, 25,
@@ -208,6 +227,7 @@ export const whiteRectTemplates: TemplateConfig[] = [
     basePrice: 0,
     inscribed: true,
     sizePrice: PRICES_RECT,
+    sizeFinishPrice: sizeFinishRectanglePrice,
     backgroundCodes: [
       300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 24, 3, 25,
       16, 14, 26, 27, 28, 29, 30, 31, 32, 2, 8, 17, 6, 33, 15, 7, 5, 4, 34, 35,
@@ -238,6 +258,7 @@ export const whiteRectTemplates: TemplateConfig[] = [
     perHolePrice: 350,
     basePrice: 0,
     sizePrice: PRICES_RECT,
+    sizeFinishPrice: sizeFinishRectanglePrice,
     backgroundCodes: [300],
     inscribed: true,
     holePatterns: [

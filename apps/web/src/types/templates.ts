@@ -90,6 +90,9 @@ export type TemplateDetails = TemplateListItem & {
   }[];
   inscribed: boolean | null;
   singlePerson: boolean;
+  finishPricesBySizeId: Partial<
+    Record<number, Partial<Record<string, number>>>
+  >;
   allowedSizes: {
     skuCode?: string;
     size: { id: number; label: string; widthCm: number; heightCm: number };
@@ -103,7 +106,7 @@ export type TemplateDetails = TemplateListItem & {
   defaults: {
     sizeId: number | null;
     holePattern: HolePattern | null;
-    finishes: HolePattern | null;
+    finish: HolePattern | null;
     frameId: number | null;
     backgroundId: number | null;
   };
