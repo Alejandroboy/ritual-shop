@@ -9,6 +9,8 @@ export type Refs = {
 export type Template = {
   label: string;
   basePriceMinor: number;
+  fullTitle: string;
+  requiresFinish: boolean;
   frameId: string;
   sizeId: string;
   backgroundId: string;
@@ -35,6 +37,7 @@ export type Template = {
   }[];
   perHolePrice: number;
   material: string;
+  finishPrices: Partial<Record<number, Partial<Record<string, number>>>>;
 };
 
 export type Material =

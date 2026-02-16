@@ -16,9 +16,9 @@ const PRICES_RECT: Record<string, number> = {
   '15×20': 1800,
   '20×25': 2200,
   '20×30': 2600,
-  '25х30': 2700,
+  '25×30': 2700,
   '30×40': 2700,
-  '30х60': 2700,
+  '30×60': 2700,
 };
 
 const sizeFinishRectanglePrice: Record<
@@ -29,9 +29,9 @@ const sizeFinishRectanglePrice: Record<
   '15×20': { MATTE: 1800, GLOSS: 2300 },
   '20×25': { MATTE: 2200, GLOSS: 2700 },
   '20×30': { MATTE: 2600, GLOSS: 3100 },
-  '25х30': { MATTE: 2800, GLOSS: 3300 },
+  '25×30': { MATTE: 2800, GLOSS: 3300 },
   '30×40': { MATTE: 2900, GLOSS: 3400 },
-  '30х60': { MATTE: 3000, GLOSS: 3500 },
+  '30×60': { MATTE: 3000, GLOSS: 3500 },
 };
 
 export const blackTextTemplates: TemplateConfig[] = blackTextBases.map(

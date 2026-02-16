@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Injectable, Query } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
   Finish as FinishEnum,
@@ -38,7 +38,7 @@ export class AdminTemplatesService {
     backgroundId?: string,
     finish?: string,
   ) {
-    const take = 100;
+    const take = 300;
     const skip = (parseInt(page) - 1) * take;
 
     const where: Prisma.TemplateWhereInput = {};
@@ -69,6 +69,13 @@ export class AdminTemplatesService {
           allowedBackgrounds: { include: { background: true } },
           allowedFinishes: true,
           variants: true,
+          finishPrices: {
+            select: {
+              price: true,
+              finish: true,
+              sizeId: true,
+            },
+          },
         },
       }),
       this.prisma.template.count({ where }),
@@ -86,14 +93,19 @@ export class AdminTemplatesService {
         allowedFrames: { include: { frame: true } },
         allowedBackgrounds: { include: { background: true } },
         allowedFinishes: true,
-
+        finishPrices: {
+          select: {
+            price: true,
+            finish: true,
+            sizeId: true,
+          },
+        },
         variants: true,
       },
     });
   }
 
   async createTemplate(dto: any) {
-    // минимально необходимые поля по схеме
     const required = ['code', 'label', 'material', 'shape', 'colorMode'];
     for (const k of required)
       if (dto[k] === undefined) {
@@ -122,32 +134,6 @@ export class AdminTemplatesService {
 
   async updateTemplate(id: string, dto: UpdateTemplateDto) {
     return this.prisma.$transaction(async (tx) => {
-      const updated = await tx.template.update({
-        where: { id },
-        data: {
-          code: dto.code ?? undefined,
-          label: dto.label ?? undefined,
-          material: dto.material ?? undefined,
-          shape: dto.shape ?? undefined,
-          orientation: dto.orientation ?? undefined,
-          colorMode: dto.colorMode ?? undefined,
-          coverage: dto.coverage ?? undefined,
-
-          supportsFrame: dto.supportsFrame ?? undefined,
-          requiresBackground: dto.requiresBackground ?? undefined,
-          requiresFinish: dto.requiresFinish ?? undefined,
-          supportsHoles: dto.supportsHoles ?? undefined,
-
-          personsMin: dto.personsMin ?? undefined,
-          personsMax: dto.personsMax ?? undefined,
-          notes: dto.notes ?? undefined,
-
-          // НОВОЕ поле шаблона:
-          perHolePrice: dto.perHolePrice ?? undefined,
-        },
-        select: { id: true }, // вернём позже свежие данные одной выборкой
-      });
-
       if (dto.sizePrices && typeof dto.sizePrices === 'object') {
         for (const [sizeIdStr, sizePrice] of Object.entries(dto.sizePrices)) {
           const sizeId = Number(sizeIdStr);
@@ -160,6 +146,43 @@ export class AdminTemplatesService {
             update: { price },
             create: { templateId: id, sizeId, price },
           });
+        }
+      }
+
+      if (
+        dto.finishPricesBySizeId &&
+        typeof dto.finishPricesBySizeId === 'object'
+      ) {
+        for (const [sizeIdStr, perFinish] of Object.entries(
+          dto.finishPricesBySizeId,
+        )) {
+          const sizeId = Number(sizeIdStr);
+          if (!Number.isFinite(sizeId)) continue;
+          if (!perFinish || typeof perFinish !== 'object') continue;
+
+          for (const [finishStr, priceVal] of Object.entries(perFinish)) {
+            const price = Number(priceVal);
+            if (!Number.isFinite(price) || price < 0) continue;
+
+            if (finishStr !== 'MATTE' && finishStr !== 'GLOSS') continue;
+
+            await tx.templateSizeFinishPrice.upsert({
+              where: {
+                templateId_sizeId_finish: {
+                  templateId: id,
+                  sizeId,
+                  finish: finishStr as any,
+                },
+              },
+              update: { price },
+              create: {
+                templateId: id,
+                sizeId,
+                finish: finishStr as any,
+                price,
+              },
+            });
+          }
         }
       }
 

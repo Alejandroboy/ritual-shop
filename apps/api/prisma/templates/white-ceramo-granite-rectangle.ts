@@ -12,15 +12,15 @@ import { sizesWhiteBlackRect, type TemplateConfig } from './shared.ts';
 
 const whiteRectSingleBases = ['K1', 'K2', 'K3'];
 const whiteRectCoupleBases = ['K4', 'K5', 'K6'];
-const whiteRectExtraBases = ['K7', 'K8']; // K9, K10, K11–K14 без цветных версий
+const whiteRectExtraBases = ['K7', 'K8']; // K9, K10, K11–K14 без цветны× версий
 const PRICES_RECT: Record<string, number> = {
   '13×18': 1500,
   '15×20': 1800,
   '20×25': 2200,
   '20×30': 2600,
-  '25х30': 2700,
+  '25×30': 2700,
   '30×40': 2800,
-  '30х60': 2900,
+  '30×60': 2900,
 };
 
 const sizeFinishRectanglePrice: Record<
@@ -31,9 +31,9 @@ const sizeFinishRectanglePrice: Record<
   '15×20': { MATTE: 1800, GLOSS: 2300 },
   '20×25': { MATTE: 2200, GLOSS: 2700 },
   '20×30': { MATTE: 2600, GLOSS: 3100 },
-  '25х30': { MATTE: 2700, GLOSS: 3200 },
+  '25×30': { MATTE: 2700, GLOSS: 3200 },
   '30×40': { MATTE: 2800, GLOSS: 3300 },
-  '30х60': { MATTE: 2900, GLOSS: 3400 },
+  '30×60': { MATTE: 2900, GLOSS: 3400 },
 };
 
 export const whiteRectTemplates: TemplateConfig[] = [

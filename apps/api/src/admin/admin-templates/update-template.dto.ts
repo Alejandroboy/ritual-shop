@@ -36,4 +36,7 @@ export class UpdateTemplateDto {
   @IsOptional() @IsInt() @Min(0) perHolePrice?: number;
 
   @IsOptional() @IsObject() sizePrices?: Record<number, number>;
+  @IsOptional()
+  @IsObject()
+  finishPricesBySizeId?: Record<string, Record<string, number>>;
 }

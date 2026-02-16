@@ -3,18 +3,16 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import type { Refs, Template } from '@types';
+import { api } from '@utils';
 
-// ---------- utils ----------
-async function api<T>(url: string, init?: RequestInit): Promise<T> {
-  const r = await fetch(url, {
-    credentials: 'include',
-    cache: 'no-store',
-    ...(init || {}),
-  });
-  const t = await r.text();
-  if (!r.ok) throw new Error(t || r.statusText);
-  return t ? (JSON.parse(t) as T) : (null as unknown as T);
-}
+const FINISHES = ['MATTE', 'GLOSS'] as const;
+type Finish = (typeof FINISHES)[number];
+
+type FinishPricesBySizeId = Partial<
+  Record<number, Partial<Record<Finish, number>>>
+>;
+
+type FinishRow = { sizeId: number; finish: Finish; price: number };
 
 type Size = Refs['sizes'][number];
 type AllowedSize = NonNullable<Template['allowedSizes']>[number];
@@ -26,6 +24,23 @@ function errMessage(e: unknown): string {
 function hasPreview(t: Template): t is Template & { previewPath: string } {
   const p = (t as unknown as { previewPath?: unknown }).previewPath;
   return typeof p === 'string' && p.length > 0;
+}
+
+function buildFinishPricesMap(
+  rows: FinishRow[] | undefined | null,
+): FinishPricesBySizeId {
+  const out: FinishPricesBySizeId = {};
+  for (const r of rows ?? []) {
+    const sizeId = Number(r.sizeId);
+    if (!Number.isFinite(sizeId)) continue;
+
+    const finish = r.finish;
+    if (finish !== 'MATTE' && finish !== 'GLOSS') continue;
+
+    const price = Number(r.price ?? 0);
+    out[sizeId] = { ...(out[sizeId] ?? {}), [finish]: price };
+  }
+  return out;
 }
 
 // ---------- component ----------
@@ -52,6 +67,8 @@ export default function TemplateEdit() {
   const [perHolePrice, setPerHolePrice] = useState<number>(0);
 
   const [sizePrices, setSizePrices] = useState<Record<number, number>>({});
+  const [finishPricesBySizeId, setFinishPricesBySizeId] =
+    useState<FinishPricesBySizeId>({});
 
   const sizeById = useMemo(() => {
     const m = new Map<number, Size>();
@@ -83,6 +100,9 @@ export default function TemplateEdit() {
           prices[Number(row.sizeId)] = Number(row.price ?? 0);
         }
         setSizePrices(prices);
+        setFinishPricesBySizeId(
+          buildFinishPricesMap((fetchedTpl as any)?.finishPrices),
+        );
       } catch (e: unknown) {
         setErr(errMessage(e));
       } finally {
@@ -105,6 +125,7 @@ export default function TemplateEdit() {
         label: string;
         perHolePrice: number;
         sizePrices: Record<number, number>;
+        finishPricesBySizeId?: FinishPricesBySizeId;
       } = {
         code,
         label,
@@ -116,6 +137,10 @@ export default function TemplateEdit() {
             )
             .map(([k, v]) => [Number(k), Number(v)]),
         ),
+        finishPricesBySizeId:
+          tpl.requiresFinish && Object.keys(tpl.finishPrices).length !== 0
+            ? finishPricesBySizeId
+            : undefined,
       };
 
       await api<void>(`/api/admin/templates/${id}`, {
@@ -135,7 +160,9 @@ export default function TemplateEdit() {
         freshPrices[Number(row.sizeId)] = Number(row.price ?? 0);
       }
       setSizePrices(freshPrices);
-
+      setFinishPricesBySizeId(
+        buildFinishPricesMap((fresh as any)?.finishPrices),
+      );
       alert('Сохранено');
     } catch (e: unknown) {
       alert(`Ошибка сохранения: ${errMessage(e)}`);
@@ -182,7 +209,7 @@ export default function TemplateEdit() {
   return (
     <form onSubmit={saveAll} className="space-y-4 max-w-2xl">
       <h1 className="text-2xl font-semibold">Шаблон {tpl.label}</h1>
-
+      <h2>{tpl.fullTitle}</h2>
       <div className="grid grid-cols-2 gap-3">
         <label className="text-sm">
           Код
@@ -224,44 +251,107 @@ export default function TemplateEdit() {
           </div>
         )}
 
-        <div>
-          <h3 className="font-medium">Цены по размерам</h3>
-          <p className="text-xs text-neutral-500 mb-2">
-            Видны только разрешённые размеры этого шаблона.
-          </p>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-2">
-            {rows.map((row) => {
-              const sizeId = Number(row.sizeId);
-              const s = sizeById.get(sizeId);
-              const value = Number(sizePrices[sizeId] ?? 0);
-              return (
-                <label key={sizeId} className="text-sm flex items-center gap-2">
-                  <span
-                    className="w-32 truncate"
-                    title={s?.label ?? `Размер #${sizeId}`}
+        {!tpl.finishPrices && (
+          <div>
+            <h3 className="font-medium">Цены по размерам</h3>
+            <p className="text-xs text-neutral-500 mb-2">
+              Видны только разрешённые размеры этого шаблона.
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-2">
+              {rows.map((row) => {
+                const sizeId = Number(row.sizeId);
+                const s = sizeById.get(sizeId);
+                const value = Number(sizePrices[sizeId] ?? 0);
+                return (
+                  <label
+                    key={sizeId}
+                    className="text-sm flex items-center gap-2"
                   >
-                    {s?.label ?? `ID: ${sizeId}`}
-                  </span>
-                  <input
-                    type="number"
-                    className="border rounded p-2 w-36"
-                    value={value}
-                    min={0}
-                    onChange={(e) => {
-                      const v = Number(e.target.value || 0);
-                      setSizePrices((prev) => ({ ...prev, [sizeId]: v }));
-                    }}
-                  />
-                </label>
-              );
-            })}
-            {rows.length === 0 && (
-              <div className="text-sm text-neutral-500">
-                Для этого шаблона пока не выбраны разрешённые размеры.
-              </div>
-            )}
+                    <span
+                      className="w-32 truncate"
+                      title={s?.label ?? `Размер #${sizeId}`}
+                    >
+                      {s?.label ?? `ID: ${sizeId}`}
+                    </span>
+                    <input
+                      type="number"
+                      className="border rounded p-2 w-36"
+                      value={value}
+                      min={0}
+                      onChange={(e) => {
+                        const v = Number(e.target.value || 0);
+                        setSizePrices((prev) => ({ ...prev, [sizeId]: v }));
+                      }}
+                    />
+                  </label>
+                );
+              })}
+              {rows.length === 0 && (
+                <div className="text-sm text-neutral-500">
+                  Для этого шаблона пока не выбраны разрешённые размеры.
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
+        {tpl.requiresFinish &&
+          tpl.finishPrices &&
+          Object.keys(tpl.finishPrices).length !== 0 && (
+            <div className="mt-6">
+              <h3 className="font-medium">Цены по финишу</h3>
+              <p className="text-xs text-neutral-500 mb-2">
+                Цена зависит от размера и выбранного финиша.
+              </p>
+
+              <div className="space-y-3">
+                {rows.map((row) => {
+                  const sizeId = Number(row.sizeId);
+                  const s = sizeById.get(sizeId);
+
+                  return (
+                    <div key={sizeId} className="border rounded-xl p-3">
+                      <div className="text-sm font-medium mb-2">
+                        {s?.label ?? `ID: ${sizeId}`}
+                      </div>
+
+                      <div className="flex flex-wrap gap-3">
+                        {FINISHES.map((finish) => {
+                          const current = Number(
+                            finishPricesBySizeId?.[sizeId]?.[finish] ?? 0,
+                          );
+                          return (
+                            <label
+                              key={finish}
+                              className="text-sm flex items-center gap-2"
+                            >
+                              <span className="w-16">{finish}</span>
+                              <input
+                                type="number"
+                                className="border rounded p-2 w-36"
+                                min={0}
+                                value={Number(current)}
+                                onChange={(e) => {
+                                  const v = Number(e.target.value || 0);
+
+                                  setFinishPricesBySizeId((prev) => ({
+                                    ...prev,
+                                    [sizeId]: {
+                                      ...(prev[sizeId] ?? {}),
+                                      [finish]: v,
+                                    },
+                                  }));
+                                }}
+                              />
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
       </div>
 
       <div className="flex items-center gap-4">

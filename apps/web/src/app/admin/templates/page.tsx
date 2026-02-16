@@ -3,18 +3,15 @@ import useSWR from 'swr';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Template } from '@types';
-
-async function api(url: string) {
-  const r = await fetch(url, { credentials: 'include', cache: 'no-store' });
-  const t = await r.text();
-  if (!r.ok) throw new Error(t || r.statusText);
-  return JSON.parse(t);
-}
+import { adminApiFetch } from '@utils';
 
 export default function TemplatesPage() {
-  const { data, error } = useSWR('/api/admin/templates', api);
+  const { data, error } = useSWR('/api/admin/templates', (u) =>
+    adminApiFetch(u).then((r) => r.json()),
+  );
   if (error) return <div className="text-red-600">Ошибка: {String(error)}</div>;
   if (!data) return <div>Загрузка…</div>;
+  console.log('data', data);
   const items = data.items ?? [];
   return (
     <div>
@@ -36,6 +33,7 @@ export default function TemplatesPage() {
           >
             <div className="font-mono">{t.code}</div>
             <div className="text-sm text-gray-600">{t.label}</div>
+            <div className="text-sm text-gray-600">{t.fullTitle}</div>
             {t.previewPath && (
               <Image
                 src={t.previewPath}

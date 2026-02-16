@@ -17,7 +17,7 @@ const PRICES_ARCH: Record<string, number> = {
   '15×20': 1800,
   '20×25': 2200,
   '20×30': 2600,
-  '25х30': 2700,
+  '25×30': 2700,
   '30×40': 2700,
 };
 
@@ -26,7 +26,7 @@ const sizeFinishArchPrice: Record<string, Partial<Record<Finish, number>>> = {
   '15×20': { GLOSS: 1800, MATTE: 1400 },
   '20×25': { GLOSS: 2200, MATTE: 1800 },
   '20×30': { GLOSS: 2600, MATTE: 2200 },
-  '25х30': { GLOSS: 2700, MATTE: 2300 },
+  '25×30': { GLOSS: 2700, MATTE: 2300 },
   '30×40': { GLOSS: 2900, MATTE: 2500 },
 };
 export const whiteArchTemplates: TemplateConfig[] = [
