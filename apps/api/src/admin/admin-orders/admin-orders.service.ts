@@ -3,8 +3,9 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { EmailService } from '../../email/email.service';
 import { TelegramService } from '../../notifications/telegram/telegram.service';
-import { Prisma } from '@prisma/client';
+import { OrderStatus, Prisma } from '@prisma/client';
 import { AdminOrdersQueryDto } from './dto/admin-orders.query.dto';
+import { RemindersService } from '../../reminders/reminders.service';
 
 function endOfDayIso(d: Date) {
   const x = new Date(d);
@@ -17,6 +18,7 @@ export class AdminOrdersService {
     private prisma: PrismaService,
     private email: EmailService,
     private telegram: TelegramService,
+    private remindersService: RemindersService,
   ) {}
 
   async getList(dto: AdminOrdersQueryDto) {
@@ -142,6 +144,7 @@ export class AdminOrdersService {
     });
 
     if (prevOrder?.orderStatus === dto.status) return;
+    const prevStatus = prevOrder?.orderStatus;
 
     const user = await this.prisma.user.findUnique({
       where: { id: dto.userId },
@@ -160,6 +163,23 @@ export class AdminOrdersService {
         prevOrder.orderStatus,
         dto.status,
       );
+    }
+    if (
+      dto.status === OrderStatus.APPROVAL &&
+      prevStatus !== OrderStatus.APPROVAL
+    ) {
+      await this.remindersService.startApprovalReminder({
+        orderId: id,
+        userId: dto.userId,
+        orderNumber: prevOrder?.number || '',
+      });
+    }
+
+    if (
+      prevStatus === OrderStatus.APPROVAL &&
+      dto.status !== OrderStatus.APPROVAL
+    ) {
+      await this.remindersService.stopApprovalReminder(id);
     }
 
     if (user?.telegramChatId) {

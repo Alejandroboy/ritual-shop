@@ -158,7 +158,7 @@ export const growthHorizontal: TemplateConfig[] = [
       ...bw,
       code: `${base}_oval_c`,
       label: `${base.replace('K', 'К').replace('_r', '')}ц овал`,
-      fullTitle: `Портрет ${bw.label}ц овал ростовой на белом керамограните`,
+      fullTitle: `Портрет ${base.replace('K', 'К').replace('_r', '')}ц овал ростовой на белом керамограните`,
       backgroundCodes: [
         300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 24, 3, 25,
         16, 14, 26, 27, 28, 29, 30, 31, 32, 2, 8, 17, 6, 33, 15, 7, 5, 4, 34,
@@ -168,6 +168,37 @@ export const growthHorizontal: TemplateConfig[] = [
     };
     return [bw, color];
   }),
+  {
+    code: 'KF',
+    label: 'КФ',
+    fullTitle: `Портрет КФ фигурный ростовой на белом керамограните`,
+    material: Material.GROWTH_PHOTOCERAMICS,
+    shape: Shape.RECTANGLE,
+    orientation: Orientation.VERTICAL,
+    colorMode: ColorMode.COLOR,
+    coverage: Coverage.NORMAL,
+    supportsFrame: false,
+    requiresBackground: true,
+    requiresFinish: true,
+    supportsHoles: true,
+    sizeLabels: sizesGrowthRectArch,
+    finishes: [Finish.GLOSS],
+    perHolePrice: 350,
+    basePrice: 0,
+    sizePrice: PRICES_RECT_ARCH,
+    backgroundCodes: [
+      300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 24, 3, 25,
+      16, 14, 26, 27, 28, 29, 30, 31, 32, 2, 8, 17, 6, 33, 15, 7, 5, 4, 34, 35,
+      36, 100, 200,
+    ],
+    holePatterns: [
+      HolePattern.TWO_HORIZONTAL,
+      HolePattern.TWO_VERTICAL,
+      HolePattern.FOUR_CORNERS,
+      HolePattern.NONE,
+    ],
+    inscribed: true,
+  },
 ];
 export const growthVertical: TemplateConfig[] = [
   ...growthSingleBases.flatMap((base, index) => {

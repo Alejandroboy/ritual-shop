@@ -20,14 +20,23 @@ import { OrdersItemsModule } from './orders/orders-items/orders-items.module';
 import { DaDataModule } from './integrations/da-data/da-data.module';
 import { MoySkladModule } from './integrations/moy-sklad/moy-sklad.module';
 import { SyncModule } from './sync/sync.module';
+import { RemindersModule } from './reminders/reminders.module';
+import { BullModule } from '@nestjs/bullmq';
 
 @Module({
   imports: [
+    BullModule.forRoot({
+      connection: {
+        host: process.env.REDIS_HOST || '127.0.0.1',
+        port: Number(process.env.REDIS_PORT || 6379),
+      },
+    }),
     OrdersItemsModule,
     DaDataModule,
     MoySkladModule,
     SyncModule,
     S3Module,
+    RemindersModule,
     AssetsModule,
     AdminUsersModule,
     AdminAuthModule,

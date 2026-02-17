@@ -251,7 +251,7 @@ export default function TemplateEdit() {
           </div>
         )}
 
-        {!tpl.finishPrices && (
+        {(!tpl.finishPrices || tpl.finishPrices.length === 0) && (
           <div>
             <h3 className="font-medium">Цены по размерам</h3>
             <p className="text-xs text-neutral-500 mb-2">
@@ -296,7 +296,7 @@ export default function TemplateEdit() {
         )}
         {tpl.requiresFinish &&
           tpl.finishPrices &&
-          Object.keys(tpl.finishPrices).length !== 0 && (
+          tpl.finishPrices.length !== 0 && (
             <div className="mt-6">
               <h3 className="font-medium">Цены по финишу</h3>
               <p className="text-xs text-neutral-500 mb-2">

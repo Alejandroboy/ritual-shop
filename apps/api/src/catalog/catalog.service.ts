@@ -195,7 +195,9 @@ export class CatalogService {
       if (
         tpl.material === 'BLACK_CERAMIC_GRANITE' ||
         tpl.material === 'WHITE_CERAMIC_GRANITE' ||
-        tpl.material === 'GROWTH_PHOTOCERAMICS'
+        tpl.material === 'GROWTH_PHOTOCERAMICS' ||
+        tpl.material === 'ENGRAVING' ||
+        tpl.material === 'GLASS'
       ) {
         return 'NONE';
       }

@@ -262,9 +262,9 @@ export default function AddToOrderForm({ tpl }: Props) {
       return <div>Пожалуйста загрузите другое изображение</div>;
     }
   };
-  const availableSizes = tpl.allowedSizes.filter((item) =>
-    item.availableHolePattern.includes(holePattern),
-  );
+  const availableSizes = tpl.allowedSizes
+    .filter((item) => item.availableHolePattern.includes(holePattern))
+    .sort((a, b) => a.size.widthCm - b.size.widthCm);
 
   const renderSecondPersonFields = () => {
     return (

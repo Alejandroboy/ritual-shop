@@ -48,7 +48,7 @@ export default function OrderDetail() {
     await adminApiFetch(`/api/admin/orders/${id}/status`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status, userId: me?.id }),
+      body: JSON.stringify({ status, userId: data.customer.id }),
     });
     setBusy(false);
     setOrderStatus(status);

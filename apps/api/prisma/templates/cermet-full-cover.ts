@@ -226,6 +226,7 @@ export const metalFullTemplates: TemplateConfig[] = [
       perHolePrice: 0,
       basePrice: 0,
       sizeHolePatterns: SIZE_HOLES_HOR,
+      singlePerson: base !== 'T13',
       sizePrice: PRICES_HOR,
       sizeLabels: sizesMetalFullWrap,
       holePatterns: [HolePattern.NONE, HolePattern.TWO_HORIZONTAL],

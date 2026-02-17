@@ -419,6 +419,16 @@ table {
     }
     if (!order) return;
 
+    const finish = () => {
+      if (!order.finish) return null;
+      if (order.finish === 'GLOSS') {
+        return "Глянец"
+      }
+      if (order.finish === 'MATTE') {
+        return "Матовый"
+      }
+    }
+
     const map = {
       orderNumber: order.number || order.publicId || '',
       dateAccepted: formatDate(order.dateAccepted) || formatDate(order.createdAt) || '',
@@ -426,6 +436,7 @@ table {
       customer: `${order.customerName} ${order.customerPhone}`,
       organization: order.organization,
       intakePoint: order.intakePoint,
+      finish: finish(),
 
       deceasedLastName: order.deceased?.lastName || '',
       deceasedFirstName: order.deceased?.firstName || '',
@@ -434,9 +445,11 @@ table {
       deceasedBirthDate: formatDate(order.deceased?.birthDate) || '',
       deceasedDeathDate: formatDate(order.deceased?.deathDate) || '',
     };
-    const materialType = order.material; // 'metal', 'granite', 'glass', 'engraving'
+    const materialType = order.material;
     if (materialType === "CERMET") map.materialCermet = order.label;
-    if (materialType === "WHITE_CERAMIC_GRANITE" || materialType === "BLACK_CERAMIC_GRANITE") map.materialGranite = order.label;
+    if (materialType === "WHITE_CERAMIC_GRANITE" ||
+      materialType === "BLACK_CERAMIC_GRANITE" ||
+      materialType === "GROWTH_PHOTOCERAMICS") map.materialGranite = map.finish ? order.label + ' ' + map.finish : order.label;
     if (materialType === "GLASS") map.materialGlass = order.label;
     if (materialType === "ENGRAVING") map.materialEngraving = order.label;
 

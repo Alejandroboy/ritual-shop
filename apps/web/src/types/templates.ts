@@ -37,7 +37,7 @@ export type Template = {
   }[];
   perHolePrice: number;
   material: string;
-  finishPrices: Partial<Record<number, Partial<Record<string, number>>>>;
+  finishPrices: Partial<Record<number, Partial<Record<string, number>>>>[];
 };
 
 export type Material =

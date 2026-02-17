@@ -127,14 +127,13 @@ export class TelegramController {
       }
     }
 
-    const res = await this.prisma.user.updateMany({
+    const res = await this.prisma.user.update({
       where: { id: userId! },
       data: {
         notifyChannel: 'TELEGRAM',
         telegramChatId: chatId,
       },
     });
-    log.log(`UPDATED users: ${res.count} (userId=${userId})`);
 
     await fetch(
       `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`,
@@ -148,6 +147,6 @@ export class TelegramController {
       },
     );
 
-    return { ok: true, updated: res.count };
+    return { ok: true };
   }
 }

@@ -2,12 +2,20 @@
 import { useParams } from 'next/navigation';
 import React from 'react';
 import useSWR from 'swr';
-import { labelOf, approvalStageLabels, adminApiFetch } from '@utils';
+import {
+  labelOf,
+  approvalStageLabels,
+  adminApiFetch,
+  finishLabels,
+  holePatternLabels,
+} from '@utils';
 import { AssetThumb } from './asset-thumb';
 import { UploadAsset } from './upload-assets';
 import { AssetPair, fetchAssetPairs } from '../utils/assets-api';
 
 const approvalStageLabel = labelOf<string>(approvalStageLabels);
+const finishLabel = labelOf<string>(finishLabels);
+const holePatternLabel = labelOf<string>(holePatternLabels);
 
 export function OrderItemsDetails({
   itemId,
@@ -50,6 +58,14 @@ export function OrderItemsDetails({
       <div className="text-sm">Вид фона: {data.backgroundId}</div>
       <div className="text-sm">Размер: {data.size?.label}</div>
       {data.frameId && <div className="text-sm">Вид рамки: {data.frameId}</div>}
+      {data.finish && (
+        <div className="text-sm">Финиш: {finishLabel(data.finish)}</div>
+      )}
+      {data.holePattern && (
+        <div className="text-sm">
+          Отверстия: {holePatternLabel(data.holePattern)}
+        </div>
+      )}
       {data.firstName ? (
         <div>
           <div>Данные для надписи</div>

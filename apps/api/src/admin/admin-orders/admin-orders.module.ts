@@ -9,6 +9,7 @@ import { AdminAuthModule } from '../admin-auth/admin-auth.module';
 import { AdminOrdersService } from './admin-orders.service';
 import { EmailModule } from '../../email/email.module';
 import { TelegramModule } from '../../notifications/telegram/telegram.module';
+import { RemindersModule } from '../../reminders/reminders.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { TelegramModule } from '../../notifications/telegram/telegram.module';
     ConfigurationModule,
     EmailModule,
     TelegramModule,
+    RemindersModule,
     JwtModule.registerAsync({
       imports: [ConfigurationModule],
       inject: [ConfigurationService],

@@ -47,6 +47,6 @@ export const engravingTemplates: TemplateConfig[] = engravingBases.map(
       HolePattern.FOUR_CORNERS,
       HolePattern.NONE,
     ],
-    inscribed: index !== 0 || index !== 3,
+    inscribed: index !== 0 && index !== 3,
   }),
 );

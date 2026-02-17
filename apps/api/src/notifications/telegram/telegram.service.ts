@@ -8,6 +8,13 @@ export class TelegramService {
     return process.env.TELEGRAM_BOT_TOKEN!;
   }
 
+  private get webUrl() {
+    return (process.env.PUBLIC_WEB_URL || process.env.APP_URL || '').replace(
+      /\/$/,
+      '',
+    );
+  }
+
   async sendMessage(chatId: string | null, text: string | null, html = false) {
     const res = await fetch(
       `https://api.telegram.org/bot${this.token}/sendMessage`,
@@ -54,12 +61,25 @@ export class TelegramService {
     if (newStatus === 'APPROVAL') {
       return this.sendMessage(
         telegramChatId,
-        `Статус заказа № ${orderNumber} изменился: ${humanOldStatus} → ${humanNewStatus}. Пожлуйста зайдите в личный кабинет и согласуйте ретушь`,
+        `Статус заказа №${orderNumber} изменился: ${humanOldStatus} → ${humanNewStatus}. Пожалуйста зайдите в личный кабинет и согласуйте ретушь`,
       );
     }
     return this.sendMessage(
       telegramChatId,
-      `Статус заказа № ${orderNumber} изменился: ${humanOldStatus} → ${humanNewStatus}`,
+      `Статус заказа №${orderNumber} изменился: ${humanOldStatus} → ${humanNewStatus}`,
+    );
+  }
+
+  async orderStatusApprovalReminder(
+    telegramChatId: string,
+    orderNumber: string,
+  ) {
+    const link = this.webUrl
+      ? `\n\nЛичный кабинет: ${this.webUrl}/account`
+      : '';
+    return this.sendMessage(
+      telegramChatId,
+      `Напоминание: заказ №${orderNumber} ждёт согласования ретуши.\nПожалуйста откройте личный кабинет и подтвердите.${link}`,
     );
   }
 }

@@ -50,6 +50,7 @@ export function OrderBlankButton({ order }: OrderBlankButtonProps) {
     label: order.items?.template?.label,
     material: order.items?.template?.material,
     size: sizeLabel,
+    finish: order.items?.finish,
     background: order.items?.backgroundId,
     frame: order.items?.frameId,
     holePattern: order.items?.holePattern,
