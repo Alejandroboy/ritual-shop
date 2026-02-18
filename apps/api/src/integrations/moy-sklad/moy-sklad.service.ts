@@ -48,16 +48,18 @@ export class MoySkladService {
 
   async findCounterpartyIdByInn(inn: string): Promise<string | null> {
     const res = await this.http.get('/entity/counterparty', {
-      params: { search: inn, limit: 1000 },
+      params: {
+        filter: `inn=${inn}`,
+        limit: 1000,
+      },
     });
 
     const rows: any[] = res.data?.rows ?? [];
-    console.log('rows', rows);
     const hit = rows.find((c) => c?.inn === inn);
     return hit?.id ?? null;
   }
 
-  async createCounterpartyLegal(input: {
+  async findOrCreateCounterpartyLegal(input: {
     name: string;
     inn: string;
     legalAddress?: string;
@@ -68,6 +70,9 @@ export class MoySkladService {
       companyType: 'legal',
       inn: input.inn,
     };
+
+    const existingId = await this.findCounterpartyIdByInn(input.inn);
+    if (existingId) return existingId;
     if (input.legalAddress) payload.legalAddress = input.legalAddress;
 
     const res = await this.http.post('/entity/counterparty', payload, {
@@ -76,7 +81,6 @@ export class MoySkladService {
 
     if (!res.data?.id) throw new Error('Moysklad: counterparty create failed');
 
-    console.log('}}}}}}}}} }}} }}}}}} res.data', res.data);
     return res.data.id as string;
   }
 
@@ -106,7 +110,6 @@ export class MoySkladService {
         `MoySklad: multiple assortments with code=${key} (types=${types.join(',')}; ids=${ids.join(',')})`,
       );
     }
-    console.log('{}}{}{}{}{{}{}{}}{{}{}{}{} exact', exact[0]);
 
     const meta = exact[0]?.meta;
     const price = exact[0]?.salePrices[0].value;

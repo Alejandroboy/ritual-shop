@@ -49,7 +49,7 @@ export const glassOvalTemplates: TemplateConfig[] = [
         HolePattern.FOUR_CORNERS,
         HolePattern.NONE,
       ],
-      inscribed: index !== 0,
+      inscribed: index !== 0 && index !== 2,
     };
     const color: TemplateConfig = {
       ...bw,
@@ -93,7 +93,7 @@ export const glassOvalTemplates: TemplateConfig[] = [
         HolePattern.FOUR_CORNERS,
         HolePattern.NONE,
       ],
-      inscribed: index !== 0,
+      inscribed: index !== 0 && index !== 2,
     };
     const color: TemplateConfig = {
       ...bw,

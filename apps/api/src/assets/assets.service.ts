@@ -20,9 +20,9 @@ import { OrdersItemsService } from '../orders/orders-items/orders-items.service'
 export type AssetDto = {
   id: string;
   kind: string;
-  stage: AssetStage; // NEW
-  primary: boolean; // NEW
-  derivedFromId?: string | null; // NEW
+  stage: AssetStage;
+  primary: boolean;
+  derivedFromId?: string | null;
   originalName?: string | null;
   fileName?: string | null;
   contentType?: string | null;

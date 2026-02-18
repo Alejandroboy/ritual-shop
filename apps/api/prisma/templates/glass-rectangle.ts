@@ -49,12 +49,17 @@ export const glassRectTemplates: TemplateConfig[] = [
         HolePattern.NONE,
       ],
       sizePrice: PRICES,
-      inscribed: index !== 0,
+      inscribed: index !== 0 && index !== 2,
     };
     const color: TemplateConfig = {
       ...bw,
       code: `${base}c`,
       label: `${bw.label}ц`,
+      backgroundCodes: [
+        400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 24, 3, 25, 16,
+        14, 26, 27, 28, 29, 30, 31, 32, 2, 8, 17, 6, 33, 15, 7, 5, 4, 34, 35,
+        36, 100, 200,
+      ],
       fullTitle: `Портрет на стекле ${bw.label}ц`,
       colorMode: ColorMode.COLOR,
     };
@@ -78,6 +83,9 @@ export const glassRectTemplates: TemplateConfig[] = [
       perHolePrice: 350,
       basePrice: 0,
       singlePerson: base !== 'St5',
+      backgroundCodes: [
+        400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 100, 200,
+      ],
       holePatterns: [
         HolePattern.TWO_HORIZONTAL,
         HolePattern.TWO_VERTICAL,
@@ -85,7 +93,7 @@ export const glassRectTemplates: TemplateConfig[] = [
         HolePattern.NONE,
       ],
       sizePrice: PRICES,
-      inscribed: index !== 0,
+      inscribed: index !== 0 && index !== 2,
     };
     const color: TemplateConfig = {
       ...bw,

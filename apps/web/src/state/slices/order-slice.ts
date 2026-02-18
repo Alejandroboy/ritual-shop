@@ -15,7 +15,6 @@ export type OrderDetails = {
 export type OrderSlice = {
   draftOrderId: Id | null;
 
-  // управление черновиком
   setDraft: (id: Id | null) => void;
   ensureOrder: () => Promise<Id>;
   clearDraft: () => void;
@@ -92,7 +91,7 @@ export const createOrderSlice: OrderCreator = (set, get, _api): OrderSlice => ({
     if (existing) return existing;
 
     const data = await api<{ id: Id }>('/orders', { method: 'POST' });
-    set({ draftOrderId: data.id }); // persist сам сохранит в localStorage
+    set({ draftOrderId: data.id });
     return data.id;
   },
 

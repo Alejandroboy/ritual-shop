@@ -72,11 +72,6 @@ export function UploadAsset({
     onDone?.();
   }
 
-  const hasStaged = useMemo(
-    () => jobs.some((j) => j.state === 'uploaded' && !j.itemId),
-    [jobs],
-  );
-
   return (
     <div>
       <label

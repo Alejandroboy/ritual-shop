@@ -111,9 +111,7 @@ export default function InvoicePage() {
         `Счёт создан: ${(json as any)?.name ?? (json as any)?.number ?? (json as any)?.id ?? ''}`,
       );
 
-      // обновим данные на странице (чтобы подтянулись invoiceName/includedInInvoice если ты их показываешь)
       await mutate();
-      // или можно сбросить выбор
       setSelected({});
       setPositions([]);
       setOrdersIds([]);
@@ -128,7 +126,7 @@ export default function InvoicePage() {
   if (!orders.length) return null;
 
   return (
-    <div>
+    <div data-qa="InvoicePage">
       <div className="flex items-center gap-3 mb-4">
         <button
           onClick={createInvoice}
@@ -144,14 +142,13 @@ export default function InvoicePage() {
       </div>
 
       {orders.map((order: CustomerOrder) => {
-        console.log('order', order);
         const createdAt = new Date(order.createdAt);
 
-        const price = (order.items as any).template?.allowedSizes?.find(
-          (x: any) => x.sizeId === (order.items as any).sizeId,
+        const price = order.items?.template?.allowedSizes?.find(
+          (x: any) => x.sizeId === order.items.sizeId,
         )?.price;
 
-        const title = (order.items as any).template?.fullTitle;
+        const title = order.items?.template?.fullTitle;
         const includedInInvoice = order.includedInInvoice;
         const invoiceName = order.invoiceName;
         return (
@@ -164,11 +161,11 @@ export default function InvoicePage() {
               <div>Цена: {price}</div>
               <div>Создан: {createdAt.toLocaleString('ru-RU')}</div>
               <div>
-                Согласование {order.items.approveNeeded ? 'Нужно' : 'Не нужно'}
+                Согласование {order.items?.approveNeeded ? 'Нужно' : 'Не нужно'}
               </div>
-              {order.items.approveNeeded && (
+              {order.items?.approveNeeded && (
                 <div>
-                  Согласование получено: {order.items.approved ? 'Да' : 'Нет'}
+                  Согласование получено: {order.items?.approved ? 'Да' : 'Нет'}
                 </div>
               )}
             </div>

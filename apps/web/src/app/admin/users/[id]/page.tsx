@@ -5,35 +5,42 @@ import useSWR from 'swr';
 import { adminApiFetch } from '@utils';
 import { CustomerOrder } from '@types';
 import Link from 'next/link';
-
+import { useState } from 'react';
+import { Loader } from '../../../../components/loader';
 export default function UserDetails() {
   const { id } = useParams<{ id: string }>();
-  const { data } = useSWR(`/api/admin/users/${id}`, (u) =>
+  const { data, mutate } = useSWR(`/api/admin/users/${id}`, (u) =>
     adminApiFetch(u).then((r) => r.json()),
   );
+  const [loading, setLoading] = useState(false);
+  if (loading) {
+    return <Loader />;
+  }
 
   const renderKontragent = () => {
     if (data?.user.kontragentId) {
       return (
-        <div className="flex justify-between">
+        <div className="flex flex-col items-end">
           <div>Можно выставлять счета </div>
-          <div>
-            <Link
-              href={`/admin/users/${id}/invoice`}
-              className="bg-[#f1f1f1] border rounded-md p-[10px] cursor-pointer inline-block"
-            >
-              Сформировать счет
-            </Link>
+          <div className="mt-[10px]">
+            {data?.user?.customerOrders.length > 0 && (
+              <Link
+                href={`/admin/users/${id}/invoice`}
+                className="bg-[#f1f1f1] border rounded-md p-[10px] cursor-pointer inline-block"
+              >
+                Сформировать счет
+              </Link>
+            )}
           </div>
         </div>
       );
     }
     return (
-      <div>
-        Добавить контрагентом для выставления счетов:{' '}
+      <div className="flex flex-col items-end">
+        Добавить контрагентом для выставления счетов:
         <div
           onClick={syncContrAgent}
-          className="bg-[#f1f1f1] border rounded-md p-[10px] cursor-pointer inline-block"
+          className="bg-[#f1f1f1] border rounded-md p-[10px] cursor-pointer inline-block mt-[10px]"
         >
           Добавить
         </div>
@@ -41,10 +48,19 @@ export default function UserDetails() {
     );
   };
   async function syncContrAgent() {
-    await fetch(`/api/sync/${data.user.inn}/${id}`, {
+    setLoading(true);
+    const res = await adminApiFetch(`/api/sync/${data.user.inn}/${id}`, {
       method: 'GET',
-      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
     });
+
+    if (res.ok) {
+      setLoading(false);
+      await mutate(
+        await adminApiFetch(`/api/admin/users/${id}`).then((r) => r.json()),
+        { revalidate: false },
+      );
+    }
   }
 
   const renderOrders = () => {
@@ -101,54 +117,58 @@ export default function UserDetails() {
     const createdAt = new Date(data.user.createdAt);
     const updatedAt = new Date(data.user.updatedAt);
     return (
-      <div>
-        <div className="flex w-96">
-          <div className="w-1/2">Создан</div>
-          <div className="w-1/2">{createdAt.toLocaleString('ru-RU')}</div>
-        </div>
-        <div className="flex w-96">
-          <div className="w-1/2">Email</div>
-          <div className="w-1/2">{data.user.email}</div>
-        </div>
-        <div className="flex w-96">
-          <div className="w-1/2">ID</div>
-          <div className="w-1/2">{data.user.id}</div>
-        </div>
-        <div className="flex w-96">
-          <div className="w-1/2">Имя</div>
-          <div className="w-1/2">{data.user.name}</div>
-        </div>
-        <div className="flex w-96">
-          <div className="w-1/2">Телефон</div>
-          <div className="w-1/2">{data.user.phone}</div>
-        </div>
-        {data.user.legalName && (
-          <div className="flex w-96">
-            <div className="w-1/2">Организация</div>
-            <div className="w-1/2">{data.user.legalName}</div>
+      <div data-qa="UserDetails">
+        <div className="flex justify-between">
+          <div>
+            <div className="flex w-96">
+              <div className="w-1/2">Создан</div>
+              <div className="w-1/2">{createdAt.toLocaleString('ru-RU')}</div>
+            </div>
+            <div className="flex w-96">
+              <div className="w-1/2">Email</div>
+              <div className="w-1/2">{data.user.email}</div>
+            </div>
+            <div className="flex w-96">
+              <div className="w-1/2">ID</div>
+              <div className="w-1/2">{data.user.id}</div>
+            </div>
+            <div className="flex w-96">
+              <div className="w-1/2">Имя</div>
+              <div className="w-1/2">{data.user.name}</div>
+            </div>
+            <div className="flex w-96">
+              <div className="w-1/2">Телефон</div>
+              <div className="w-1/2">{data.user.phone}</div>
+            </div>
+            {data.user.legalName && (
+              <div className="flex w-96">
+                <div className="w-1/2">Организация</div>
+                <div className="w-1/2">{data.user.legalName}</div>
+              </div>
+            )}
+            {data.user.address && (
+              <div className="flex w-96">
+                <div className="w-1/2">Адрес</div>
+                <div className="w-1/2">{data.user.address}</div>
+              </div>
+            )}
+            {data.user.inn && (
+              <div className="flex w-96">
+                <div className="w-1/2">ИНН</div>
+                <div className="w-1/2">{data.user.inn}</div>
+              </div>
+            )}
+            <div className="flex w-96">
+              <div className="w-1/2">Статус</div>
+              <div className="w-1/2">{data.user.role}</div>
+            </div>
+            <div className="flex w-96">
+              <div className="w-1/2">Изменен</div>
+              <div className="w-1/2">{updatedAt.toLocaleString('ru-RU')}</div>
+            </div>
           </div>
-        )}
-        {data.user.address && (
-          <div className="flex w-96">
-            <div className="w-1/2">Адрес</div>
-            <div className="w-1/2">{data.user.address}</div>
-          </div>
-        )}
-        {data.user.inn && (
-          <div className="flex w-96">
-            <div className="w-1/2">ИНН</div>
-            <div className="w-1/2">{data.user.inn}</div>
-          </div>
-        )}
-        <div className="flex w-96">
-          <div className="w-1/2">Статус</div>
-          <div className="w-1/2">{data.user.role}</div>
+          {renderKontragent()}
         </div>
-        <div className="flex w-96">
-          <div className="w-1/2">Изменен</div>
-          <div className="w-1/2">{updatedAt.toLocaleString('ru-RU')}</div>
-        </div>
-        {renderKontragent()}
         {renderOrders()}
       </div>
     );

@@ -6,8 +6,11 @@ import {
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
-function sanitizeFilename(name: string) {
-  return name.replace(/[^\w.\-]+/g, '_');
+function pad2(n: number) {
+  return String(n).padStart(2, '0');
+}
+function monthKey(d: Date) {
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}`; // YYYY-MM
 }
 
 @Injectable()
@@ -26,13 +29,22 @@ export class S3Service {
   private prefix = process.env.S3_PREFIX || 'dev';
   private expires = Number(process.env.PRESIGN_EXPIRES || 60 * 5);
 
-  makeKey(orderId: string, filename: string, itemId?: string) {
+  makeKey(params: {
+    orderNumber: string;
+    createdAt: Date;
+    filename: string;
+    itemId?: string;
+  }) {
     const uid =
       (crypto as any).randomUUID?.() ?? Math.random().toString(36).slice(2, 10);
-    const safe = filename.replace(/[^\w.\-]+/g, '_');
-    const base = itemId
-      ? `orders/${orderId}/items/${itemId}`
-      : `orders/${orderId}/staged`;
+
+    const safe = params.filename.replace(/[^\w.\-]+/g, '_');
+    const ym = monthKey(params.createdAt);
+
+    const base = params.itemId
+      ? `orders/${ym}/${params.orderNumber}/items/${params.itemId}`
+      : `orders/${ym}/${params.orderNumber}/staged`;
+
     return `${base}/${uid}-${safe}`;
   }
 
@@ -93,7 +105,6 @@ export class S3Service {
     const cmd = new GetObjectCommand({
       Bucket: this.bucket,
       Key: key,
-      // Заголовки ответа, которые S3 подставит в выдачу
       ResponseContentDisposition: disposition,
       ...(opts?.contentType ? { ResponseContentType: opts.contentType } : {}),
     });

@@ -12,7 +12,7 @@ export class SyncController {
   constructor(private syncService: SyncService) {}
 
   @Get(':inn/:userId')
-  getuser(@Param() params: GetuserDto) {
+  getUser(@Param() params: GetuserDto) {
     return this.syncService.syncByInn(params.inn, params.userId);
   }
 }

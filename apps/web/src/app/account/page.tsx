@@ -90,7 +90,8 @@ export default function AccountPage() {
             return (
               <div key={order.id} className="border rounded-xl p-4 space-y-3">
                 <div className="flex items-center justify-between text-sm">
-                  <div>Заказ от {createdAt.toLocaleString('ru-RU')}</div>
+                  <div>Заказ №&nbsp;{order.orderNumber}</div>
+                  <div>Создан {createdAt.toLocaleString('ru-RU')} </div>
                   <div>Статус: {orderLabel(order.orderStatus)}</div>
                 </div>
                 <OrderItem

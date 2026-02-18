@@ -1,5 +1,5 @@
 'use client';
-import React, { SyntheticEvent, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import type { TemplateDetails } from '@types';
 import { UploadAsset } from './upload-assets';
 import { useAppStore } from '@state';
@@ -146,33 +146,35 @@ export default function AddToOrderForm({ tpl }: Props) {
     }
   }
 
-  function handleApproveClick(event: SyntheticEvent) {
-    event.preventDefault();
+  function handleApproveClick() {
     setApproveNeeded((prevState) => !prevState);
   }
-  function handleRetouchClick(event: SyntheticEvent) {
-    event.preventDefault();
+
+  function handleRetouchClick() {
     setRetouchNeeded((prevState) => !prevState);
   }
 
-  function handleReadClick(event: SyntheticEvent) {
-    event.preventDefault();
+  function handleReadClick() {
     setReadAgreement((prevState) => !prevState);
   }
 
   const renderCheckboxes = () => {
     if (!assetUploaded.length) {
       return (
-        <div className="mb-[15px] flex">
-          <div className="cursor-pointer p-[15px] border rounded-xl block w-fit">
-            <label className="cursor-pointer" htmlFor="checkbox-approve">
+        <div className="mb-[15px] ">
+          <div className="p-[15px] border rounded-xl block w-fit">
+            <label
+              className="cursor-pointer flex items-center"
+              htmlFor="checkbox-approve"
+            >
               <input
                 type="checkbox"
+                className="h-6 w-6 accent-black cursor-pointer"
                 id="checkbox-approve"
                 checked={approveNeeded}
                 onChange={handleApproveClick}
               />
-              &nbsp;Нужно согласование
+              <div>&nbsp;Нужно согласование</div>
             </label>
           </div>
         </div>
@@ -182,25 +184,33 @@ export default function AddToOrderForm({ tpl }: Props) {
       return (
         <div className="mb-[15px] flex">
           <div className="mr-[15px] cursor-pointer p-[15px] border rounded-xl block w-fit">
-            <label className="cursor-pointer" htmlFor="checkbox-retouch">
-              <input
-                type="checkbox"
-                id="checkbox-retouch"
-                checked={retouchNeeded}
-                onChange={handleRetouchClick}
-              />
-              &nbsp;Нужна ретушь
-            </label>
-          </div>
-          <div className="cursor-pointer p-[15px] border rounded-xl block w-fit">
-            <label className="cursor-pointer" htmlFor="checkbox-approve">
+            <label
+              className="cursor-pointer flex items-center"
+              htmlFor="checkbox-approve"
+            >
               <input
                 type="checkbox"
                 id="checkbox-approve"
                 checked={approveNeeded}
+                className="cursor-pointer h-6 w-6 accent-black"
                 onChange={handleApproveClick}
               />
-              &nbsp;Нужно согласование
+              <div>&nbsp;Нужно согласование</div>
+            </label>
+          </div>
+          <div className="cursor-pointer p-[15px] border rounded-xl block w-fit">
+            <label
+              className="cursor-pointer flex items-center"
+              htmlFor="checkbox-retouch"
+            >
+              <input
+                type="checkbox"
+                id="checkbox-retouch"
+                checked={retouchNeeded}
+                className="h-6 w-6 accent-black cursor-pointer"
+                onChange={handleRetouchClick}
+              />
+              <div>&nbsp;Нужна ретушь</div>
             </label>
           </div>
         </div>
@@ -211,10 +221,11 @@ export default function AddToOrderForm({ tpl }: Props) {
   const renderRequiredCheckboxes = () => {
     return (
       <div>
-        <div className="mr-[15px] cursor-pointer p-[15px] flex">
+        <div className="mr-[15px] p-[15px] flex items-center">
           <label className="cursor-pointer" htmlFor="checkbox-agreement">
             <input
               type="checkbox"
+              className="mt-2 h-6 w-6 accent-black cursor-pointer"
               id="checkbox-agreement"
               checked={readAgreement}
               onChange={handleReadClick}

@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { adminApiFetch, api } from '@utils';
 import useSWR from 'swr';
-import { labelOf, roleLabels } from '../../../utils/labels';
+import { labelOf, roleLabels } from '@utils';
 import { Role } from '@types';
 
 type User = {
@@ -18,20 +18,22 @@ type User = {
 const roleLabel = labelOf<Role>(roleLabels);
 
 export default function AdminUsersListPage() {
-  const [q, setQ] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const { data } = useSWR(`/api/admin/users/list`, (u) =>
+  const [query, setQuery] = useState('');
+  const [error, setError] = useState<boolean>(false);
+  const { data, mutate } = useSWR(`/api/admin/users/list`, (u) =>
     adminApiFetch(u).then((r) => r.json()),
   );
 
   async function handleDelete(id: string) {
     try {
-      return await api(`admin/users/${id}`, {
+      await api(`admin/users/${id}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // важно для httpOnly-куки
+        credentials: 'include',
       });
+      await mutate();
     } catch (e) {
+      setError(true);
       console.log('e', e);
     }
   }
@@ -48,8 +50,8 @@ export default function AdminUsersListPage() {
         <input
           className="rounded-xl border p-2 w-full max-w-sm"
           placeholder="Поиск по email/имени/телефону"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
         />
         <button className="rounded-xl border px-4">Найти</button>
       </div>

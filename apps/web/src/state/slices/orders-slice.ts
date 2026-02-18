@@ -37,6 +37,7 @@ export type MyOrder = {
   orderStatus: string;
   totalMinor: number;
   items: MyOrderItem;
+  orderNumber: string;
 };
 
 export type OrdersSlice = {
@@ -82,6 +83,7 @@ const mapOrder = (o: CustomerOrder): MyOrder => ({
   id: o.id,
   createdAt: o.createdAt,
   orderStatus: o.orderStatus,
+  orderNumber: o.orderNumber,
   totalMinor: o.totalMinor,
   items: o.items,
 });

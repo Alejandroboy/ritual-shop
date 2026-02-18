@@ -18,8 +18,6 @@ export class SyncService {
       throw new BadRequestException('DaData: company not found by INN/KPP');
     }
 
-    console.log('===========>suggestion', suggestion);
-
     const inn = suggestion.data.inn;
     const kpp = suggestion.data.kpp;
 
@@ -29,13 +27,14 @@ export class SyncService {
       suggestion.value;
 
     const address = suggestion.data.address?.value ?? null;
-    const kontragentId = await this.moySkladService.createCounterpartyLegal({
-      name: legalName,
-      inn,
-      legalAddress: address ?? undefined,
-    });
+    const kontragentId =
+      await this.moySkladService.findOrCreateCounterpartyLegal({
+        name: legalName,
+        inn,
+        legalAddress: address ?? undefined,
+      });
 
-    const updated = await this.prismaService.user.update({
+    await this.prismaService.user.update({
       where: { id: userId },
       data: {
         legalName,
@@ -44,6 +43,6 @@ export class SyncService {
       },
     });
 
-    return updated;
+    return { status: 'success' };
   }
 }

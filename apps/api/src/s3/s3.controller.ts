@@ -1,9 +1,13 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { S3Service } from './s3.service';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Controller('uploads')
 export class S3Controller {
-  constructor(private readonly s3: S3Service) {}
+  constructor(
+    private readonly s3: S3Service,
+    private readonly prismaService: PrismaService,
+  ) {}
 
   @Post('presign')
   async presign(
@@ -12,10 +16,22 @@ export class S3Controller {
       orderId: string;
       itemId?: string;
       filename: string;
-      contentType: string;
+      contentType?: string;
     },
   ) {
-    const key = this.s3.makeKey(b.orderId, b.filename, b.itemId);
+    const order = await this.prismaService.order.findUniqueOrThrow({
+      where: { id: b.orderId },
+      select: { orderNumber: true, createdAt: true },
+    });
+    console.log('order', order);
+
+    const key = this.s3.makeKey({
+      orderNumber: order.orderNumber!, // раз ты генеришь на createOrder
+      createdAt: order.createdAt,
+      filename: b.filename,
+      itemId: b.itemId,
+    });
+
     return this.s3.presignPut(key, b.contentType || undefined);
   }
 

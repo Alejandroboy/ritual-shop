@@ -11,7 +11,6 @@ import { AddAssetDto } from './dto/add-asset.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { UpdateOrderItemDto } from './dto/update-item.dto';
-import { MailerService } from '../common/mailer.service';
 import { CheckoutDto } from './dto/checkout.dto';
 import { AssetsService } from '../assets/assets.service';
 import { ChangeOrderStatusDto } from './dto/change-order-status.dto';
@@ -42,6 +41,7 @@ type OrderDto = {
 function pad(n: number, len: number) {
   return n.toString().padStart(len, '0');
 }
+
 function todayPrefix() {
   const d = new Date();
   return `${d.getFullYear()}${pad(d.getMonth() + 1, 2)}${pad(d.getDate(), 2)}`;
@@ -51,27 +51,24 @@ function todayPrefix() {
 export class OrdersService {
   constructor(
     private readonly prisma: PrismaService,
-    private mailer: MailerService,
     private email: EmailService,
     private telegram: TelegramService,
     private readonly assets: AssetsService,
   ) {}
 
-  private genNumber(): string {
-    const d = new Date();
-    const pad = (n: number) => n.toString().padStart(2, '0');
-    const ymd = `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}`;
-    const rnd = Math.floor(1000 + Math.random() * 9000);
-    return `${ymd}-${rnd}`;
-  }
-
   async createOrder(dto: CreateOrderDto) {
-    let number = dto?.number?.trim();
-    for (let i = 0; i < 3 && !number; i++) number = this.genNumber();
+    const countToday = await this.prisma.order.count({
+      where: {
+        createdAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) },
+      },
+    });
+    const number =
+      dto?.number?.trim() || `ZO66-${todayPrefix()}-${pad(countToday + 1, 4)}`;
     try {
       return this.prisma.order.create({
         data: {
-          number: dto?.number ?? this.genNumber(),
+          number: number,
+          orderNumber: number,
           customerName: dto?.customerName || '',
           customerPhone: dto?.customerPhone || '',
           intakePoint: dto?.intakePoint || '',
@@ -545,20 +542,11 @@ export class OrdersService {
     if (!order) throw new NotFoundException('Order not found 4');
     if (!order.items) throw new BadRequestException('Order has no items');
 
-    const datePrefix = todayPrefix();
     const result = await this.prisma.$transaction(async (tx) => {
-      const countToday = await tx.order.count({
-        where: {
-          createdAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) },
-        },
-      });
-      const number = `RS-${datePrefix}-${pad(countToday + 1, 4)}`;
-
       return tx.order.update({
         where: { id },
         data: {
           orderStatus: OrderStatus.ACCEPTED,
-          orderNumber: number,
           customerName: dto.name,
           customerPhone: dto.phone,
           customerEmail: dto.email ?? null,
@@ -599,23 +587,16 @@ export class OrdersService {
     });
 
     // Письма
-    try {
-      await this.mailer.sendOrderCreatedToManager(result);
-      if (result.customerEmail)
-        await this.mailer.sendOrderCreatedToClient(result);
-    } catch (e) {
-      console.error('MAIL_ERROR', e);
-    }
-    if (result.customerEmail) {
-      await this.email.orderPlaced(
-        result.customerEmail || '',
-        result.number || '',
-      );
-    }
-
-    if (user?.notifyChannel === 'TELEGRAM') {
-      await this.telegram.orderPlaced(user.telegramChatId, result.number);
-    }
+    // if (result.customerEmail) {
+    //   await this.email.orderPlaced(
+    //     result.customerEmail || '',
+    //     result.number || '',
+    //   );
+    // }
+    //
+    // if (user?.notifyChannel === 'TELEGRAM') {
+    //   await this.telegram.orderPlaced(user.telegramChatId, result.number);
+    // }
 
     return result;
   }

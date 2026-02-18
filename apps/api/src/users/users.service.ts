@@ -91,6 +91,7 @@ export class UsersService {
           select: {
             id: true,
             orderStatus: true,
+            orderNumber: true,
             createdAt: true,
             items: {
               include: { size: true },
