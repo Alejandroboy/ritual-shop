@@ -275,7 +275,20 @@ export default function AddToOrderForm({ tpl }: Props) {
   };
   const availableSizes = tpl.allowedSizes
     .filter((item) => item.availableHolePattern.includes(holePattern))
-    .sort((a, b) => a.size.widthCm - b.size.widthCm);
+    .sort((a, b) => {
+      if (a.size.widthCm < b.size.widthCm) {
+        return -1;
+      } else if (a.size.widthCm > b.size.widthCm) {
+        return 1;
+      } else {
+        if (a.size.heightCm < b.size.heightCm) {
+          return -1;
+        } else if (a.size.heightCm > b.size.heightCm) {
+          return 1;
+        }
+        return 0;
+      }
+    });
 
   const renderSecondPersonFields = () => {
     return (
