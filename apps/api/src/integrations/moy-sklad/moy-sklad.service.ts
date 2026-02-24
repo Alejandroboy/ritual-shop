@@ -2,11 +2,16 @@ import axios, { AxiosInstance } from 'axios';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 
-type Meta = {
+type MsMeta = {
   href: string;
   type: string;
   mediaType: 'application/json';
+};
+
+type AssortmentResolved = {
+  meta: MsMeta;
   price?: number;
+  name?: string;
 };
 
 @Injectable()
@@ -14,7 +19,7 @@ export class MoySkladService {
   private readonly http: AxiosInstance;
   private readonly baseUrl = 'https://api.moysklad.ru/api/remap/1.2';
   private organizationIdPromise?: Promise<string>;
-  private readonly assortmentCache = new Map<string, Meta>();
+  private readonly assortmentCache = new Map<string, AssortmentResolved>();
 
   constructor(private readonly prismaService: PrismaService) {
     const token = process.env.MOYSKLAD_TOKEN;
@@ -42,8 +47,8 @@ export class MoySkladService {
     return this.organizationIdPromise;
   }
 
-  private meta(href: string, type: string, price?: number): { meta: Meta } {
-    return { meta: { href, type, price, mediaType: 'application/json' } };
+  private meta(href: string, type: string): { meta: MsMeta } {
+    return { meta: { href, type, mediaType: 'application/json' } };
   }
 
   async findCounterpartyIdByInn(inn: string): Promise<string | null> {
@@ -84,45 +89,37 @@ export class MoySkladService {
     return res.data.id as string;
   }
 
-  async resolveAssortmentMetaBySku(sku: string): Promise<Meta> {
+  async resolveAssortmentMetaBySku(sku: string): Promise<AssortmentResolved> {
     const key = sku.trim();
     const cached = this.assortmentCache.get(key);
     if (cached) return cached;
 
     const res = await this.http.get('/entity/assortment', {
-      params: {
-        filter: `code=${key};archived=false`,
-        limit: 50,
-      },
+      params: { filter: `code=${key};archived=false`, limit: 50 },
     });
 
     const rows: any[] = res.data?.rows ?? [];
-
     const exact = rows.filter((r) => String(r?.code ?? '').trim() === key);
 
-    if (exact.length === 0) {
+    if (exact.length === 0)
       throw new Error(`MoySklad: assortment not found by code=${key}`);
-    }
-    if (exact.length > 1) {
-      const types = exact.map((r) => r?.meta?.type).filter(Boolean);
-      const ids = exact.map((r) => r?.id).filter(Boolean);
-      throw new Error(
-        `MoySklad: multiple assortments with code=${key} (types=${types.join(',')}; ids=${ids.join(',')})`,
-      );
-    }
+    if (exact.length > 1)
+      throw new Error(`MoySklad: multiple assortments with code=${key}`);
 
-    const meta = exact[0]?.meta;
-    const price = exact[0]?.salePrices[0].value;
-    if (!meta?.href || !meta?.type) {
+    const row = exact[0];
+    const meta = row?.meta;
+    const price = row?.salePrices?.[0]?.value;
+    const name = row?.name;
+
+    if (!meta?.href || !meta?.type)
       throw new Error(`MoySklad: broken meta for code=${key}`);
-    }
 
-    const out: Meta = {
-      href: meta.href,
-      type: meta.type,
-      mediaType: 'application/json',
+    const out: AssortmentResolved = {
+      meta: { href: meta.href, type: meta.type, mediaType: 'application/json' },
       price,
+      name,
     };
+
     this.assortmentCache.set(key, out);
     return out;
   }
@@ -149,16 +146,30 @@ export class MoySkladService {
   async createInvoiceOut(input: {
     counterpartyId: string;
     orderIds: string[];
-    positions: Array<{ sku: string; qty?: number; priceMinor?: number }>;
+    positions: Array<{
+      sku: string;
+      qty?: number;
+      priceMinor?: number;
+      description?: string;
+      label?: string;
+    }>;
+    invoiceDescription?: string;
   }) {
     const organizationId = await this.getOrganizationId();
 
     const msPositions = await this.mapLimit(input.positions, 6, async (p) => {
-      const a = await this.resolveAssortmentMetaBySku(p.sku); // product/service — не важно
+      const a = await this.resolveAssortmentMetaBySku(p.sku);
+
+      const price =
+        (typeof p.priceMinor === 'number' ? p.priceMinor : undefined) ??
+        (typeof a.price === 'number' ? a.price : undefined);
+
       return {
-        quantity: p.qty || 1,
-        price: a.price || p.priceMinor,
-        assortment: { meta: a },
+        quantity: p.qty ?? 1,
+        ...(typeof price === 'number' ? { price } : {}),
+        assortment: { meta: a.meta },
+
+        ...(p.description ? { description: p.description } : {}),
       };
     });
 
@@ -172,6 +183,9 @@ export class MoySkladService {
         'counterparty',
       ),
       positions: msPositions,
+      ...(input.invoiceDescription
+        ? { description: input.invoiceDescription }
+        : {}),
     };
 
     const created = await this.http.post('/entity/invoiceout', payload, {
@@ -181,13 +195,11 @@ export class MoySkladService {
     const invoiceId = created.data?.id as string | undefined;
     if (!invoiceId) throw new Error('Moysklad: invoiceout create failed');
 
-    // В МС обычно есть name/number — выбери то, что хочешь хранить.
     const invoiceName =
       (created.data?.name as string | undefined) ??
       (created.data?.number as string | undefined) ??
       null;
 
-    // Обновляем ордера
     if (input.orderIds?.length) {
       await this.prismaService.order.updateMany({
         where: { id: { in: input.orderIds } },
@@ -202,14 +214,72 @@ export class MoySkladService {
     return created.data;
   }
 
-  async downloadInvoicePdf(invoiceoutId: string): Promise<Buffer> {
-    const res = await this.http.get(
-      `/entity/invoiceout/${invoiceoutId}/export`,
+  async getOrCreateOrderInvoicePublicationHtmlUrl(
+    orderId: string,
+    templateId: string,
+  ): Promise<string> {
+    const order = await this.prismaService.order.findUnique({
+      where: { id: orderId },
+      select: {
+        id: true,
+        invoiceId: true,
+        invoicePublicationHtmlUrl: true,
+      },
+    });
+
+    if (!order) throw new Error('Order not found');
+    if (order.invoicePublicationHtmlUrl) return order.invoicePublicationHtmlUrl;
+
+    if (!order.invoiceId)
+      throw new Error('Order has no invoiceId (moysklad invoiceoutId)');
+
+    if (!templateId) throw new Error('Order has no templateId');
+
+    const pubRes = await this.http.post(
+      `/entity/invoiceout/${order.invoiceId}/publication`,
       {
-        responseType: 'arraybuffer',
-        headers: { Accept: 'application/pdf' },
+        template: {
+          meta: {
+            href: `${this.baseUrl}/entity/invoiceout/metadata/embeddedtemplate/${templateId}`,
+            type: 'embeddedtemplate',
+            mediaType: 'application/json',
+          },
+        },
+        extension: 'pdf',
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json;charset=utf-8',
+        },
       },
     );
-    return Buffer.from(res.data);
+
+    const shortUrl = pubRes.data?.href as string | undefined;
+    if (!shortUrl)
+      throw new Error('MoySklad: publication response has no href');
+
+    const r = await axios.get(shortUrl, {
+      maxRedirects: 10,
+      timeout: 20_000,
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+        Accept: 'text/html,*/*',
+      },
+      validateStatus: () => true,
+    });
+
+    const finalUrl =
+      (r.request?.res?.responseUrl as string | undefined) ?? shortUrl;
+
+    const htmlUrl = finalUrl.endsWith('.html') ? finalUrl : `${finalUrl}.html`;
+
+    await this.prismaService.order.update({
+      where: { id: orderId },
+      data: { invoicePublicationHtmlUrl: htmlUrl },
+    });
+
+    return htmlUrl;
   }
 }

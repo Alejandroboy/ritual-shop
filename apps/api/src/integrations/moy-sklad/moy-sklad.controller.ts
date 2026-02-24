@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  StreamableFile,
+} from '@nestjs/common';
 import { MoySkladService } from './moy-sklad.service';
 import {
   ArrayMinSize,
@@ -32,6 +40,14 @@ class InvoiceOutPositionDto {
   @IsInt()
   @Min(0)
   priceMinor?: number;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @IsOptional()
+  @IsString()
+  label?: string;
 }
 
 class CreateInvoiceOutDto {
@@ -48,6 +64,10 @@ class CreateInvoiceOutDto {
   @ValidateNested({ each: true })
   @Type(() => InvoiceOutPositionDto)
   positions!: InvoiceOutPositionDto[];
+
+  @IsOptional()
+  @IsString()
+  invoiceDescription?: string;
 }
 
 @Controller('moy-sklad')
@@ -70,6 +90,20 @@ export class MoySkladController {
       counterpartyId: body.counterpartyId,
       orderIds: body.orderIds,
       positions: body.positions,
+      invoiceDescription: body.invoiceDescription,
     });
+  }
+
+  @Get('orders/:orderId/invoice-publication-url')
+  async getPublicationUrl(
+    @Param('orderId') orderId: string,
+    @Query('templateId') templateId: string,
+  ) {
+    const url =
+      await this.moySkladService.getOrCreateOrderInvoicePublicationHtmlUrl(
+        orderId,
+        templateId,
+      );
+    return { url };
   }
 }

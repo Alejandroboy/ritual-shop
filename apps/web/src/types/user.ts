@@ -12,6 +12,7 @@ export type CustomerOrder = {
   createdAt: string;
   includedInInvoice: boolean;
   invoiceName: string;
+  invoiceId: string;
   id: string;
   orderStatus: string;
   totalMinor: number;

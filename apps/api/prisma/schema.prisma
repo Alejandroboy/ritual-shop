@@ -297,6 +297,7 @@ model Order {
   includedInInvoice Boolean     @default(false)
   invoiceId         String?
   invoiceName       String?
+  invoicePublicationHtmlUrl       String?
 
   items OrderItem?
 

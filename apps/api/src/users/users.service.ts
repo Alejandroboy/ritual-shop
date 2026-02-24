@@ -38,6 +38,7 @@ export class UsersService {
           select: {
             id: true,
             orderStatus: true,
+            orderNumber: true,
             createdAt: true,
             includedInInvoice: true,
             invoiceId: true,

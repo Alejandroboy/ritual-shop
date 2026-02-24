@@ -1,9 +1,9 @@
 'use client';
 import { useParams } from 'next/navigation';
 import useSWR from 'swr';
-import { adminApiFetch } from '@utils';
+import { adminApiFetch, api } from '@utils';
 import { CustomerOrder } from '@types';
-import { useMemo, useState } from 'react';
+import { Fragment, useMemo, useState } from 'react';
 
 export default function InvoicePage() {
   const { id } = useParams<{ id: string }>();
@@ -12,9 +12,24 @@ export default function InvoicePage() {
     adminApiFetch(u).then((r) => r.json()),
   );
 
+  const skuCodesForAdditional = [
+    { skuCode: '00326', name: 'Ретушь' },
+    { skuCode: '00331', name: 'Сверление отверстий' },
+    { skuCode: '00513', name: 'Согласование' },
+  ];
+
+  type AdditionalSku = (typeof skuCodesForAdditional)[number]['skuCode'];
+
+  const [extraByOrderId, setExtraByOrderId] = useState<
+    Record<string, Record<AdditionalSku, number>>
+  >({});
+  const [selectValueByOrderId, setSelectValueByOrderId] = useState<
+    Record<string, AdditionalSku | ''>
+  >({});
+
   const [selected, setSelected] = useState<Record<string, boolean>>({});
   const [positions, setPositions] = useState<
-    { orderId: string; sku: string; priceMinor: number }[]
+    { orderId: string; orderNumber: string; sku: string; priceMinor: number }[]
   >([]);
   const [ordersIds, setOrdersIds] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
@@ -41,7 +56,12 @@ export default function InvoicePage() {
     if (checked) {
       setPositions((prev) => [
         ...prev,
-        { orderId, sku, priceMinor: price * 100 },
+        {
+          orderId,
+          orderNumber: order.orderNumber ?? orderId,
+          sku,
+          priceMinor: price * 100,
+        },
       ]);
       setOrdersIds((prev) => [...prev, orderId]);
     } else {
@@ -49,6 +69,91 @@ export default function InvoicePage() {
       setOrdersIds((prev) => prev.filter((x) => x !== orderId));
     }
   };
+
+  function addExtra(orderId: string) {
+    const sku = selectValueByOrderId[orderId];
+    if (!sku) return;
+
+    setExtraByOrderId((prev) => {
+      const cur = prev[orderId] ?? {};
+      const currentQty = cur[sku] ?? 0;
+
+      return {
+        ...prev,
+        [orderId]: {
+          ...cur,
+          [sku]: currentQty + 1, // увеличиваем
+        },
+      };
+    });
+
+    setSelectValueByOrderId((prev) => ({ ...prev, [orderId]: '' }));
+  }
+
+  function removeExtra(orderId: string, sku: AdditionalSku) {
+    setExtraByOrderId((prev) => {
+      const cur = prev[orderId] ?? {};
+      const currentQty = cur[sku] ?? 0;
+
+      if (currentQty <= 1) {
+        const { [sku]: _, ...rest } = cur;
+
+        const out = { ...prev, [orderId]: rest };
+        if (Object.keys(rest).length === 0) delete out[orderId];
+        return out;
+      }
+
+      return {
+        ...prev,
+        [orderId]: {
+          ...cur,
+          [sku]: currentQty - 1,
+        },
+      };
+    });
+  }
+
+  const orderNumberById = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const o of orders) m.set(o.id, (o as any).orderNumber ?? o.id);
+    return m;
+  }, [orders]);
+
+  const extraPositions = useMemo(() => {
+    return ordersIds.flatMap((orderId) => {
+      const extras = extraByOrderId[orderId] ?? {};
+      const orderNumber = orderNumberById.get(orderId) ?? orderId;
+
+      return Object.entries(extras).map(([sku, qty]) => ({
+        sku,
+        qty,
+        orderId,
+        orderNumber,
+      }));
+    });
+  }, [ordersIds, extraByOrderId]);
+
+  async function getDownloadUrl(orderId: string) {
+    const templateId = '6f3c9a47-6772-4944-9723-92d0d7be2a9c';
+    try {
+      const res = await api<{ url: string }>(
+        `/moy-sklad/orders/${orderId}/invoice-publication-url?templateId=${templateId}`,
+        {
+          method: 'GET',
+          cache: 'no-store',
+        },
+      );
+      if (!res?.url) {
+        alert('Ссылка на счёт не получена');
+        return;
+      }
+
+      window.open(res.url, '_blank', 'noopener,noreferrer');
+    } catch (e) {
+      console.error(e);
+      alert('Ошибка получения ссылки');
+    }
+  }
 
   // const aggregatedPositions = useMemo(() => {
   //   const map = new Map<
@@ -79,6 +184,13 @@ export default function InvoicePage() {
     }
 
     setBusy(true);
+    const orderNumberById = new Map(
+      orders.map((o: any) => [o.id, o.orderNumber ?? o.id]),
+    );
+    const selectedOrderNumbers = ordersIds
+      .map((oid) => orderNumberById.get(oid) ?? oid)
+      .filter(Boolean);
+
     try {
       const res = await adminApiFetch('/api/moy-sklad/invoiceout', {
         method: 'POST',
@@ -86,11 +198,22 @@ export default function InvoicePage() {
         body: JSON.stringify({
           counterpartyId,
           orderIds: ordersIds,
-          positions: positions.map((p) => ({
-            sku: p.sku,
-            qty: 1,
-            priceMinor: p.priceMinor,
-          })),
+          invoiceDescription: `Заказы: ${selectedOrderNumbers.join(', ')}`,
+          positions: [
+            ...positions.map((p) => ({
+              sku: p.sku,
+              qty: 1,
+              priceMinor: p.priceMinor,
+              description: `Заказ ${p.orderNumber}`,
+              label: `Заказ ${p.orderNumber}`,
+            })),
+            ...extraPositions.map((p) => ({
+              sku: p.sku,
+              qty: p.qty,
+              description: `Заказ ${p.orderNumber}`,
+              label: `Заказ ${p.orderNumber}`,
+            })),
+          ],
         }),
       });
 
@@ -115,6 +238,8 @@ export default function InvoicePage() {
       setSelected({});
       setPositions([]);
       setOrdersIds([]);
+      setExtraByOrderId({});
+      setSelectValueByOrderId({});
     } catch (e: any) {
       console.error(e);
       alert(e?.message ?? 'Ошибка создания счёта');
@@ -149,38 +274,140 @@ export default function InvoicePage() {
         )?.price;
 
         const title = order.items?.template?.fullTitle;
+        const orderNumber = order.orderNumber;
         const includedInInvoice = order.includedInInvoice;
+        const invoiceId = order.invoiceId;
         const invoiceName = order.invoiceName;
+        const selectedExtras = extraByOrderId[order.id] ?? {};
+        const isChecked = !!selected[order.id] && !includedInInvoice;
         return (
-          <div
-            key={order.id}
-            className="border rounded-md px-4 py-3 mb-[10px] flex items-start justify-between gap-4"
-          >
-            <div className="min-w-0">
-              <div className="font-semibold">{title}</div>
-              <div>Цена: {price}</div>
-              <div>Создан: {createdAt.toLocaleString('ru-RU')}</div>
-              <div>
-                Согласование {order.items?.approveNeeded ? 'Нужно' : 'Не нужно'}
-              </div>
-              {order.items?.approveNeeded && (
+          <Fragment key={order.id}>
+            <div
+              key={order.id}
+              className="border rounded-md px-4 py-3 mb-[10px] flex items-start justify-between gap-4"
+            >
+              <div className="min-w-0">
+                <div className="font-semibold">{title}</div>
+                <div>Цена: {price}</div>
+                <div>Номер №{orderNumber}</div>
+                <div>Создан: {createdAt.toLocaleString('ru-RU')}</div>
                 <div>
-                  Согласование получено: {order.items?.approved ? 'Да' : 'Нет'}
+                  Согласование{' '}
+                  {order.items?.approveNeeded ? 'Нужно' : 'Не нужно'}
+                </div>
+                {order.items?.approveNeeded && (
+                  <div>
+                    Согласование получено:{' '}
+                    {order.items?.approved ? 'Да' : 'Нет'}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex flex-col items-end">
+                {includedInInvoice && <p>Добавлен в счет №{invoiceName}</p>}
+                {invoiceId ? (
+                  <button
+                    type="button"
+                    onClick={() => getDownloadUrl(order.id!)}
+                    className="border rounded-md px-3 py-2 bg-[#f1f1f1] mt-2 cursor-pointer"
+                  >
+                    Открыть счет
+                  </button>
+                ) : (
+                  <input
+                    type="checkbox"
+                    className={`mt-2 h-6 w-6 accent-black ${includedInInvoice ? 'cursor-not-allowed' : 'cursor-pointer'} `}
+                    checked={selected[order.id] || false}
+                    disabled={includedInInvoice}
+                    onChange={(e) => toggleOrder(order, e.target.checked)}
+                  />
+                )}
+              </div>
+            </div>
+            <div className="mt-2 mb-4 flex flex-col items-end gap-2">
+              <div className="text-sm opacity-80">
+                Доп. услуги для этого заказа:
+              </div>
+              <div className="flex items-center gap-2">
+                <select
+                  className="border rounded-md p-2 bg-white"
+                  disabled={!isChecked}
+                  value={selectValueByOrderId[order.id] ?? ''}
+                  onChange={(e) =>
+                    setSelectValueByOrderId((prev) => ({
+                      ...prev,
+                      [order.id]: e.target.value as AdditionalSku | '',
+                    }))
+                  }
+                >
+                  <option value="">— выбрать —</option>
+                  {skuCodesForAdditional.map((s) => (
+                    <option key={s.skuCode} value={s.skuCode}>
+                      {s.name} ({s.skuCode})
+                    </option>
+                  ))}
+                </select>
+
+                <button
+                  type="button"
+                  onClick={() => addExtra(order.id)}
+                  className="border rounded-md px-3 py-2 bg-[#f1f1f1] disabled:opacity-50"
+                  disabled={!isChecked || !selectValueByOrderId[order.id]}
+                >
+                  Добавить
+                </button>
+              </div>
+
+              {Object.keys(selectedExtras).length > 0 && (
+                <div className="flex flex-wrap gap-2 justify-end">
+                  {Object.entries(selectedExtras).map(([sku, qty]) => {
+                    const label =
+                      skuCodesForAdditional.find((x) => x.skuCode === sku)
+                        ?.name ?? sku;
+
+                    return (
+                      <div
+                        key={sku}
+                        className="flex items-center gap-2 border rounded-full px-3 py-1 bg-white"
+                      >
+                        <span className="text-sm">
+                          {label} ({sku}) × {qty}
+                        </span>
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            removeExtra(order.id, sku as AdditionalSku)
+                          }
+                          className="text-sm opacity-70 hover:opacity-100"
+                        >
+                          −
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setExtraByOrderId((prev) => ({
+                              ...prev,
+                              [order.id]: {
+                                ...(prev[order.id] ?? {}),
+                                [sku]:
+                                  (prev[order.id]?.[sku as AdditionalSku] ??
+                                    0) + 1,
+                              },
+                            }));
+                          }}
+                          className="text-sm opacity-70 hover:opacity-100"
+                        >
+                          +
+                        </button>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
-
-            <div className="flex flex-col items-end">
-              {includedInInvoice && <p>Добавлен в счет №{invoiceName}</p>}
-              <input
-                type="checkbox"
-                className={`mt-2 h-6 w-6 accent-black ${includedInInvoice ? 'cursor-not-allowed' : 'cursor-pointer'} `}
-                checked={selected[order.id] || false}
-                disabled={includedInInvoice}
-                onChange={(e) => toggleOrder(order, e.target.checked)}
-              />
-            </div>
-          </div>
+          </Fragment>
         );
       })}
 
@@ -189,6 +416,8 @@ export default function InvoicePage() {
           {
             ordersIds,
             positions,
+            extraByOrderId,
+            extraPositions,
           },
           null,
           2,
