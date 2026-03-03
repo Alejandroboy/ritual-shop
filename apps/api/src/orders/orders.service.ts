@@ -589,12 +589,12 @@ export class OrdersService {
       },
     });
 
-    // if (result.customerEmail) {
-    //   await this.email.orderPlaced(
-    //     result.customerEmail || '',
-    //     result.number || '',
-    //   );
-    // }
+    if (result.customerEmail) {
+      await this.email.orderPlaced(
+        result.customerEmail || '',
+        result.number || '',
+      );
+    }
 
     if (user?.notifyChannel === 'TELEGRAM') {
       await this.telegram.orderPlaced(user.telegramChatId, result.number);
