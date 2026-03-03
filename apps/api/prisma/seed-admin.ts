@@ -5,11 +5,15 @@ import * as argon2 from 'argon2';
 import { PrismaPg } from '@prisma/adapter-pg';
 import pg from 'pg';
 
-const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+const datasourceUrl = process.env.DATABASE_URL;
+if (!datasourceUrl) throw new Error('DATABASE_URL missing');
+
+const pool = new pg.Pool({ connectionString: datasourceUrl });
 const adapter = new PrismaPg(pool);
 
 const prisma = new PrismaClient({
   adapter,
+  datasourceUrl,
 });
 
 async function main() {
