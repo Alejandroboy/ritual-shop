@@ -302,6 +302,8 @@ export class OrdersService {
         finish: dto.finish,
         comment: dto.comment ?? null,
         approveNeeded: dto.approveNeeded,
+        userActionNeeded: dto.approveNeeded,
+        approvalStage: dto.approveNeeded ? 'IN_PROGRESS' : 'NOT_STARTED',
         retouchNeeded: dto.retouchNeeded,
       },
       include: {
@@ -466,7 +468,7 @@ export class OrdersService {
   }
 
   private async validateItemOptions(input: {
-    templateId: string;
+    templateId: number;
     sizeId?: number | null;
     holePattern?: HolePattern | null;
     frameId?: number | null;
@@ -586,17 +588,16 @@ export class OrdersService {
       },
     });
 
-    // Письма
-    // if (result.customerEmail) {
-    //   await this.email.orderPlaced(
-    //     result.customerEmail || '',
-    //     result.number || '',
-    //   );
-    // }
-    //
-    // if (user?.notifyChannel === 'TELEGRAM') {
-    //   await this.telegram.orderPlaced(user.telegramChatId, result.number);
-    // }
+    if (result.customerEmail) {
+      await this.email.orderPlaced(
+        result.customerEmail || '',
+        result.number || '',
+      );
+    }
+
+    if (user?.notifyChannel === 'TELEGRAM') {
+      await this.telegram.orderPlaced(user.telegramChatId, result.number);
+    }
 
     return result;
   }

@@ -134,6 +134,9 @@ export function OrderItemsDetails({
           <b>Нужно согласование!</b>
         </p>
       )}
+      {data.userActionNeeded && !data.managerActionNeeded && (
+        <span>Ожидание пользователя</span>
+      )}
       {data.retouchNeeded === false && data.approveNeeded === false ? (
         <>
           {pairs.map(({ original, retouch }) => (
@@ -182,9 +185,6 @@ export function OrderItemsDetails({
                   />
                 )}
               </div>
-              {data.userActionNeeded && !data.managerActionNeeded && (
-                <span>Ожидание пользователя</span>
-              )}
               {data.discussComment && !data.userActionNeeded && (
                 <div>
                   <div>Комментарий по ретуши:</div>

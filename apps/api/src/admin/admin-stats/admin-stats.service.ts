@@ -27,8 +27,8 @@ export class AdminStatsService {
       CANCELLED: 0,
       DRAFT: 0,
       ACCEPTED: 0,
-      IN_PROGRESS: 0,
       APPROVAL: 0,
+      IN_PROGRESS: 0,
       SENT: 0,
       READY: 0,
     };

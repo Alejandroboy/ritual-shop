@@ -114,4 +114,5 @@ export type TemplateDetails = TemplateListItem & {
     backgroundId: number | null;
   };
   perHolePrice: number;
+  goldTypes?: { templateId: number; goldType: string }[];
 };

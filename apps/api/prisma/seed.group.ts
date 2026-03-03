@@ -43,8 +43,6 @@ const prisma = new PrismaClient({
   adapter,
 });
 
-// ================== HELPERS ==================
-
 const ALL_HOLES: HolePattern[] = [
   HolePattern.NONE,
   HolePattern.TWO_HORIZONTAL,
@@ -78,7 +76,6 @@ async function createTemplate(cfg: TemplateConfig) {
   const defaultHoles = cfg.holePatterns ?? [HolePattern.NONE];
 
   const defaultPrice = cfg.basePrice ?? 0;
-  // размеры
   if (cfg.sizeLabels.length) {
     const sizes = await prisma.size.findMany({
       where: { label: { in: cfg.sizeLabels } },
@@ -110,21 +107,33 @@ async function createTemplate(cfg: TemplateConfig) {
     });
 
     const rows: Array<{
-      templateId: string;
+      templateId: number;
       sizeId: number;
       finish: Finish;
       price: number;
     }> = [];
 
     for (const s of sizes) {
-      const perFinish = cfg.sizeFinishPrice[s.label];
-      if (!perFinish) continue;
+      const pricePerFinish = cfg.sizeFinishPrice[s.label];
+      const skuCodePerFinish =
+        cfg.skuCodesFinish && cfg.skuCodesFinish[s.label];
+      if (!pricePerFinish) continue;
 
       for (const finish of cfg.finishes) {
-        const price = perFinish[finish];
+        const price = pricePerFinish[finish];
+        let skuCodeValue;
+        if (skuCodePerFinish) {
+          skuCodeValue = skuCodePerFinish[finish];
+        }
         if (price == null) continue;
 
-        rows.push({ templateId: template.id, sizeId: s.id, finish, price });
+        rows.push({
+          templateId: template.id,
+          sizeId: s.id,
+          finish,
+          price,
+          skuCode: skuCodeValue ? skuCodeValue : '',
+        });
       }
     }
 
@@ -136,7 +145,6 @@ async function createTemplate(cfg: TemplateConfig) {
     }
   }
 
-  // отверстия
   const holes = cfg.holePatterns ?? ALL_HOLES;
   if (holes.length && (cfg.supportsHoles ?? true)) {
     await prisma.templateHole.createMany({
@@ -148,7 +156,6 @@ async function createTemplate(cfg: TemplateConfig) {
     });
   }
 
-  // рамки
   if (cfg.frameCodes?.length) {
     const frames = await prisma.frame.findMany({
       where: { code: { in: cfg.frameCodes } },
@@ -162,7 +169,16 @@ async function createTemplate(cfg: TemplateConfig) {
     });
   }
 
-  // фоны
+  if (cfg.goldTypes) {
+    await prisma.templateGoldType.createMany({
+      data: cfg.goldTypes.map((goldType) => ({
+        templateId: template.id,
+        goldType,
+      })),
+      skipDuplicates: true,
+    });
+  }
+
   if (cfg.requiresBackground || (cfg.backgroundCodes?.length ?? 0) > 0) {
     const where =
       cfg.backgroundCodes && cfg.backgroundCodes.length
@@ -178,7 +194,6 @@ async function createTemplate(cfg: TemplateConfig) {
     });
   }
 
-  // финиши (мат/глянец)
   if (cfg.finishes?.length) {
     await prisma.templateFinish.createMany({
       data: cfg.finishes.map((finish) => ({
@@ -190,12 +205,8 @@ async function createTemplate(cfg: TemplateConfig) {
   }
 }
 
-// ================== SIZES ==================
-
 async function seedSizes() {
-  // Массив всех уникальных размеров, встречающихся в каталоге
   const tuples: Array<[number, number]> = [
-    // базовые таблички/металлокерамика
     [13, 19],
     [17, 22],
     [20, 30],
@@ -205,21 +216,14 @@ async function seedSizes() {
     [30, 60],
     [16, 18],
     [16, 45],
-
-    // приложение (овалы, арки)
     [13, 18],
     [21, 27],
     [9, 12],
     [17, 24],
-
-    // белый / черный керамогранит, стекло, гравировка
     [15, 20],
     [20, 25],
     [25, 30],
     [30, 60],
-    [40, 60],
-
-    // ростовая фотокерамика
     [40, 60],
     [50, 70],
     [50, 80],
@@ -251,8 +255,6 @@ async function seedSizes() {
   });
 }
 
-// ================== FRAMES ==================
-
 async function seedFrames() {
   const frames: { code: number; name: string }[] = [];
 
@@ -270,8 +272,6 @@ async function seedFrames() {
     skipDuplicates: true,
   });
 }
-
-// ================== BACKGROUNDS ==================
 
 async function seedBackgrounds() {
   const bgs: Array<{ code: number; name: string }> = [
@@ -324,8 +324,6 @@ async function seedBackgrounds() {
   });
 }
 
-// ================== MATERIAL HOLE PRICES ==================
-
 async function seedMaterialHolePrices() {
   const materials = Object.values(Material) as Material[];
 
@@ -338,10 +336,7 @@ async function seedMaterialHolePrices() {
   });
 }
 
-// ================== TEMPLATES ==================
-
 async function seedTemplates() {
-  // ---------- Собираем всё ----------
   const allTemplates: TemplateConfig[] = [
     ...metalOvalVertTemplates,
     ...metalOvalHorTemplates,
@@ -370,8 +365,6 @@ async function seedTemplates() {
     await createTemplate(t);
   }
 }
-
-// ================== MAIN ==================
 
 async function main() {
   console.log('Seeding sizes...');

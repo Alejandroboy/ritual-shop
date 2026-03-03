@@ -38,7 +38,7 @@ export default function AccountPage() {
             : 0;
 
         if (status === 401 || status === 403) {
-          router.replace('/login'); // для app router: строкой, не объектом
+          router.replace('/login');
           return;
         }
 
@@ -85,10 +85,12 @@ export default function AccountPage() {
           <div className="text-sm text-gray-600">Нет заказов</div>
         ) : (
           myOrders.map((order, index) => {
-            console.log('order', order.items);
             const createdAt = new Date(order.createdAt);
             return (
-              <div key={order.id} className="border rounded-xl p-4 space-y-3">
+              <div
+                key={order.id}
+                className={`border rounded-xl p-4 space-y-3 ${order.orderStatus === 'APPROVAL' && order.items.userActionNeeded ? 'border-red-600' : ''}`}
+              >
                 <div className="flex items-center justify-between text-sm">
                   <div>Заказ №&nbsp;{order.orderNumber}</div>
                   <div>Создан {createdAt.toLocaleString('ru-RU')} </div>

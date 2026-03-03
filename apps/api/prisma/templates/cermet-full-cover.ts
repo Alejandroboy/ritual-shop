@@ -24,39 +24,24 @@ const heartBasesFull = ['C4', 'C5'];
 const metalFullOvalHorizontal = ['F14', 'F15'];
 const metalFullOvalVertical = ['F10', 'F11'];
 
-const PRICES_HOR: Record<string, number> = {
+const PRICES_RECT: Record<string, number> = {
   '13×19': 1500,
   '17×22': 1800,
-  '18×24': 2200,
-  '20×30': 2600,
-  '24×30': 2700,
 };
-const PRICES_VERT: Record<string, number> = {
-  '13×19': 1500,
-  '17×22': 1800,
-  '18×24': 2200,
-  '20×30': 2600,
-  '24×30': 2700,
+
+const PRICES_OVAL: Record<string, number> = {
+  '9×12': 1500,
+  '13×18': 1800,
+  '17×22': 2200,
+  '21×27': 2600,
 };
-const PRICES_HOR_OVAL: Record<string, number> = {
-  '13×19': 1500,
-  '17×22': 1800,
-  '18×24': 2200,
-  '20×30': 2600,
-  '24×30': 2700,
-};
-const PRICES_VERT_OVAL: Record<string, number> = {
-  '13×19': 1500,
-  '17×22': 1800,
-  '18×24': 2200,
-  '20×30': 2600,
-  '24×30': 2700,
-};
+
 const PRICES_ARCH: Record<string, number> = {
   '17×24': 1800,
 };
+
 const PRICES_HEART: Record<string, number> = {
-  '16×18': 1500,
+  '17×24': 1800,
 };
 
 const SIZE_HOLES_HOR: Record<string, HolePattern[]> = {
@@ -88,6 +73,46 @@ const SIZE_HOLES_VERT_OVAL: Record<string, HolePattern[]> = {
   '21×27': [HolePattern.TWO_HORIZONTAL, HolePattern.NONE],
 };
 
+const OVAL_SKU_CODES_BW: Record<string, string> = {
+  '9×12': '20022',
+  '13×18': '20020',
+  '17×22': '20019',
+  '21×27': '20021',
+};
+
+const OVAl_SKU_CODES_COLOR: Record<string, string> = {
+  '9×12': '20026',
+  '13×18': '20024',
+  '17×22': '20023',
+  '21×27': '20025',
+};
+
+const RECT_SKU_CODES_BW: Record<string, string> = {
+  '13×19': '20027',
+  '17×22': '20028',
+};
+
+const RECT_SKU_CODES_COLOR: Record<string, string> = {
+  '13×19': '20029',
+  '17×22': '20030',
+};
+
+const ARCH_SKU_CODES_BW: Record<string, string> = {
+  '17×24': '20031',
+};
+
+const ARCH_SKU_CODES_COLOR: Record<string, string> = {
+  '17×24': '20032',
+};
+
+const HEART_SKU_CODES_BW: Record<string, string> = {
+  '17×24': '20033',
+};
+
+const HEART_SKU_CODES_COLOR: Record<string, string> = {
+  '17×24': '20034',
+};
+
 export const metalFullTemplates: TemplateConfig[] = [
   ...metalFullOvalVertical.flatMap((base, index) => {
     const bw: TemplateConfig = {
@@ -106,7 +131,7 @@ export const metalFullTemplates: TemplateConfig[] = [
       perHolePrice: 0,
       basePrice: 0,
       sizeHolePatterns: SIZE_HOLES_VERT_OVAL,
-      sizePrice: PRICES_VERT_OVAL,
+      sizePrice: PRICES_OVAL,
       sizeLabels: sizesOvalVert,
       holePatterns: [
         HolePattern.NONE,
@@ -115,6 +140,7 @@ export const metalFullTemplates: TemplateConfig[] = [
       ],
       backgroundCodes: [400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11],
       inscribed: index !== 0,
+      skuCodes: OVAL_SKU_CODES_BW,
     };
     const color: TemplateConfig = {
       ...bw,
@@ -127,6 +153,7 @@ export const metalFullTemplates: TemplateConfig[] = [
         36,
       ],
       colorMode: ColorMode.COLOR,
+      skuCodes: OVAl_SKU_CODES_COLOR,
     };
     return [bw, color];
   }),
@@ -147,7 +174,7 @@ export const metalFullTemplates: TemplateConfig[] = [
       perHolePrice: 0,
       basePrice: 0,
       sizeHolePatterns: SIZE_HOLES_HOR_OVAL,
-      sizePrice: PRICES_HOR_OVAL,
+      sizePrice: PRICES_OVAL,
       sizeLabels: sizesOvalHor,
       holePatterns: [
         HolePattern.NONE,
@@ -156,6 +183,7 @@ export const metalFullTemplates: TemplateConfig[] = [
       ],
       backgroundCodes: [400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11],
       inscribed: index !== 0,
+      skuCodes: OVAL_SKU_CODES_BW,
     };
     const color: TemplateConfig = {
       ...bw,
@@ -168,6 +196,7 @@ export const metalFullTemplates: TemplateConfig[] = [
         36,
       ],
       colorMode: ColorMode.COLOR,
+      skuCodes: OVAl_SKU_CODES_COLOR,
     };
     return [bw, color];
   }),
@@ -189,11 +218,12 @@ export const metalFullTemplates: TemplateConfig[] = [
       basePrice: 0,
       sizeHolePatterns: SIZE_HOLES_VERT,
       singlePerson: base !== 'T13',
-      sizePrice: PRICES_VERT,
+      sizePrice: PRICES_RECT,
       sizeLabels: sizesMetalFullWrap,
       holePatterns: [HolePattern.NONE, HolePattern.TWO_VERTICAL],
       backgroundCodes: [400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11],
       inscribed: index !== 0,
+      skuCodes: RECT_SKU_CODES_BW,
     };
     const color: TemplateConfig = {
       ...bw,
@@ -206,6 +236,7 @@ export const metalFullTemplates: TemplateConfig[] = [
         36,
       ],
       colorMode: ColorMode.COLOR,
+      skuCodes: RECT_SKU_CODES_COLOR,
     };
     return [bw, color];
   }),
@@ -227,11 +258,12 @@ export const metalFullTemplates: TemplateConfig[] = [
       basePrice: 0,
       sizeHolePatterns: SIZE_HOLES_HOR,
       singlePerson: base !== 'T13',
-      sizePrice: PRICES_HOR,
+      sizePrice: PRICES_RECT,
       sizeLabels: sizesMetalFullWrap,
       holePatterns: [HolePattern.NONE, HolePattern.TWO_HORIZONTAL],
       backgroundCodes: [400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11],
       inscribed: index !== 0,
+      skuCodes: RECT_SKU_CODES_BW,
     };
     const color: TemplateConfig = {
       ...bw,
@@ -244,6 +276,7 @@ export const metalFullTemplates: TemplateConfig[] = [
         36,
       ],
       colorMode: ColorMode.COLOR,
+      skuCodes: RECT_SKU_CODES_COLOR,
     };
     return [bw, color];
   }),
@@ -268,6 +301,7 @@ export const metalFullTemplates: TemplateConfig[] = [
       holePatterns: [HolePattern.NONE, HolePattern.TWO_HORIZONTAL],
       backgroundCodes: [400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11],
       inscribed: index !== 0,
+      skuCodes: ARCH_SKU_CODES_BW,
     };
     const color: TemplateConfig = {
       ...bw,
@@ -280,6 +314,7 @@ export const metalFullTemplates: TemplateConfig[] = [
         36,
       ],
       colorMode: ColorMode.COLOR,
+      skuCodes: ARCH_SKU_CODES_COLOR,
     };
     return [bw, color];
   }),
@@ -304,6 +339,7 @@ export const metalFullTemplates: TemplateConfig[] = [
       holePatterns: [HolePattern.NONE, HolePattern.TWO_VERTICAL],
       backgroundCodes: [400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11],
       inscribed: index !== 0,
+      skuCodes: HEART_SKU_CODES_BW,
     };
     const color: TemplateConfig = {
       ...bw,
@@ -316,6 +352,7 @@ export const metalFullTemplates: TemplateConfig[] = [
         36,
       ],
       colorMode: ColorMode.COLOR,
+      skuCodes: HEART_SKU_CODES_COLOR,
     };
     return [bw, color];
   }),

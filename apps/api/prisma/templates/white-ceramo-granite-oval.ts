@@ -29,6 +29,16 @@ const sizeFinishOvalPrice: Record<string, Partial<Record<Finish, number>>> = {
   '25×30': { MATTE: 2700, GLOSS: 3200 },
   '30×40': { MATTE: 3000, GLOSS: 3500 },
 };
+
+const SKU_CODES: Record<string, Partial<Record<Finish, string>>> = {
+  '13×18': { MATTE: '20045', GLOSS: '20046' },
+  '15×20': { MATTE: '20047', GLOSS: '20048' },
+  '20×25': { MATTE: '20049', GLOSS: '20050' },
+  '20×30': { MATTE: '20041', GLOSS: '20042' },
+  '25×30': { MATTE: '20051', GLOSS: '20052' },
+  '30×40': { MATTE: '20043', GLOSS: '20044' },
+};
+
 export const whiteOvalTemplates: TemplateConfig[] = [
   ...whiteOvalBasesVert.flatMap((base, index) => {
     const bw: TemplateConfig = {
@@ -60,6 +70,7 @@ export const whiteOvalTemplates: TemplateConfig[] = [
         HolePattern.NONE,
       ],
       inscribed: index !== 0,
+      skuCodesFinish: SKU_CODES,
     };
     const color: TemplateConfig = {
       ...bw,
@@ -72,6 +83,7 @@ export const whiteOvalTemplates: TemplateConfig[] = [
         35, 36, 100, 200,
       ],
       colorMode: ColorMode.COLOR,
+      skuCodesFinish: SKU_CODES,
     };
     return [bw, color];
   }),
@@ -106,6 +118,7 @@ export const whiteOvalTemplates: TemplateConfig[] = [
         HolePattern.NONE,
       ],
       inscribed: index !== 0,
+      skuCodesFinish: SKU_CODES,
     };
     const color: TemplateConfig = {
       ...bw,
@@ -118,6 +131,7 @@ export const whiteOvalTemplates: TemplateConfig[] = [
         35, 36, 100, 200,
       ],
       colorMode: ColorMode.COLOR,
+      skuCodesFinish: SKU_CODES,
     };
     return [bw, color];
   }),

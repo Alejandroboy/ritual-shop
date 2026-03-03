@@ -17,13 +17,16 @@ export class EmailService {
     const t = await this.transporterP;
     const from = process.env.SMTP_FROM || 'no-reply@example.com';
 
-    const info = await t.sendMail({ from, to, subject, html, text });
-
-    const url = (nodemailer as any).getTestMessageUrl?.(info);
-    if (url) this.log.log(`Preview: ${url}`);
-
     this.log.log(`Email queued OK: ${subject} -> ${to}`);
-    return info;
+    try {
+      const info = await t.sendMail({ from, to, subject, html, text });
+      const url = (nodemailer as any).getTestMessageUrl?.(info);
+      if (url) this.log.log(`Preview: ${url}`);
+      return info;
+    } catch (e: any) {
+      this.log.error(`Email send FAILED: ${subject} -> ${to}`, e?.stack || e);
+      throw e;
+    }
   }
 
   async orderPlaced(to: string, orderNumber: string) {
@@ -54,7 +57,7 @@ export class EmailService {
       return this.send(
         to,
         `Статус заказа №${orderNumber}: ${humanNewStatus}`,
-        `<p>Статус заказа <b>№${orderNumber}</b> изменился:</p><p><b>${humanOldStatus}</b> → <b>${humanNewStatus}</b></p> <p><b>Пожлуйста зайдите в личный кабинет и согласуйте ретушь</b></p>`,
+        `<p>Статус заказа <b>№${orderNumber}</b> изменился:</p><p><b>${humanOldStatus}</b> → <b>${humanNewStatus}</b></p> <p><b>Пожалуйста зайдите в личный кабинет и согласуйте ретушь</b></p>`,
       );
     return this.send(
       to,

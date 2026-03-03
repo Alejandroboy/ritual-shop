@@ -30,6 +30,41 @@ const PRICES_OVAL: Record<string, number> = {
   '50×70': 6500,
 };
 
+const SKU_CODES: Record<string, string> = {
+  '40×60': '20079',
+  '50×70': '20080',
+  '50×80': '20081',
+  '55×80': '20082',
+  '50×100': '20083',
+  '60×100': '20084',
+  '60×120': '20085',
+};
+
+const SKU_CODES_ARCH: Record<string, string> = {
+  '40×60': '20086',
+  '50×70': '20087',
+  '50×80': '20088',
+  '55×80': '20089',
+  '50×100': '20090',
+  '60×100': '20091',
+  '60×120': '20092',
+};
+
+const SKU_CODES_FIG: Record<string, string> = {
+  '40×60': '20095',
+  '50×70': '20096',
+  '50×80': '20097',
+  '55×80': '20098',
+  '50×100': '20099',
+  '60×100': '20100',
+  '60×120': '20101',
+};
+
+const SKU_CODES_OVAL: Record<string, string> = {
+  '40×60': '20093',
+  '50×70': '20094',
+};
+
 const growthSingleBases = ['K1_r', 'K2_r'];
 const growthCoupleBases = ['K4_r', 'K5_r'];
 
@@ -64,6 +99,7 @@ export const growthHorizontal: TemplateConfig[] = [
         HolePattern.NONE,
       ],
       inscribed: index !== 0,
+      skuCodes: SKU_CODES,
     };
     const color: TemplateConfig = {
       ...bw,
@@ -76,6 +112,7 @@ export const growthHorizontal: TemplateConfig[] = [
         35, 36, 100, 200,
       ],
       colorMode: ColorMode.COLOR,
+      skuCodes: SKU_CODES,
     };
     return [bw, color];
   }),
@@ -108,6 +145,7 @@ export const growthHorizontal: TemplateConfig[] = [
         HolePattern.NONE,
       ],
       inscribed: index !== 0,
+      skuCodes: SKU_CODES_ARCH,
     };
     const color: TemplateConfig = {
       ...bw,
@@ -120,6 +158,7 @@ export const growthHorizontal: TemplateConfig[] = [
         35, 36, 100, 200,
       ],
       colorMode: ColorMode.COLOR,
+      skuCodes: SKU_CODES_ARCH,
     };
     return [bw, color];
   }),
@@ -153,6 +192,7 @@ export const growthHorizontal: TemplateConfig[] = [
         HolePattern.NONE,
       ],
       inscribed: index !== 0,
+      skuCodes: SKU_CODES_OVAL,
     };
     const color: TemplateConfig = {
       ...bw,
@@ -165,6 +205,7 @@ export const growthHorizontal: TemplateConfig[] = [
         35, 36, 100, 200,
       ],
       colorMode: ColorMode.COLOR,
+      skuCodes: SKU_CODES_OVAL,
     };
     return [bw, color];
   }),
@@ -198,6 +239,7 @@ export const growthHorizontal: TemplateConfig[] = [
       HolePattern.NONE,
     ],
     inscribed: true,
+    skuCodes: SKU_CODES_FIG,
   },
 ];
 export const growthVertical: TemplateConfig[] = [
@@ -230,6 +272,7 @@ export const growthVertical: TemplateConfig[] = [
         HolePattern.NONE,
       ],
       inscribed: index !== 0,
+      skuCodes: SKU_CODES,
     };
     const color: TemplateConfig = {
       ...bw,
@@ -242,6 +285,7 @@ export const growthVertical: TemplateConfig[] = [
         35, 36, 100, 200,
       ],
       colorMode: ColorMode.COLOR,
+      skuCodes: SKU_CODES,
     };
     return [bw, color];
   }),
@@ -274,6 +318,7 @@ export const growthVertical: TemplateConfig[] = [
         HolePattern.NONE,
       ],
       inscribed: index !== 0,
+      skuCodes: SKU_CODES_ARCH,
     };
     const color: TemplateConfig = {
       ...bw,
@@ -286,6 +331,7 @@ export const growthVertical: TemplateConfig[] = [
         35, 36, 100, 200,
       ],
       colorMode: ColorMode.COLOR,
+      skuCodes: SKU_CODES_ARCH,
     };
     return [bw, color];
   }),
@@ -318,6 +364,7 @@ export const growthVertical: TemplateConfig[] = [
         HolePattern.NONE,
       ],
       inscribed: index !== 0,
+      skuCodes: SKU_CODES_OVAL,
     };
     const color: TemplateConfig = {
       ...bw,
@@ -330,6 +377,7 @@ export const growthVertical: TemplateConfig[] = [
         35, 36, 100, 200,
       ],
       colorMode: ColorMode.COLOR,
+      skuCodes: SKU_CODES_OVAL,
     };
     return [bw, color];
   }),

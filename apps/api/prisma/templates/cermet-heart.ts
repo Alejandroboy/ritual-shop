@@ -15,6 +15,14 @@ const PRICES: Record<string, number> = {
   '16×18': 1500,
 };
 
+const SKU_CODES_BW: Record<string, string> = {
+  '16×18': '20039',
+};
+
+const SKU_CODES_COLOR: Record<string, string> = {
+  '16×18': '20040',
+};
+
 export const heartTemplates: TemplateConfig[] = [
   ...heartBasesNormal.flatMap((base, index) => {
     const bw: TemplateConfig = {
@@ -38,6 +46,7 @@ export const heartTemplates: TemplateConfig[] = [
         300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 100, 200,
       ],
       inscribed: index !== 0 && index !== 2,
+      skuCodes: SKU_CODES_BW,
     };
     const color: TemplateConfig = {
       ...bw,
@@ -50,6 +59,7 @@ export const heartTemplates: TemplateConfig[] = [
         35, 36, 100, 200,
       ],
       colorMode: ColorMode.COLOR,
+      skuCodes: SKU_CODES_COLOR,
     };
     return [bw, color];
   }),

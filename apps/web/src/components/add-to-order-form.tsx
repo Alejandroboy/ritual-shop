@@ -88,6 +88,7 @@ export default function AddToOrderForm({ tpl }: Props) {
     tpl.defaults.backgroundId ?? '',
   );
   const [finish, setFinish] = useState<string | ''>(tpl.defaults.finish ?? '');
+  const [goldType, setGoldType] = useState<string>('');
   const [comment, setComment] = useState('');
 
   const needFinish =
@@ -347,6 +348,32 @@ export default function AddToOrderForm({ tpl }: Props) {
   return (
     <div className="border rounded-xl p-4 bg-white space-y-3">
       <div className="grid sm:grid-cols-2 gap-3">
+        {tpl.goldTypes?.length ? (
+          <label className="text-sm">
+            <div className="mb-1 text-neutral-600">Вид</div>
+            {tpl.goldTypes.length > 1 ? (
+              <>
+                <select
+                  className="border rounded-md px-2 py-1 bg-white w-full"
+                  value={goldType}
+                  onChange={(e) => setGoldType(e.target.value || '')}
+                >
+                  {tpl.goldTypes.map((f) => {
+                    return (
+                      <option key={f.goldType} value={f.goldType}>
+                        {f.goldType}
+                      </option>
+                    );
+                  })}
+                </select>
+              </>
+            ) : (
+              <span>{tpl.goldTypes[0].goldType}</span>
+            )}
+          </label>
+        ) : (
+          ''
+        )}
         {needFinish && (
           <label className="text-sm">
             <div className="mb-1 text-neutral-600">Финиш</div>
@@ -414,17 +441,21 @@ export default function AddToOrderForm({ tpl }: Props) {
         )}
         <label className="text-sm">
           <div className="mb-1 text-neutral-600">Отверстия</div>
-          <select
-            className="border rounded-md px-2 py-1 bg-white w-full"
-            value={holePattern}
-            onChange={(e) => setHolePattern(e.target.value || '')}
-          >
-            {tpl.holes.map((h) => (
-              <option key={h} value={h}>
-                {holePatternLabel(h)}
-              </option>
-            ))}
-          </select>
+          {tpl.holes.length > 1 ? (
+            <select
+              className="border rounded-md px-2 py-1 bg-white w-full"
+              value={holePattern}
+              onChange={(e) => setHolePattern(e.target.value || '')}
+            >
+              {tpl.holes.map((h) => (
+                <option key={h} value={h}>
+                  {holePatternLabel(h)}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <span>{holePatternLabel(tpl.holes[0])}</span>
+          )}
         </label>
         <label className="text-sm">
           <div className="mb-1 text-neutral-600">Размер</div>

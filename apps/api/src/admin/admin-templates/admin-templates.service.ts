@@ -84,7 +84,7 @@ export class AdminTemplatesService {
     return { items, total, page: +page, pageSize: take };
   }
 
-  async getById(id: string) {
+  async getById(id: number) {
     return this.prisma.template.findUnique({
       where: { id },
       include: {
@@ -132,7 +132,7 @@ export class AdminTemplatesService {
     });
   }
 
-  async updateTemplate(id: string, dto: UpdateTemplateDto) {
+  async updateTemplate(id: number, dto: UpdateTemplateDto) {
     return this.prisma.$transaction(async (tx) => {
       if (dto.sizePrices && typeof dto.sizePrices === 'object') {
         for (const [sizeIdStr, sizePrice] of Object.entries(dto.sizePrices)) {
@@ -200,7 +200,7 @@ export class AdminTemplatesService {
     });
   }
 
-  async deleteTemplate(id: string) {
+  async deleteTemplate(id: number) {
     return this.prisma.template.delete({ where: { id } });
   }
 }

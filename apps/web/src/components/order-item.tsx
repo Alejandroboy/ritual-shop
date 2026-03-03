@@ -26,6 +26,7 @@ interface OrderItemProps {
   lastName?: string;
   lastNameSecondPerson?: string;
   approveNeeded?: boolean;
+  retouchNeeded?: boolean;
   approvalStage?: string;
   approved?: boolean;
   managerActionNeeded?: boolean;
@@ -62,31 +63,48 @@ export const OrderItem = ({
   userActionNeeded,
   backgroundId,
   size,
+  retouchNeeded,
 }: OrderItemProps) => {
   const updateApprove = useAppStore((s) => s.updateApprove);
   const updateComment = useAppStore((s) => s.updateComment);
   const [approveRetouch, setApproveRetouch] = useState(false);
   const [disapproveRetouch, setDisapproveRetouch] = useState(false);
+  const [approve, setApprove] = useState(false);
   const [retouchComment, setRetouchComment] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
-  function handleApproveClick(event: SyntheticEvent) {
-    event.preventDefault();
-    setApproveRetouch(true);
+  function handleApproveClick() {
+    setApprove((prev) => !prev);
+    setApproveRetouch(false);
     setDisapproveRetouch(false);
   }
 
-  function handleDisapproveClick(event: SyntheticEvent) {
-    event.preventDefault();
-    setDisapproveRetouch(true);
+  function handleApproveRetouchClick() {
+    setApproveRetouch((prev) => !prev);
+    setDisapproveRetouch(false);
+  }
+
+  function handleDisapproveClick() {
+    setDisapproveRetouch((prev) => !prev);
     setApproveRetouch(false);
   }
 
-  function handleApproveSubmit() {
-    return updateApprove({ orderId, userId, itemId: id });
+  async function handleApproveSubmit() {
+    try {
+      setSubmitting(true);
+      await updateApprove({ orderId, userId, itemId: id });
+    } finally {
+      setSubmitting(false);
+    }
   }
 
-  function handleCommentSubmit() {
-    return updateComment({ orderId, text: retouchComment, itemId: id });
+  async function handleCommentSubmit() {
+    try {
+      setSubmitting(true);
+      await updateComment({ orderId, text: retouchComment, itemId: id });
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   const [pairs, setPairs] = React.useState<AssetPair[]>([]);
@@ -103,18 +121,23 @@ export const OrderItem = ({
 
   const birthDate = dateOfBirth ? new Date(dateOfBirth) : undefined;
   const deathDay = dateOfDeath ? new Date(dateOfDeath) : undefined;
+  const birthDateSecondPerson = dateOfBirth ? new Date(dateOfBirth) : undefined;
+  const deathDaySecondPerson = dateOfDeath ? new Date(dateOfDeath) : undefined;
 
   const renderCheckboxes = () => {
     if (!approveRetouch && !disapproveRetouch)
       return (
         <div className="flex mt-[15px]">
           <div className="cursor-pointer mr-[15px] p-[15px] border rounded-xl block w-fit">
-            <label htmlFor="checkbox-approve" className="cursor-pointer">
+            <label
+              htmlFor="checkbox-approve-retouch"
+              className="cursor-pointer"
+            >
               <input
                 type="checkbox"
-                id="checkbox-approve"
+                id="checkbox-approve-retouch"
                 checked={approveRetouch}
-                onChange={handleApproveClick}
+                onChange={handleApproveRetouchClick}
               />
               &nbsp;Согласен
             </label>
@@ -137,19 +160,23 @@ export const OrderItem = ({
       return (
         <>
           <div className="cursor-pointer mr-[15px] p-[15px] border rounded-xl block w-fit mt-[10px]">
-            <label htmlFor="checkbox-approve" className="cursor-pointer">
+            <label
+              htmlFor="checkbox-approve-retouch"
+              className="cursor-pointer"
+            >
               <input
                 type="checkbox"
-                id="checkbox-approve"
+                id="checkbox-approve-retouch"
                 checked={approveRetouch}
-                onChange={handleApproveClick}
+                onChange={handleApproveRetouchClick}
               />
               &nbsp;Согласен
             </label>
           </div>
           <button
             onClick={handleApproveSubmit}
-            className="border rounded-md cursor-pointer p-[5px] mt-[10px]"
+            className={`border rounded-md p-[5px] mt-[10px] ${submitting ? 'cursor-wait' : 'cursor-pointer'}`}
+            disabled={submitting}
           >
             Отправить
           </button>
@@ -187,7 +214,7 @@ export const OrderItem = ({
   };
 
   const renderForms = () => {
-    if (approved) return <p>Согласовано</p>;
+    if (approved) return null;
     if (userActionNeeded)
       return (
         <div>
@@ -196,6 +223,52 @@ export const OrderItem = ({
         </div>
       );
     if (managerActionNeeded) return <p>Ожиданние новой ретуши</p>;
+  };
+
+  const renderApprovalForms = () => {
+    if (userActionNeeded && !approve)
+      return (
+        <div>
+          <div className="cursor-pointer mr-[15px] p-[15px] border rounded-xl block w-fit">
+            <label htmlFor="checkbox-approve" className="cursor-pointer">
+              <input
+                type="checkbox"
+                id="checkbox-approve"
+                checked={approve}
+                onChange={handleApproveClick}
+              />
+              &nbsp;Согласен
+            </label>
+          </div>
+        </div>
+      );
+
+    if (userActionNeeded && approve) {
+      return (
+        <div>
+          <div className="cursor-pointer mr-[15px] p-[15px] border rounded-xl block w-fit">
+            <label htmlFor="checkbox-approve" className="cursor-pointer">
+              <input
+                type="checkbox"
+                id="checkbox-approve"
+                checked={approve}
+                onChange={handleApproveClick}
+              />
+              &nbsp;Согласен
+            </label>
+          </div>
+          <button
+            onClick={handleApproveSubmit}
+            className={`border rounded-md p-[5px] mt-[10px] ${submitting ? 'cursor-wait' : 'cursor-pointer'}`}
+            disabled={submitting}
+          >
+            Отправить
+          </button>
+        </div>
+      );
+    }
+
+    return null;
   };
 
   const renderRetouch = (retouch: AssetView) => {
@@ -215,8 +288,6 @@ export const OrderItem = ({
             primary={retouch.primary}
           />
         </div>
-
-        {approveNeeded && <div className="mb-[15px] flex">{renderForms()}</div>}
       </>
     );
   };
@@ -276,8 +347,8 @@ export const OrderItem = ({
       )}
       {dateOfBirthSecondPerson && (
         <div className="text-sm text-gray-600">
-          {birthDate &&
-            birthDate.toLocaleString('ru-RU', {
+          {birthDateSecondPerson &&
+            birthDateSecondPerson.toLocaleString('ru-RU', {
               year: 'numeric',
               month: 'long',
               day: 'numeric',
@@ -286,8 +357,8 @@ export const OrderItem = ({
       )}
       {dateOfDeathSecondPerson && (
         <div className="text-sm text-gray-600">
-          {deathDay &&
-            deathDay.toLocaleString('ru-RU', {
+          {deathDaySecondPerson &&
+            deathDaySecondPerson.toLocaleString('ru-RU', {
               year: 'numeric',
               month: 'long',
               day: 'numeric',
@@ -309,12 +380,15 @@ export const OrderItem = ({
             size={180}
             primary={original.primary}
           />
-          {approveNeeded && approvalStage && (
-            <p>{approvalStageLabel(approvalStage)}</p>
-          )}
           {renderRetouch(retouch)}
         </div>
       ))}
+      {approveNeeded && approvalStage && (
+        <>
+          {retouchNeeded ? renderForms() : renderApprovalForms()}
+          <p data-qa="as">{approvalStageLabel(approvalStage)}</p>
+        </>
+      )}
     </div>
   );
 };

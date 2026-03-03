@@ -29,6 +29,16 @@ const sizeFinishArchPrice: Record<string, Partial<Record<Finish, number>>> = {
   '25×30': { GLOSS: 2700, MATTE: 2300 },
   '30×40': { GLOSS: 2900, MATTE: 2500 },
 };
+
+const SKU_CODES: Record<string, Partial<Record<Finish, string>>> = {
+  '13×18': { GLOSS: '20057', MATTE: '20058' },
+  '15×20': { GLOSS: '20059', MATTE: '20060' },
+  '20×25': { GLOSS: '20061', MATTE: '20062' },
+  '20×30': { GLOSS: '20053', MATTE: '20054' },
+  '25×30': { GLOSS: '20063', MATTE: '20064' },
+  '30×40': { GLOSS: '20055', MATTE: '20056' },
+};
+
 export const whiteArchTemplates: TemplateConfig[] = [
   ...whiteArchBasesVert.flatMap((base, index) => {
     const bw: TemplateConfig = {
@@ -60,6 +70,7 @@ export const whiteArchTemplates: TemplateConfig[] = [
         HolePattern.NONE,
       ],
       inscribed: index !== 0,
+      skuCodesFinish: SKU_CODES,
     };
     const color: TemplateConfig = {
       ...bw,
@@ -72,6 +83,7 @@ export const whiteArchTemplates: TemplateConfig[] = [
         35, 36, 100, 200,
       ],
       colorMode: ColorMode.COLOR,
+      skuCodesFinish: SKU_CODES,
     };
     return [bw, color];
   }),
@@ -106,6 +118,7 @@ export const whiteArchTemplates: TemplateConfig[] = [
         HolePattern.NONE,
       ],
       inscribed: index !== 0,
+      skuCodesFinish: SKU_CODES,
     };
     const color: TemplateConfig = {
       ...bw,
@@ -118,6 +131,7 @@ export const whiteArchTemplates: TemplateConfig[] = [
         35, 36, 100, 200,
       ],
       colorMode: ColorMode.COLOR,
+      skuCodesFinish: SKU_CODES,
     };
     return [bw, color];
   }),

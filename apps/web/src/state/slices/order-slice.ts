@@ -18,26 +18,18 @@ export type OrderSlice = {
   setDraft: (id: Id | null) => void;
   ensureOrder: () => Promise<Id>;
   clearDraft: () => void;
-  updateApprove: ({
-    orderId,
-    userId,
-    itemId,
-  }: {
+  updateApprove: (args: {
     orderId: string;
     userId: string;
     itemId?: string;
-  }) => void;
-  updateComment: ({
-    orderId,
-    text,
-    itemId,
-  }: {
+  }) => Promise<OrderDetails>;
+
+  updateComment: (args: {
     orderId: string;
     text: string;
     itemId?: string;
-  }) => void;
+  }) => Promise<OrderDetails>;
 
-  // позиции
   addItem: (payload: {
     dateOfBirth: string;
     dateOfDeath: string;
@@ -62,7 +54,6 @@ export type OrderSlice = {
     retouchNeeded: boolean;
   }) => Promise<OrderItem>;
 
-  // вспомогательные действия страницы чекаута
   getOrderDetails: () => Promise<OrderDetails | null>;
   checkout: (payload: {
     userId: string;
@@ -107,21 +98,43 @@ export const createOrderSlice: OrderCreator = (set, get, _api): OrderSlice => ({
   },
 
   updateApprove: async ({ orderId, itemId, userId }) => {
-    return api<OrderDetails>(`/orders/${orderId}/items/${itemId}/approve`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ userId: userId }),
+    const updatedItem = await api<OrderDetails>(
+      `/orders/${orderId}/items/${itemId}/approve`,
+      {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ userId: userId }),
+      },
+    );
+
+    set((s) => {
+      const order = s.myOrders?.find((o) => o.id === orderId);
+      if (!order) return;
+      order.items = { ...order.items, ...updatedItem };
     });
+
+    return updatedItem;
   },
 
   updateComment: async ({ orderId, itemId, text }) => {
-    return api(`/orders/${orderId}/items/${itemId}/discus`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ text: text }),
+    const updatedItem = await api<OrderDetails>(
+      `/orders/${orderId}/items/${itemId}/discus`,
+      {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ text: text }),
+      },
+    );
+
+    set((s) => {
+      const order = s.myOrders?.find((o) => o.id === orderId);
+      if (!order) return;
+      order.items = { ...order.items, ...updatedItem };
     });
+
+    return updatedItem;
   },
 
   getOrderDetails: async () => {
@@ -141,7 +154,6 @@ export const createOrderSlice: OrderCreator = (set, get, _api): OrderSlice => ({
       body: JSON.stringify(payload),
     });
 
-    // заказ оформлен — чистим черновик
     set({ draftOrderId: null });
     return res;
   },

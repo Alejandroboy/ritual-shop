@@ -42,6 +42,7 @@ export type CustomerOrderItem = {
     id: string;
     label: string;
   };
+  userActionNeeded: boolean;
   templateCode: string;
   templateId: string;
   templateLabel: string;

@@ -13,9 +13,38 @@ export default function InvoicePage() {
   );
 
   const skuCodesForAdditional = [
-    { skuCode: '00326', name: 'Ретушь' },
-    { skuCode: '00331', name: 'Сверление отверстий' },
-    { skuCode: '00513', name: 'Согласование' },
+    {
+      name: 'Дополнительный фон на трафарете',
+      skuCode: '20174',
+    },
+    {
+      name: 'Дополнительный человек на трафарете',
+      skuCode: '20173',
+    },
+
+    {
+      name: 'Оцветнение фотографии',
+      skuCode: '20172',
+    },
+
+    {
+      name: 'Ретушь',
+      skuCode: '20170',
+    },
+
+    {
+      name: 'Ретушь с другой фотографии',
+      skuCode: '20171',
+    },
+    {
+      name: 'Сверление отверстий',
+      skuCode: '20169',
+    },
+
+    {
+      name: 'Согласование',
+      skuCode: '20168',
+    },
   ];
 
   type AdditionalSku = (typeof skuCodesForAdditional)[number]['skuCode'];
@@ -324,89 +353,91 @@ export default function InvoicePage() {
                 )}
               </div>
             </div>
-            <div className="mt-2 mb-4 flex flex-col items-end gap-2">
-              <div className="text-sm opacity-80">
-                Доп. услуги для этого заказа:
-              </div>
-              <div className="flex items-center gap-2">
-                <select
-                  className="border rounded-md p-2 bg-white"
-                  disabled={!isChecked}
-                  value={selectValueByOrderId[order.id] ?? ''}
-                  onChange={(e) =>
-                    setSelectValueByOrderId((prev) => ({
-                      ...prev,
-                      [order.id]: e.target.value as AdditionalSku | '',
-                    }))
-                  }
-                >
-                  <option value="">— выбрать —</option>
-                  {skuCodesForAdditional.map((s) => (
-                    <option key={s.skuCode} value={s.skuCode}>
-                      {s.name} ({s.skuCode})
-                    </option>
-                  ))}
-                </select>
-
-                <button
-                  type="button"
-                  onClick={() => addExtra(order.id)}
-                  className="border rounded-md px-3 py-2 bg-[#f1f1f1] disabled:opacity-50"
-                  disabled={!isChecked || !selectValueByOrderId[order.id]}
-                >
-                  Добавить
-                </button>
-              </div>
-
-              {Object.keys(selectedExtras).length > 0 && (
-                <div className="flex flex-wrap gap-2 justify-end">
-                  {Object.entries(selectedExtras).map(([sku, qty]) => {
-                    const label =
-                      skuCodesForAdditional.find((x) => x.skuCode === sku)
-                        ?.name ?? sku;
-
-                    return (
-                      <div
-                        key={sku}
-                        className="flex items-center gap-2 border rounded-full px-3 py-1 bg-white"
-                      >
-                        <span className="text-sm">
-                          {label} ({sku}) × {qty}
-                        </span>
-
-                        <button
-                          type="button"
-                          onClick={() =>
-                            removeExtra(order.id, sku as AdditionalSku)
-                          }
-                          className="text-sm opacity-70 hover:opacity-100"
-                        >
-                          −
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setExtraByOrderId((prev) => ({
-                              ...prev,
-                              [order.id]: {
-                                ...(prev[order.id] ?? {}),
-                                [sku]:
-                                  (prev[order.id]?.[sku as AdditionalSku] ??
-                                    0) + 1,
-                              },
-                            }));
-                          }}
-                          className="text-sm opacity-70 hover:opacity-100"
-                        >
-                          +
-                        </button>
-                      </div>
-                    );
-                  })}
+            {!includedInInvoice && (
+              <div className="mt-2 mb-4 flex flex-col items-end gap-2">
+                <div className="text-sm opacity-80">
+                  Доп. услуги для этого заказа:
                 </div>
-              )}
-            </div>
+                <div className="flex items-center gap-2">
+                  <select
+                    className="border rounded-md p-2 bg-white"
+                    disabled={!isChecked}
+                    value={selectValueByOrderId[order.id] ?? ''}
+                    onChange={(e) =>
+                      setSelectValueByOrderId((prev) => ({
+                        ...prev,
+                        [order.id]: e.target.value as AdditionalSku | '',
+                      }))
+                    }
+                  >
+                    <option value="">— выбрать —</option>
+                    {skuCodesForAdditional.map((s) => (
+                      <option key={s.skuCode} value={s.skuCode}>
+                        {s.name} ({s.skuCode})
+                      </option>
+                    ))}
+                  </select>
+
+                  <button
+                    type="button"
+                    onClick={() => addExtra(order.id)}
+                    className="border rounded-md px-3 py-2 bg-[#f1f1f1] disabled:opacity-50"
+                    disabled={!isChecked || !selectValueByOrderId[order.id]}
+                  >
+                    Добавить
+                  </button>
+                </div>
+
+                {Object.keys(selectedExtras).length > 0 && (
+                  <div className="flex flex-wrap gap-2 justify-end">
+                    {Object.entries(selectedExtras).map(([sku, qty]) => {
+                      const label =
+                        skuCodesForAdditional.find((x) => x.skuCode === sku)
+                          ?.name ?? sku;
+
+                      return (
+                        <div
+                          key={sku}
+                          className="flex items-center gap-2 border rounded-full px-3 py-1 bg-white"
+                        >
+                          <span className="text-sm">
+                            {label} ({sku}) × {qty}
+                          </span>
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              removeExtra(order.id, sku as AdditionalSku)
+                            }
+                            className="text-sm opacity-70 hover:opacity-100"
+                          >
+                            −
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setExtraByOrderId((prev) => ({
+                                ...prev,
+                                [order.id]: {
+                                  ...(prev[order.id] ?? {}),
+                                  [sku]:
+                                    (prev[order.id]?.[sku as AdditionalSku] ??
+                                      0) + 1,
+                                },
+                              }));
+                            }}
+                            className="text-sm opacity-70 hover:opacity-100"
+                          >
+                            +
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
           </Fragment>
         );
       })}

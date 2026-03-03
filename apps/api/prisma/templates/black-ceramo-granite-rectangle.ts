@@ -34,6 +34,16 @@ const sizeFinishRectanglePrice: Record<
   '30×60': { MATTE: 3000, GLOSS: 3500 },
 };
 
+const SKU_CODES: Record<string, Partial<Record<Finish, string>>> = {
+  '13×18': { MATTE: '20126', GLOSS: '20127' },
+  '15×20': { MATTE: '20128', GLOSS: '20129' },
+  '20×25': { MATTE: '20130', GLOSS: '20131' },
+  '20×30': { MATTE: '20120', GLOSS: '20121' },
+  '25×30': { MATTE: '20132', GLOSS: '20133' },
+  '30×40': { MATTE: '20122', GLOSS: '20123' },
+  '30×60': { MATTE: '20124', GLOSS: '20125' },
+};
+
 export const blackTextTemplates: TemplateConfig[] = blackTextBases.map(
   (base) => ({
     code: base,
@@ -63,5 +73,6 @@ export const blackTextTemplates: TemplateConfig[] = blackTextBases.map(
       HolePattern.FOUR_CORNERS,
       HolePattern.NONE,
     ],
+    skuCodesFinish: SKU_CODES,
   }),
 );

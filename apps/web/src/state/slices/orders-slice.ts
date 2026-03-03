@@ -29,6 +29,7 @@ export type MyOrderItem = {
   approveNeeded: boolean;
   approved: boolean;
   approvalStage: string;
+  userActionNeeded: boolean;
 };
 
 export type MyOrder = {
@@ -55,29 +56,6 @@ type MW = [
 ];
 
 type OrdersCreator = StateCreator<AppState, MW, [], OrdersSlice>;
-
-const mapAsset = (a: CustomerOrderItemAsset): MyAsset => ({
-  id: a.id,
-  originalName: a.filename ?? null,
-  contentType: a.mime ?? null,
-  size: a.size ?? null,
-});
-
-const mapItem = (i: CustomerOrderItem): MyOrderItem => ({
-  id: i.id,
-  templateLabel: i.template.label,
-  comment: i.comment,
-  sizeLabel: i.size.label ?? null,
-  dateOfBirth: i.dateOfBirth,
-  dateOfDeath: i.dateOfDeath,
-  firstName: i.firstName,
-  middleName: i.middleName,
-  lastName: i.lastName,
-  assets: Array.isArray(i.assets) ? i.assets.map(mapAsset) : [],
-  approveNeeded: i.approveNeeded,
-  approvalStage: i.approvalStage,
-  approved: i.approved,
-});
 
 const mapOrder = (o: CustomerOrder): MyOrder => ({
   id: o.id,

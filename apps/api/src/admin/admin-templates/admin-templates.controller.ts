@@ -44,7 +44,7 @@ export class AdminTemplatesController {
   }
 
   @Get(':id')
-  async one(@Param('id') id: string) {
+  async one(@Param('id') id: number) {
     return this.adminTemplatesService.getById(id);
   }
 
@@ -55,7 +55,7 @@ export class AdminTemplatesController {
 
   @Patch(':id')
   async update(
-    @Param('id') id: string,
+    @Param('id') id: number,
     @Body(new ValidationPipe({ whitelist: true, transform: true }))
     dto: UpdateTemplateDto,
   ) {
@@ -63,7 +63,7 @@ export class AdminTemplatesController {
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string) {
+  async remove(@Param('id') id: number) {
     return this.adminTemplatesService.deleteTemplate(id);
   }
 }

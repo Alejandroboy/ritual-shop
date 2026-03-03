@@ -2,6 +2,7 @@ import { ApprovalStage, OrderStatusEnum } from './enums';
 
 export type OrderItemDetails = {
   comment?: string;
+  approved: boolean;
   id: string;
   templateLabel: string;
   templateCode: string;
@@ -26,6 +27,7 @@ export type OrderItemAsset = {
   id: string;
   originalName: string;
   size: number;
+  stage: string;
 };
 
 export type Order = {
@@ -37,4 +39,5 @@ export type Order = {
   customerName: string;
   customerPhone: string;
   orderNumber: string;
+  items: OrderItemDetails;
 };

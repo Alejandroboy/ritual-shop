@@ -36,6 +36,16 @@ const sizeFinishRectanglePrice: Record<
   '30×60': { MATTE: 2900, GLOSS: 3400 },
 };
 
+const SKU_CODES: Record<string, Partial<Record<Finish, string>>> = {
+  '13×18': { MATTE: '20071', GLOSS: '20072' },
+  '15×20': { MATTE: '20073', GLOSS: '20074' },
+  '20×25': { MATTE: '20075', GLOSS: '20076' },
+  '20×30': { MATTE: '20077', GLOSS: '20078' },
+  '25×30': { MATTE: '20053', GLOSS: '20054' },
+  '30×40': { MATTE: '20067', GLOSS: '20068' },
+  '30×60': { MATTE: '20069', GLOSS: '20070' },
+};
+
 export const whiteRectTemplates: TemplateConfig[] = [
   ...whiteRectSingleBases.flatMap((base, index) => {
     const bw: TemplateConfig = {
@@ -66,6 +76,7 @@ export const whiteRectTemplates: TemplateConfig[] = [
         HolePattern.FOUR_CORNERS,
         HolePattern.NONE,
       ],
+      skuCodesFinish: SKU_CODES,
       inscribed: index !== 0,
     };
     const color: TemplateConfig = {
@@ -79,6 +90,7 @@ export const whiteRectTemplates: TemplateConfig[] = [
         35, 36, 100, 200,
       ],
       colorMode: ColorMode.COLOR,
+      skuCodesFinish: SKU_CODES,
     };
     return [bw, color];
   }),
@@ -113,6 +125,7 @@ export const whiteRectTemplates: TemplateConfig[] = [
         HolePattern.NONE,
       ],
       inscribed: index !== 0,
+      skuCodesFinish: SKU_CODES,
     };
     const color: TemplateConfig = {
       ...bw,
@@ -125,6 +138,7 @@ export const whiteRectTemplates: TemplateConfig[] = [
         35, 36, 100, 200,
       ],
       colorMode: ColorMode.COLOR,
+      skuCodesFinish: SKU_CODES,
     };
     return [bw, color];
   }),
@@ -161,6 +175,7 @@ export const whiteExtra: TemplateConfig[] = [
         HolePattern.NONE,
       ],
       finishes: [Finish.MATTE, Finish.GLOSS],
+      skuCodesFinish: SKU_CODES,
     };
     const color: TemplateConfig = {
       ...bw,
@@ -173,6 +188,7 @@ export const whiteExtra: TemplateConfig[] = [
         35, 36, 100, 200,
       ],
       colorMode: ColorMode.COLOR,
+      skuCodesFinish: SKU_CODES,
     };
     return [bw, color];
   }),
@@ -207,6 +223,7 @@ export const whiteExtra: TemplateConfig[] = [
       HolePattern.FOUR_CORNERS,
       HolePattern.NONE,
     ],
+    skuCodesFinish: SKU_CODES,
   },
   {
     code: 'K10',
@@ -240,6 +257,7 @@ export const whiteExtra: TemplateConfig[] = [
       HolePattern.FOUR_CORNERS,
       HolePattern.NONE,
     ],
+    skuCodesFinish: SKU_CODES,
   },
   ...['K11', 'K12', 'K13', 'K14'].map<TemplateConfig>((base) => ({
     code: base,
@@ -268,5 +286,6 @@ export const whiteExtra: TemplateConfig[] = [
       HolePattern.FOUR_CORNERS,
       HolePattern.NONE,
     ],
+    skuCodesFinish: SKU_CODES,
   })),
 ];

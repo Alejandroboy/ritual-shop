@@ -12,6 +12,14 @@ const templateSelect = {
   colorMode: true,
   coverage: true,
   fullTitle: true,
+  allowedFinishes: true,
+  allowedSizes: {
+    select: {
+      size: true,
+      skuCode: true,
+      price: true,
+    },
+  },
 };
 @Injectable()
 export class CatalogService {
@@ -136,6 +144,7 @@ export class CatalogService {
             sizeId: true,
           },
         },
+        goldTypes: true,
         allowedSizes: {
           select: {
             price: true,

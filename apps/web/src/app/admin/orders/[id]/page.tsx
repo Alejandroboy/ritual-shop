@@ -8,6 +8,7 @@ import { labelOf, orderStatusLabels } from '@utils';
 import { useAppStore } from '@state';
 import { OrderItemsDetails } from '../../../../components/details';
 import { OrderBlankButton } from '../../../../components/order-blank-button';
+import Link from 'next/link';
 
 const orderLabel = labelOf<string>(orderStatusLabels);
 
@@ -52,7 +53,7 @@ export default function OrderDetail() {
     });
     setBusy(false);
     setOrderStatus(status);
-    mutate();
+    await mutate();
   }
   return (
     <div className="space-y-4">
@@ -91,6 +92,12 @@ export default function OrderDetail() {
         <p>{data?.customerName}</p>
         <p>{data?.customerEmail}</p>
         <p>{data?.customerPhone}</p>
+        <Link
+          href={`/admin/users/${data?.customer?.id}`}
+          className="mt-[10px] px-3 py-1 border rounded-xl cursor-pointer block w-fit"
+        >
+          Открыть заказчика
+        </Link>
       </div>
       {data?.includedInInvoice && <div>Включен в счет {data.invoiceName}</div>}
       <div>

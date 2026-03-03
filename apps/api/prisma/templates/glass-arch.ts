@@ -21,6 +21,15 @@ const PRICES: Record<string, number> = {
   '30×60': 6500,
 };
 
+const SKU_CODES: Record<string, string> = {
+  '15×20': '20117',
+  '20×25': '20118',
+  '20×30': '20114',
+  '25×30': '20119',
+  '30×40': '20115',
+  '30×60': '20116',
+};
+
 export const glassArchTemplates: TemplateConfig[] = [
   ...glassArchBasesSingle.flatMap((base, index) => {
     const bw: TemplateConfig = {
@@ -50,6 +59,7 @@ export const glassArchTemplates: TemplateConfig[] = [
         HolePattern.NONE,
       ],
       inscribed: index !== 0 && index !== 2,
+      skuCodes: SKU_CODES,
     };
     const color: TemplateConfig = {
       ...bw,
@@ -62,6 +72,7 @@ export const glassArchTemplates: TemplateConfig[] = [
         36, 100, 200,
       ],
       colorMode: ColorMode.COLOR,
+      skuCodes: SKU_CODES,
     };
     return [bw, color];
   }),
@@ -94,6 +105,7 @@ export const glassArchTemplates: TemplateConfig[] = [
         HolePattern.NONE,
       ],
       inscribed: index !== 0 && index !== 2,
+      skuCodes: SKU_CODES,
     };
     const color: TemplateConfig = {
       ...bw,
@@ -106,6 +118,7 @@ export const glassArchTemplates: TemplateConfig[] = [
         36, 100, 200,
       ],
       colorMode: ColorMode.COLOR,
+      skuCodes: SKU_CODES,
     };
     return [bw, color];
   }),

@@ -3,6 +3,14 @@ import nodemailer, { Transporter } from 'nodemailer';
 type MailMode = 'smtp' | 'ethereal' | 'json';
 
 export async function createTransport(): Promise<Transporter> {
+  console.log(
+    '[MAIL] mode=',
+    process.env.MAIL_MODE,
+    'host=',
+    process.env.SMTP_HOST,
+    'port=',
+    process.env.SMTP_PORT,
+  );
   const mode: MailMode = (process.env.MAIL_MODE as MailMode) || 'smtp';
 
   if (mode === 'ethereal') {
@@ -13,6 +21,7 @@ export async function createTransport(): Promise<Transporter> {
       secure: test.smtp.secure,
       auth: { user: test.user, pass: test.pass },
     });
+    console.log('[MAIL] ethereal smtp', test.smtp);
     console.log('[MAIL] ethereal ready', test.user);
     return t;
   }
@@ -21,7 +30,6 @@ export async function createTransport(): Promise<Transporter> {
     return nodemailer.createTransport({ jsonTransport: true });
   }
 
-  // SMTP (SendPulse)
   const host = process.env.SMTP_HOST!;
   const port = Number(process.env.SMTP_PORT || 587);
   const secure = String(process.env.SMTP_SECURE).toLowerCase() === 'true';
@@ -31,11 +39,10 @@ export async function createTransport(): Promise<Transporter> {
   const transporter = nodemailer.createTransport({
     host,
     port,
-    secure, // 465 -> true; 587/2525 -> false
+    secure,
     auth: user && pass ? { user, pass } : undefined,
   });
 
-  // Проверим соединение при старте
   try {
     await transporter.verify();
     console.log('[MAIL] smtp ready', { host, port, secure, auth: !!user });

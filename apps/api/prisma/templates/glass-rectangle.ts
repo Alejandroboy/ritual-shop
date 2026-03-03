@@ -21,6 +21,15 @@ const PRICES: Record<string, number> = {
   '30×60': 6500,
 };
 
+const SKU_CODES: Record<string, string> = {
+  '15×20': '20105',
+  '20×25': '20106',
+  '20×30': '20102',
+  '25×30': '20107',
+  '30×40': '20103',
+  '30×60': '20104',
+};
+
 export const glassRectTemplates: TemplateConfig[] = [
   ...glassRectBasesSingle.flatMap((base, index) => {
     const bw: TemplateConfig = {
@@ -50,6 +59,7 @@ export const glassRectTemplates: TemplateConfig[] = [
       ],
       sizePrice: PRICES,
       inscribed: index !== 0 && index !== 2,
+      skuCodes: SKU_CODES,
     };
     const color: TemplateConfig = {
       ...bw,
@@ -62,6 +72,7 @@ export const glassRectTemplates: TemplateConfig[] = [
       ],
       fullTitle: `Портрет на стекле ${bw.label}ц`,
       colorMode: ColorMode.COLOR,
+      skuCodes: SKU_CODES,
     };
     return [bw, color];
   }),
@@ -94,6 +105,7 @@ export const glassRectTemplates: TemplateConfig[] = [
       ],
       sizePrice: PRICES,
       inscribed: index !== 0 && index !== 2,
+      skuCodes: SKU_CODES,
     };
     const color: TemplateConfig = {
       ...bw,
@@ -106,6 +118,7 @@ export const glassRectTemplates: TemplateConfig[] = [
         36, 100, 200,
       ],
       colorMode: ColorMode.COLOR,
+      skuCodes: SKU_CODES,
     };
     return [bw, color];
   }),

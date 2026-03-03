@@ -13,6 +13,15 @@ const starBases = ['D1', 'D2', 'D3'];
 const PRICES: Record<string, number> = {
   '18×24': 1500,
 };
+
+const SKU_CODES_BW: Record<string, string> = {
+  '18×24': '20035',
+};
+
+const SKU_CODES_COLOR: Record<string, string> = {
+  '18×24': '20036',
+};
+
 export const starTemplates: TemplateConfig[] = starBases.flatMap(
   (base, index) => {
     const bw: TemplateConfig = {
@@ -38,6 +47,7 @@ export const starTemplates: TemplateConfig[] = starBases.flatMap(
         300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 100, 200,
       ],
       inscribed: index !== 0,
+      skuCodes: SKU_CODES_BW,
     };
     const color: TemplateConfig = {
       ...bw,
@@ -50,6 +60,7 @@ export const starTemplates: TemplateConfig[] = starBases.flatMap(
         35, 36, 100, 200,
       ],
       colorMode: ColorMode.COLOR,
+      skuCodes: SKU_CODES_COLOR,
     };
     return [bw, color];
   },

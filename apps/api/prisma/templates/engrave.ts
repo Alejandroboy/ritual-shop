@@ -21,6 +21,16 @@ const PRICES: Record<string, number> = {
   '40×60': 7500,
 };
 
+const SKU_CODES: Record<string, string> = {
+  '15×20': '20161',
+  '20×25': '20162',
+  '20×30': '20158',
+  '25×30': '20163',
+  '30×40': '20159',
+  '30×60': '20160',
+  '40×60': '20164',
+};
+
 export const engravingTemplates: TemplateConfig[] = engravingBases.map(
   (base, index) => ({
     code: base,
@@ -48,5 +58,6 @@ export const engravingTemplates: TemplateConfig[] = engravingBases.map(
       HolePattern.NONE,
     ],
     inscribed: index !== 0 && index !== 3,
+    skuCodes: SKU_CODES,
   }),
 );

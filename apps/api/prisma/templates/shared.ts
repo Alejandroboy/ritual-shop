@@ -66,8 +66,8 @@ export const sizesGrowthRectArch = [
 export const sizesGrowthOval = ['40×60', '50×70'];
 
 export type TemplateConfig = {
-  code: string; // slug, уникальный
-  label: string; // как в каталоге
+  code: string;
+  label: string;
   material: Material;
   shape: Shape;
   orientation?: Orientation | null;
@@ -81,15 +81,17 @@ export type TemplateConfig = {
   inscribed?: boolean;
   singlePerson?: boolean;
 
-  sizeLabels: string[]; // "13×18" и т.п.
+  sizeLabels: string[];
   sizeFinishPrice?: Record<string, Partial<Record<Finish, number>>>;
-  holePatterns?: HolePattern[]; // если нужен нестандартный набор
+  holePatterns?: HolePattern[];
+  goldTypes?: string[];
   sizeHolePatterns?: Record<string, HolePattern[]>;
   perHolePrice: number;
-  basePrice?: number; // базовая цена по умолчанию для всех размеров шаблона
-  sizePrice?: Record<string, number>; // цена для конкретного размера, по label
-  frameCodes?: number[]; // коды рамок (1..6)
-  backgroundCodes?: number[]; // если нужны конкретные фоны, иначе все
-  finishes?: Finish[]; // допустимые финиши
+  basePrice?: number;
+  sizePrice?: Record<string, number>;
+  frameCodes?: number[];
+  backgroundCodes?: number[];
+  finishes?: Finish[];
   skuCodes?: Record<string, string>;
+  skuCodesFinish?: Record<string, Partial<Record<Finish, string>>>;
 };

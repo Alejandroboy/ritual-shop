@@ -10,8 +10,17 @@ import {
 import { sizeArchMetal, type TemplateConfig } from './shared.ts';
 
 const archMetalBases = ['A1', 'A2', 'A3'];
+
 const PRICES: Record<string, number> = {
   '17×24': 1500,
+};
+
+const SKU_CODES_BW: Record<string, string> = {
+  '17×24': '20037',
+};
+
+const SKU_CODES_COLOR: Record<string, string> = {
+  '17×24': '20038',
 };
 export const archMetalTemplates: TemplateConfig[] = archMetalBases.flatMap(
   (base, index) => {
@@ -37,6 +46,7 @@ export const archMetalTemplates: TemplateConfig[] = archMetalBases.flatMap(
         300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 100, 200,
       ],
       inscribed: index !== 0,
+      skuCodes: SKU_CODES_BW,
     };
     const color: TemplateConfig = {
       ...bw,
@@ -49,6 +59,7 @@ export const archMetalTemplates: TemplateConfig[] = archMetalBases.flatMap(
         35, 36, 100, 200,
       ],
       colorMode: ColorMode.COLOR,
+      skuCodes: SKU_CODES_COLOR,
     };
     return [bw, color];
   },
