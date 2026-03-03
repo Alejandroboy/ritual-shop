@@ -431,6 +431,7 @@ table {
 
     const map = {
       orderNumber: order.number || order.publicId || '',
+      goldType: order.goldType,
       dateAccepted: formatDate(order.dateAccepted) || formatDate(order.createdAt) || '',
       dateDelivery: formatDate(order.dateDelivery) || formatDate(order.deadline) || '',
       customer: `${order.customerName} ${order.customerPhone}`,
@@ -447,6 +448,7 @@ table {
     };
     const materialType = order.material;
     if (materialType === "CERMET") map.materialCermet = order.label;
+    if (map.goldType) map.materialCermet = map.goldType.toUpperCase() + ' ' + 'золотой';
     if (materialType === "WHITE_CERAMIC_GRANITE" ||
       materialType === "BLACK_CERAMIC_GRANITE" ||
       materialType === "GROWTH_PHOTOCERAMICS") map.materialGranite = map.finish ? order.label + ' ' + map.finish : order.label;

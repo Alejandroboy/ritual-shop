@@ -25,11 +25,6 @@ export class AdminOrdersPingController {
 export class AdminOrdersController {
   constructor(private readonly adminOrdersService: AdminOrdersService) {}
 
-  @Get('_ping')
-  ping() {
-    return { ok: true, ts: Date.now() };
-  }
-
   @Get()
   async list(@Query() dto: AdminOrdersQueryDto) {
     return this.adminOrdersService.getList(dto);

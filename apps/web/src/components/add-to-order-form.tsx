@@ -88,7 +88,9 @@ export default function AddToOrderForm({ tpl }: Props) {
     tpl.defaults.backgroundId ?? '',
   );
   const [finish, setFinish] = useState<string | ''>(tpl.defaults.finish ?? '');
-  const [goldType, setGoldType] = useState<string>('');
+  const [goldType, setGoldType] = useState<string>(
+    tpl.goldTypes?.length ? tpl.goldTypes[0].goldType : '',
+  );
   const [comment, setComment] = useState('');
 
   const needFinish =
@@ -132,6 +134,7 @@ export default function AddToOrderForm({ tpl }: Props) {
       backgroundId: backgroundId || undefined,
       finish: finish || undefined,
       comment: comment || undefined,
+      goldType: goldType || undefined,
       approveNeeded,
       retouchNeeded,
     };

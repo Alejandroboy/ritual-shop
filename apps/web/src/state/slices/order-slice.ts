@@ -52,6 +52,7 @@ export type OrderSlice = {
     comment?: string;
     approveNeeded: boolean;
     retouchNeeded: boolean;
+    goldType?: string;
   }) => Promise<OrderItem>;
 
   getOrderDetails: () => Promise<OrderDetails | null>;

@@ -37,6 +37,7 @@ export function OrderBlankButton({ order }: OrderBlankButtonProps) {
   );
   let sizeLabel = '';
   if (sizeObject) sizeLabel = sizeObject.length && sizeObject[0].size?.label;
+  console.log('order', order);
   const orderData = {
     number: order.number,
     customerName: order.customerName,
@@ -46,6 +47,7 @@ export function OrderBlankButton({ order }: OrderBlankButtonProps) {
     organization: order?.customer?.legalName,
     intakePoint: order?.customer?.address,
     approveNeeded: order.items?.approveNeeded,
+    goldType: order?.items?.goldType,
     comment: order.items?.comment,
     label: order.items?.template?.label,
     material: order.items?.template?.material,

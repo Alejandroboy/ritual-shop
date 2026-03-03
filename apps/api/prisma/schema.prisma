@@ -343,6 +343,7 @@ model OrderItem {
   approvalStage   ApprovalStage    @default(NOT_STARTED)
   approved        Boolean          @default(false)
   skuCode         String?
+  goldType         String?
 
   templateCode      String
   templateLabel     String

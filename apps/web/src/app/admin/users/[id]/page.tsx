@@ -7,6 +7,17 @@ import { CustomerOrder } from '@types';
 import Link from 'next/link';
 import { useState } from 'react';
 import { Loader } from '../../../../components/loader';
+import {
+  labelOf,
+  orderStatusLabels,
+  holePatternLabels,
+  roleLabels,
+} from '@utils';
+
+const orderLabel = labelOf<string>(orderStatusLabels);
+const holePatternLabel = labelOf<string>(holePatternLabels);
+const roleLabel = labelOf<string>(roleLabels);
+
 export default function UserDetails() {
   const { id } = useParams<{ id: string }>();
   const { data, mutate } = useSWR(`/api/admin/users/${id}`, (u) =>
@@ -74,7 +85,9 @@ export default function UserDetails() {
               <div key={order.id}>
                 <div className="flex w-96">
                   <div className="w-1/2 text-right">Статус:</div>
-                  <div className="w-1/2 text-right">{order.orderStatus}</div>
+                  <div className="w-1/2 text-right">
+                    {orderLabel(order.orderStatus)}
+                  </div>
                 </div>
                 <div className="flex w-96">
                   <div className="w-1/2 text-right">Добавлен в счет:</div>
@@ -97,9 +110,14 @@ export default function UserDetails() {
                       <div key={order?.items.id}>
                         <p>{order?.items.templateLabel}</p>
                         <p>Размер: {order?.items.sizeId}</p>
-                        <p>Вид рамки:{order?.items.frameId}</p>
+                        {order?.items.frameId && (
+                          <p>Вид рамки:{order?.items.frameId}</p>
+                        )}
                         <p>Вид фона: {order?.items.backgroundId}</p>
-                        <p>Отверстия: {order?.items.holePattern}</p>
+                        <p>
+                          Отверстия:&nbsp;
+                          {holePatternLabel(order?.items.holePattern)}
+                        </p>
                       </div>
                     )}
                   </div>
@@ -160,7 +178,7 @@ export default function UserDetails() {
             )}
             <div className="flex w-96">
               <div className="w-1/2">Статус</div>
-              <div className="w-1/2">{data.user.role}</div>
+              <div className="w-1/2">{roleLabel(data.user.role)}</div>
             </div>
             <div className="flex w-96">
               <div className="w-1/2">Изменен</div>

@@ -51,6 +51,7 @@ export class AdminAuthController {
       .status(201)
       .json({ ok: true });
   }
+
   @Post('refresh')
   async refresh(@Req() req: Request, @Res() res: Response) {
     const rt = req.cookies?.refresh_token as string | undefined;

@@ -96,4 +96,8 @@ export class AddOrderItemDto {
   @IsOptional()
   @IsString()
   lastNameSecondPerson: string;
+
+  @IsOptional()
+  @IsString()
+  goldType: string;
 }

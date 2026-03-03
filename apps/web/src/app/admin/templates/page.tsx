@@ -11,18 +11,11 @@ export default function TemplatesPage() {
   );
   if (error) return <div className="text-red-600">Ошибка: {String(error)}</div>;
   if (!data) return <div>Загрузка…</div>;
-  console.log('data', data);
   const items = data.items ?? [];
   return (
     <div>
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Шаблоны</h1>
-        <Link
-          className="px-3 py-2 rounded-xl bg-black text-white"
-          href="/admin/templates/new"
-        >
-          Новый шаблон
-        </Link>
       </div>
       <div className="mt-4 space-y-2">
         {items.map((t: Template) => (

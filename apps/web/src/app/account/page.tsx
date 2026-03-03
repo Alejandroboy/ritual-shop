@@ -89,7 +89,7 @@ export default function AccountPage() {
             return (
               <div
                 key={order.id}
-                className={`border rounded-xl p-4 space-y-3 ${order.orderStatus === 'APPROVAL' && order.items.userActionNeeded ? 'border-red-600' : ''}`}
+                className={`border rounded-xl p-4 space-y-3 ${order.orderStatus === 'APPROVAL' && order?.items?.userActionNeeded ? 'border-red-600' : ''}`}
               >
                 <div className="flex items-center justify-between text-sm">
                   <div>Заказ №&nbsp;{order.orderNumber}</div>
