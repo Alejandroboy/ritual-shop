@@ -13,7 +13,6 @@ const adapter = new PrismaPg(pool);
 
 const prisma = new PrismaClient({
   adapter,
-  datasourceUrl,
 });
 
 async function main() {
