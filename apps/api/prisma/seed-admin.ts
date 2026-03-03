@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Role } from '@prisma/client';
 import * as argon2 from 'argon2';
 
 import { PrismaPg } from '@prisma/adapter-pg';
