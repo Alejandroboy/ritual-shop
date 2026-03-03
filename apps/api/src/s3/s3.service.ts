@@ -26,7 +26,6 @@ export class S3Service {
   });
 
   private bucket = process.env.S3_BUCKET!;
-  private prefix = process.env.S3_PREFIX || 'dev';
   private expires = Number(process.env.PRESIGN_EXPIRES || 60 * 5);
 
   makeKey(params: {
@@ -35,17 +34,13 @@ export class S3Service {
     filename: string;
     itemId?: string;
   }) {
-    const uid =
-      (crypto as any).randomUUID?.() ?? Math.random().toString(36).slice(2, 10);
-
-    const safe = params.filename.replace(/[^\w.\-]+/g, '_');
     const ym = monthKey(params.createdAt);
 
     const base = params.itemId
       ? `orders/${ym}/${params.orderNumber}/items/${params.itemId}`
       : `orders/${ym}/${params.orderNumber}/staged`;
 
-    return `${base}/${uid}-${safe}`;
+    return `${base}/${params.orderNumber}`;
   }
 
   async signGet(

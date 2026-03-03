@@ -1,7 +1,15 @@
 import { PrismaClient } from '@prisma/client';
 import * as argon2 from 'argon2';
 
-const prisma = new PrismaClient();
+import { PrismaPg } from '@prisma/adapter-pg';
+import pg from 'pg';
+
+const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
+
+const prisma = new PrismaClient({
+  adapter,
+});
 
 async function main() {
   const email = process.env.ADMIN_EMAIL ?? 'shepardhero@gmail.com';
@@ -16,8 +24,8 @@ async function main() {
     create: {
       email,
       passwordHash,
-      role: 'ADMIN',
-      name: 'Super Admin',
+      role: 'ADMIN_GOD',
+      name: 'Alejandro',
     },
   });
 
