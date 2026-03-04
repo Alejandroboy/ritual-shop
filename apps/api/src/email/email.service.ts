@@ -13,6 +13,13 @@ export class EmailService {
     this.transporterP = createTransport();
   }
 
+  private get webUrl() {
+    return (process.env.PUBLIC_WEB_URL || process.env.APP_URL || '').replace(
+      /\/$/,
+      '',
+    );
+  }
+
   async send(to: string, subject: string, html: string, text?: string) {
     const t = await this.transporterP;
     const from = process.env.SMTP_FROM || 'no-reply@example.com';
@@ -63,6 +70,18 @@ export class EmailService {
       to,
       `Статус заказа №${orderNumber}: ${humanNewStatus}`,
       `<p>Статус заказа <b>№${orderNumber}</b> изменился:</p><p><b>${humanOldStatus}</b> → <b>${humanNewStatus}</b></p>`,
+    );
+  }
+
+  async orderStatusApprovalReminder(to: string, orderNumber: string) {
+    const link = this.webUrl
+      ? `<p>Личный кабинет: ${this.webUrl}/account</p>`
+      : '';
+
+    return this.send(
+      to,
+      `Напоминание: заказ №${orderNumber}: ждёт согласования ретуши`,
+      `<p>Напоминание: заказ <b>№${orderNumber} </b>ждёт согласования ретуши.</p><p><b>Пожалуйста, откройте личный кабинет и подтвердите.${link}</b></p>`,
     );
   }
 }
