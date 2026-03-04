@@ -13,7 +13,7 @@ export function Orders({ qs }: { qs: string }) {
   const items = data?.items ?? [];
 
   const renderApproval = (item: OrderItemDetails) => {
-    if (item.approved && item.approveNeeded) {
+    if (item?.approved && item?.approveNeeded) {
       return (
         <div className="text-sm text-gray-600">
           <span className="line-through">Нужно согласование</span>&nbsp;
@@ -21,17 +21,17 @@ export function Orders({ qs }: { qs: string }) {
         </div>
       );
     }
-    if (item.approveNeeded) {
+    if (item?.approveNeeded) {
       return <div className="text-sm text-red-600">Нужно согласование</div>;
     }
     return null;
   };
 
   const renderRetouch = (item: OrderItemDetails) => {
-    const retouchedAssets = item.assets.filter(
+    const retouchedAssets = item?.assets.filter(
       (asset) => asset.stage === 'RETOUCHED',
     );
-    if (item.retouchNeeded && retouchedAssets.length > 0) {
+    if (item?.retouchNeeded && retouchedAssets.length > 0) {
       return (
         <div className="text-sm text-gray-600">
           <span className="line-through">Нужна ретушь</span>&nbsp;
@@ -39,7 +39,7 @@ export function Orders({ qs }: { qs: string }) {
         </div>
       );
     }
-    if (item.retouchNeeded) {
+    if (item?.retouchNeeded) {
       return <div className="text-sm text-red-600">Нужна ретушь</div>;
     }
   };
