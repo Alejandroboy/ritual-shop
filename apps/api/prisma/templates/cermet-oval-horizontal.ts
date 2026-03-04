@@ -113,7 +113,7 @@ export const metalOvalHorTemplates: TemplateConfig[] = [
     colorMode: ColorMode.BW,
     coverage: Coverage.NORMAL,
     supportsFrame: false,
-    fullTitle: `Горизонтальный овал золотой`,
+    fullTitle: `Горизонтальный овал с золотой рамкой`,
     requiresBackground: true,
     requiresFinish: false,
     supportsHoles: true,
@@ -132,5 +132,6 @@ export const metalOvalHorTemplates: TemplateConfig[] = [
     sizeHolePatterns: SIZE_HOLES_GOLD,
     inscribed: true,
     skuCodes: SKU_CODES_GOLD,
+    singlePerson: false,
   },
 ];

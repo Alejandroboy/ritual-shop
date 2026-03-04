@@ -448,7 +448,7 @@ table {
     };
     const materialType = order.material;
     if (materialType === "CERMET") map.materialCermet = order.label;
-    if (map.goldType) map.materialCermet = map.goldType.toUpperCase() + ' ' + 'золотой';
+    if (map.goldType) map.materialCermet = map.goldType.toUpperCase() + ' ' + 'золото';
     if (materialType === "WHITE_CERAMIC_GRANITE" ||
       materialType === "BLACK_CERAMIC_GRANITE" ||
       materialType === "GROWTH_PHOTOCERAMICS") map.materialGranite = map.finish ? order.label + ' ' + map.finish : order.label;

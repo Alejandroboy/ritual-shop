@@ -112,7 +112,7 @@ export const metalRectVertTemplates: TemplateConfig[] = [
     colorMode: ColorMode.BW,
     coverage: Coverage.NORMAL,
     supportsFrame: false,
-    fullTitle: `Вертикальная табличка золотая`,
+    fullTitle: `Вертикальная табличка с золотой рамкой`,
     requiresBackground: true,
     requiresFinish: false,
     supportsHoles: true,

@@ -113,7 +113,7 @@ export const metalOvalVertTemplates: TemplateConfig[] = [
     colorMode: ColorMode.BW,
     coverage: Coverage.NORMAL,
     supportsFrame: false,
-    fullTitle: `Вертикальный овал золотой`,
+    fullTitle: `Вертикальный овал с золотой рамкой`,
     requiresBackground: true,
     requiresFinish: false,
     supportsHoles: true,
