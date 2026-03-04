@@ -4,7 +4,6 @@ import { PrismaService } from '../prisma/prisma.service';
 import { TelegramService } from '../notifications/telegram/telegram.service';
 import {
   REMINDERS_QUEUE,
-  APPROVAL_REPEAT_DELAY_MS,
   jobIdForOrder,
   ReminderJobData,
 } from './reminders.constants';
@@ -30,7 +29,17 @@ export class RemindersProcessor extends WorkerHost {
       select: { orderStatus: true },
     });
 
-    if (!order || order.orderStatus !== OrderStatus.APPROVAL) return;
+    if (!order || order.orderStatus !== OrderStatus.APPROVAL) {
+      const repeatJobs = await this.queue.getJobSchedulers();
+
+      const repeatJob = repeatJobs.find((j) => j.id === jobIdForOrder(orderId));
+
+      if (repeatJob) {
+        await this.queue.removeJobScheduler(repeatJob.key);
+      }
+
+      return;
+    }
 
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
@@ -43,18 +52,12 @@ export class RemindersProcessor extends WorkerHost {
         orderNumber,
       );
     }
+
     if (user?.email) {
       await this.emailService.orderStatusApprovalReminder(
         user.email,
         orderNumber,
       );
     }
-
-    await this.queue.add('approval-reminder', job.data, {
-      jobId: jobIdForOrder(orderId),
-      delay: APPROVAL_REPEAT_DELAY_MS,
-      removeOnComplete: true,
-      removeOnFail: 50,
-    });
   }
 }

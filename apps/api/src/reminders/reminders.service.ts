@@ -6,6 +6,7 @@ import {
   APPROVAL_FIRST_DELAY_MS,
   jobIdForOrder,
   ReminderJobData,
+  APPROVAL_REPEAT_DELAY_MS,
 } from './reminders.constants';
 
 @Injectable()
@@ -19,13 +20,19 @@ export class RemindersService {
     await this.queue.add('approval-reminder', data, {
       jobId: jobIdForOrder(data.orderId),
       delay: APPROVAL_FIRST_DELAY_MS,
+      repeat: {
+        every: APPROVAL_REPEAT_DELAY_MS,
+      },
       removeOnComplete: true,
       removeOnFail: 50,
     });
   }
 
   async stopApprovalReminder(orderId: string) {
-    const job = await this.queue.getJob(jobIdForOrder(orderId));
-    if (job) await job.remove();
+    const repeatJobs = await this.queue.getJobSchedulers();
+    const job = repeatJobs.find((j) => j.id === jobIdForOrder(orderId));
+    if (job) {
+      await this.queue.removeJobScheduler(job.key);
+    }
   }
 }
