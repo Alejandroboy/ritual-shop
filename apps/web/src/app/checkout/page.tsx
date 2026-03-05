@@ -53,7 +53,6 @@ export default function CheckoutPage() {
       const data = await api<OrderDetails>(`/orders/${draftOrderId}`);
       if (!ignore) setOrderItems(data.items ? data.items : null);
     } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : '';
       console.warn('getOrderDetails error', e);
       clearDraft();
       router.replace('/catalog');

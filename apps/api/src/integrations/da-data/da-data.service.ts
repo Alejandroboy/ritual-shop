@@ -35,7 +35,6 @@ export class DaDataService {
     inn: string,
     opts?: { kpp?: string; branchType?: 'MAIN' | 'BRANCH' },
   ) {
-    console.log('ghjdfsghjdfsbhgjhjferw');
     const payload: any = { query: inn };
     if (opts?.kpp) payload.kpp = opts.kpp;
     if (opts?.branchType) payload.branch_type = opts.branchType;

@@ -104,7 +104,6 @@ export class UsersService {
       },
     });
     if (!user) throw new NotFoundException('User not found');
-    console.log('user', user);
     return user;
   }
 

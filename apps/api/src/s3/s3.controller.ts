@@ -23,7 +23,6 @@ export class S3Controller {
       where: { id: b.orderId },
       select: { orderNumber: true, createdAt: true },
     });
-    console.log('order', order);
 
     const key = this.s3.makeKey({
       orderNumber: order.orderNumber!, // раз ты генеришь на createOrder

@@ -15,7 +15,6 @@ export function SubscribeTelegramButton({
     window.open(url, '_blank');
   }
 
-  console.log(telegramChatId);
   if (telegramChatId) {
     return;
   }

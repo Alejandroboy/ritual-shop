@@ -45,9 +45,6 @@ export async function createTransport(): Promise<Transporter> {
   };
 
   const transporter = nodemailer.createTransport(options);
-  await transporter.verify();
-
-  console.log('[MAIL] smtp ready', { host, port, secure, auth: !!user });
 
   try {
     await transporter.verify();
