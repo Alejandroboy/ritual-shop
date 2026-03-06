@@ -14,12 +14,12 @@ function endOfDayIso(d: Date) {
 }
 @Injectable()
 export class AdminOrdersService {
+  private readonly logger = new Logger(AdminOrdersService.name);
   constructor(
     private prisma: PrismaService,
     private email: EmailService,
     private telegram: TelegramService,
     private remindersService: RemindersService,
-    private logger: Logger,
   ) {}
 
   async getList(dto: AdminOrdersQueryDto) {

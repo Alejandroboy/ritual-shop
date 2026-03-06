@@ -12,7 +12,6 @@ import {
 @Injectable()
 export class RemindersService {
   private readonly log = new Logger(RemindersService.name);
-
   constructor(@InjectQueue(REMINDERS_QUEUE) private readonly queue: Queue) {}
 
   async startApprovalReminder(data: ReminderJobData) {

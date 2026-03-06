@@ -13,11 +13,11 @@ import { Logger } from '@nestjs/common';
 
 @Processor(REMINDERS_QUEUE)
 export class RemindersProcessor extends WorkerHost {
+  private readonly log = new Logger(RemindersProcessor.name);
   constructor(
     private readonly prisma: PrismaService,
     private readonly telegram: TelegramService,
     private readonly emailService: EmailService,
-    private readonly log = new Logger(RemindersProcessor.name),
     @InjectQueue(REMINDERS_QUEUE) private readonly queue: Queue,
   ) {
     super();
