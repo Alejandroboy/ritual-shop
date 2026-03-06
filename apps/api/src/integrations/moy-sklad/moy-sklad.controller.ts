@@ -1,12 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Post,
-  Query,
-  StreamableFile,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { MoySkladService } from './moy-sklad.service';
 import {
   ArrayMinSize,
@@ -105,5 +97,24 @@ export class MoySkladController {
         templateId,
       );
     return { url };
+  }
+
+  @Post(':id/sync-moysklad-prices')
+  async syncPrices(@Param('id') id: string) {
+    const templateId = Number(id);
+    return this.moySkladService.syncTemplatePricesFromMoysklad({
+      templateId,
+      concurrency: 6,
+    });
+  }
+
+  @Post('sync-templates-prices')
+  async syncAll(
+    @Body() body?: { stopOnError?: boolean; templateConcurrency?: number },
+  ) {
+    return this.moySkladService.syncAllTemplatesPricesFromMoysklad({
+      stopOnError: body?.stopOnError ?? false,
+      templateConcurrency: body?.templateConcurrency ?? 6,
+    });
   }
 }

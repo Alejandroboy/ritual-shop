@@ -2,7 +2,8 @@
 import { adminApiFetch } from '@utils';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import React, { MouseEventHandler } from 'react';
+import React, { MouseEventHandler, useEffect } from 'react';
+import { useAppStore } from '@state';
 
 export default function AdminLayout({
   children,
@@ -10,6 +11,14 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+
+  const me = useAppStore((s) => s.me);
+  const fetchMe = useAppStore((s) => s.fetchMe);
+
+  useEffect(() => {
+    if (!me) fetchMe().catch(() => {});
+  }, [me, fetchMe]);
+
   const handleExit: MouseEventHandler<HTMLDivElement> = async () => {
     try {
       const res = await adminApiFetch('/api/admin/auth/logout', {

@@ -89,7 +89,7 @@ export default function InvoicePage() {
           orderId,
           orderNumber: order.orderNumber ?? orderId,
           sku,
-          priceMinor: price * 100,
+          priceMinor: price,
         },
       ]);
       setOrdersIds((prev) => [...prev, orderId]);

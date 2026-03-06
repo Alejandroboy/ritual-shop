@@ -318,6 +318,14 @@ export default function AddToOrderForm({ tpl }: Props) {
             />
           </label>
           <label className="text-sm">
+            <span className="block mb-1 text-neutral-600">Фамилия</span>
+            <input
+              className="border rounded-md px-2 py-1 bg-white min-w-64"
+              value={lastNameSecondPerson}
+              onChange={(e) => setLastNameSecondPerson(e.target.value)}
+            />
+          </label>
+          <label className="text-sm">
             <span className="block mb-1 text-neutral-600">Имя</span>
             <input
               className="border rounded-md px-2 py-1 bg-white min-w-64"
@@ -333,14 +341,6 @@ export default function AddToOrderForm({ tpl }: Props) {
               className="border rounded-md px-2 py-1 bg-white min-w-64"
               value={middleNameSecondPerson}
               onChange={(e) => setMiddleNameSecondPerson(e.target.value)}
-            />
-          </label>
-          <label className="text-sm">
-            <span className="block mb-1 text-neutral-600">Фамилия</span>
-            <input
-              className="border rounded-md px-2 py-1 bg-white min-w-64"
-              value={lastNameSecondPerson}
-              onChange={(e) => setLastNameSecondPerson(e.target.value)}
             />
           </label>
         </div>
@@ -505,6 +505,14 @@ export default function AddToOrderForm({ tpl }: Props) {
               />
             </label>
             <label className="text-sm">
+              <span className="block mb-1 text-neutral-600">Фамилия</span>
+              <input
+                className="border rounded-md px-2 py-1 bg-white min-w-64"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+              />
+            </label>
+            <label className="text-sm">
               <span className="block mb-1 text-neutral-600">Имя</span>
               <input
                 className="border rounded-md px-2 py-1 bg-white min-w-64"
@@ -520,14 +528,6 @@ export default function AddToOrderForm({ tpl }: Props) {
                 className="border rounded-md px-2 py-1 bg-white min-w-64"
                 value={middleName}
                 onChange={(e) => setMiddleName(e.target.value)}
-              />
-            </label>
-            <label className="text-sm">
-              <span className="block mb-1 text-neutral-600">Фамилия</span>
-              <input
-                className="border rounded-md px-2 py-1 bg-white min-w-64"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
               />
             </label>
           </div>
@@ -551,7 +551,7 @@ export default function AddToOrderForm({ tpl }: Props) {
 
       <div className="flex justify-between">
         <div>
-          Итоговая цена: {Number.isFinite(price()) ? price() : 0}
+          Итоговая цена: {Number.isFinite(price()) ? price() / 100 : 0}
           &nbsp;&#8381;
         </div>
       </div>

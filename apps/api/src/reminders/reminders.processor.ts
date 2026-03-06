@@ -9,6 +9,7 @@ import {
 } from './reminders.constants';
 import { OrderStatus } from '@prisma/client';
 import { EmailService } from '../email/email.service';
+import { Logger } from '@nestjs/common';
 
 @Processor(REMINDERS_QUEUE)
 export class RemindersProcessor extends WorkerHost {
@@ -16,12 +17,14 @@ export class RemindersProcessor extends WorkerHost {
     private readonly prisma: PrismaService,
     private readonly telegram: TelegramService,
     private readonly emailService: EmailService,
+    private readonly log = new Logger(RemindersProcessor.name),
     @InjectQueue(REMINDERS_QUEUE) private readonly queue: Queue,
   ) {
     super();
   }
 
   async process(job: Job<ReminderJobData>) {
+    this.log.log(`process job id=${job.id} orderId=${job.data.orderId}`);
     const { orderId, userId, orderNumber } = job.data;
 
     const order = await this.prisma.order.findUnique({
@@ -30,6 +33,7 @@ export class RemindersProcessor extends WorkerHost {
     });
 
     if (!order || order.orderStatus !== OrderStatus.APPROVAL) {
+      this.log.log(`skip job orderId=${orderId}, status=${order?.orderStatus}`);
       const repeatJobs = await this.queue.getJobSchedulers();
 
       const repeatJob = repeatJobs.find((j) => j.id === jobIdForOrder(orderId));
@@ -59,5 +63,6 @@ export class RemindersProcessor extends WorkerHost {
         orderNumber,
       );
     }
+    this.log.log(`rescheduled job for orderId=${orderId}`);
   }
 }

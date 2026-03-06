@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import {
@@ -11,11 +11,17 @@ import {
 
 @Injectable()
 export class RemindersService {
+  private readonly log = new Logger(RemindersService.name);
+
   constructor(@InjectQueue(REMINDERS_QUEUE) private readonly queue: Queue) {}
 
   async startApprovalReminder(data: ReminderJobData) {
+    this.log.log(`startApprovalReminder orderId=${data.orderId}`);
     const existing = await this.queue.getJob(jobIdForOrder(data.orderId));
-    if (existing) await existing.remove();
+    if (existing) {
+      this.log.log(`remove existing job ${jobIdForOrder(data.orderId)}`);
+      await existing.remove();
+    }
 
     await this.queue.add('approval-reminder', data, {
       jobId: jobIdForOrder(data.orderId),
@@ -26,6 +32,8 @@ export class RemindersService {
       removeOnComplete: true,
       removeOnFail: 50,
     });
+
+    this.log.log(`job added ${jobIdForOrder(data.orderId)}`);
   }
 
   async stopApprovalReminder(orderId: string) {

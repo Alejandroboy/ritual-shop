@@ -38,7 +38,7 @@ export class S3Service {
 
     const base = params.itemId
       ? `orders/${ym}/${params.orderNumber}/items/${params.itemId}`
-      : `orders/${ym}/${params.orderNumber}/staged`;
+      : `orders/${ym}/${params.orderNumber}`;
 
     return `${base}/${params.orderNumber}`;
   }

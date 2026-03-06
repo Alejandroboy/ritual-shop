@@ -1,6 +1,11 @@
 import axios, { AxiosInstance } from 'axios';
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 
 type MsMeta = {
   href: string;
@@ -12,6 +17,17 @@ type AssortmentResolved = {
   meta: MsMeta;
   price?: number;
   name?: string;
+};
+
+type SyncResultRow = {
+  sku: string;
+  target: 'size' | 'finish';
+  sizeId: number;
+  finish?: string;
+  oldPrice: number | null;
+  newPrice: number | null;
+  status: 'updated' | 'skipped' | 'no-price' | 'no-sku' | 'not-found' | 'error';
+  message?: string;
 };
 
 @Injectable()
@@ -33,6 +49,32 @@ export class MoySkladService {
       },
       timeout: 20_000,
     });
+  }
+
+  private toSafeErrorDetails(e: unknown):
+    | {
+        message?: unknown;
+        errors?: unknown;
+        statusCode?: unknown;
+      }
+    | undefined {
+    const resp =
+      (e as any)?.getResponse?.() ?? (e as any)?.response ?? undefined;
+
+    if (!resp) return undefined;
+
+    if (typeof resp === 'string') return { message: resp };
+
+    if (typeof resp === 'object') {
+      const r: any = resp;
+      return {
+        message: r.message,
+        errors: r.errors,
+        statusCode: r.statusCode,
+      };
+    }
+
+    return { message: resp };
   }
 
   async getOrganizationId(): Promise<string> {
@@ -281,5 +323,326 @@ export class MoySkladService {
     });
 
     return htmlUrl;
+  }
+
+  async syncTemplatePricesFromMoysklad(input: {
+    templateId: number;
+    concurrency?: number;
+  }): Promise<{
+    templateId: number;
+    requiresFinish: boolean;
+    updated: number;
+    perHoleUpdated: boolean;
+  }> {
+    const concurrency = input.concurrency ?? 6;
+
+    const DRILLING_SKU = '20169';
+
+    const tpl = await this.prismaService.template.findUnique({
+      where: { id: input.templateId },
+      select: {
+        id: true,
+        requiresFinish: true,
+        material: true,
+        perHolePrice: true,
+        allowedSizes: {
+          select: {
+            templateId: true,
+            sizeId: true,
+            price: true,
+            skuCode: true,
+          },
+        },
+        finishPrices: {
+          select: {
+            templateId: true,
+            sizeId: true,
+            finish: true,
+            price: true,
+            skuCode: true,
+          },
+        },
+      },
+    });
+
+    if (!tpl) throw new NotFoundException('Template not found');
+
+    const shouldSyncPerHole =
+      tpl.material === 'WHITE_CERAMIC_GRANITE' ||
+      tpl.material === 'BLACK_CERAMIC_GRANITE' ||
+      tpl.material === 'GLASS' ||
+      tpl.material === 'GROWTH_PHOTOCERAMICS';
+
+    const shouldUseFinishPrices =
+      tpl.requiresFinish && (tpl.finishPrices?.length ?? 0) > 0;
+
+    const errors: string[] = [];
+
+    let perHoleResolved: number | null = null;
+    if (shouldSyncPerHole) {
+      try {
+        const a = await this.resolveAssortmentMetaBySku(DRILLING_SKU);
+        if (typeof a.price !== 'number' || !Number.isFinite(a.price)) {
+          errors.push(
+            `drilling sku=${DRILLING_SKU}: no sale price (salePrices.value missing)`,
+          );
+        } else {
+          perHoleResolved = Number(a.price); // копейки
+        }
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : String(e);
+        errors.push(`drilling sku=${DRILLING_SKU}: ${msg}`);
+      }
+    }
+
+    if (!shouldUseFinishPrices) {
+      const candidates = tpl.allowedSizes;
+
+      const resolved = await this.mapLimit(
+        candidates,
+        concurrency,
+        async (r) => {
+          const sku = String(r.skuCode ?? '').trim();
+          if (!sku) {
+            errors.push(`allowedSizes: sizeId=${r.sizeId}: skuCode is empty`);
+            return null;
+          }
+
+          const a = await this.resolveAssortmentMetaBySku(sku);
+
+          if (typeof a.price !== 'number' || !Number.isFinite(a.price)) {
+            errors.push(
+              `allowedSizes: sku=${sku} (sizeId=${r.sizeId}): no sale price`,
+            );
+            return null;
+          }
+
+          return { sizeId: r.sizeId, price: Number(a.price), sku };
+        },
+      );
+
+      if (errors.length) {
+        throw new BadRequestException({
+          message: 'MoySklad sync failed',
+          templateId: tpl.id,
+          requiresFinish: tpl.requiresFinish,
+          storage: 'allowedSizes',
+          errors,
+        });
+      }
+
+      const updates = resolved.filter(
+        (x): x is { sizeId: number; price: number; sku: string } => x !== null,
+      );
+
+      const tx: Prisma.PrismaPromise<unknown>[] = updates.map((u) =>
+        this.prismaService.templateSize.update({
+          where: {
+            templateId_sizeId: {
+              templateId: tpl.id,
+              sizeId: u.sizeId,
+            },
+          },
+          data: { price: u.price },
+        }),
+      );
+
+      let perHoleUpdated = false;
+      if (shouldSyncPerHole && perHoleResolved !== null) {
+        tx.push(
+          this.prismaService.template.update({
+            where: { id: tpl.id },
+            data: { perHolePrice: perHoleResolved }, // копейки
+          }),
+        );
+        perHoleUpdated = true;
+      }
+
+      await this.prismaService.$transaction(tx);
+
+      return {
+        templateId: tpl.id,
+        requiresFinish: tpl.requiresFinish,
+        updated: updates.length,
+        perHoleUpdated,
+      };
+    }
+
+    {
+      const candidates = tpl.finishPrices;
+
+      const resolved = await this.mapLimit(
+        candidates,
+        concurrency,
+        async (r) => {
+          const sku = String(r.skuCode ?? '').trim();
+          if (!sku) {
+            errors.push(
+              `finishPrices: sizeId=${r.sizeId}, finish=${String(r.finish)}: skuCode is empty`,
+            );
+            return null;
+          }
+
+          const a = await this.resolveAssortmentMetaBySku(sku);
+
+          if (typeof a.price !== 'number' || !Number.isFinite(a.price)) {
+            errors.push(
+              `finishPrices: sku=${sku} (sizeId=${r.sizeId}, finish=${String(r.finish)}): no sale price`,
+            );
+            return null;
+          }
+
+          return {
+            sizeId: r.sizeId,
+            finish: r.finish,
+            price: Number(a.price),
+            sku,
+          };
+        },
+      );
+
+      if (errors.length) {
+        throw new BadRequestException({
+          message: 'MoySklad sync failed',
+          templateId: tpl.id,
+          requiresFinish: true,
+          storage: 'finishPrices',
+          errors,
+        });
+      }
+
+      const updates = resolved.filter(
+        (
+          x,
+        ): x is {
+          sizeId: number;
+          finish: (typeof tpl.finishPrices)[number]['finish'];
+          price: number;
+          sku: string;
+        } => x !== null,
+      );
+
+      const tx: Prisma.PrismaPromise<unknown>[] = updates.map((u) =>
+        this.prismaService.templateSizeFinishPrice.update({
+          where: {
+            templateId_sizeId_finish: {
+              templateId: tpl.id,
+              sizeId: u.sizeId,
+              finish: u.finish,
+            },
+          },
+          data: { price: u.price },
+        }),
+      );
+
+      let perHoleUpdated = false;
+      if (shouldSyncPerHole && perHoleResolved !== null) {
+        tx.push(
+          this.prismaService.template.update({
+            where: { id: tpl.id },
+            data: { perHolePrice: perHoleResolved },
+          }),
+        );
+        perHoleUpdated = true;
+      }
+
+      await this.prismaService.$transaction(tx);
+
+      return {
+        templateId: tpl.id,
+        requiresFinish: true,
+        updated: updates.length,
+        perHoleUpdated,
+      };
+    }
+  }
+
+  async syncAllTemplatesPricesFromMoysklad(input?: {
+    templateConcurrency?: number;
+    stopOnError?: boolean;
+  }): Promise<{
+    total: number;
+    ok: number;
+    failed: number;
+    results: Array<{
+      templateId: number;
+      ok: boolean;
+      updated?: number;
+      perHoleUpdated?: boolean;
+      error?: string;
+      errorDetails?: {
+        message?: unknown;
+        errors?: unknown;
+        statusCode?: unknown;
+      };
+    }>;
+  }> {
+    const templateConcurrency = input?.templateConcurrency ?? 6;
+    const stopOnError = input?.stopOnError ?? false;
+
+    const templates = await this.prismaService.template.findMany({
+      select: { id: true },
+      orderBy: { id: 'asc' },
+    });
+
+    const results: Array<{
+      templateId: number;
+      ok: boolean;
+      updated?: number;
+      perHoleUpdated?: boolean;
+      error?: string;
+      errorDetails?: {
+        message?: unknown;
+        errors?: unknown;
+        statusCode?: unknown;
+      };
+    }> = [];
+
+    let ok = 0;
+    let failed = 0;
+
+    for (const t of templates) {
+      try {
+        const r = await this.syncTemplatePricesFromMoysklad({
+          templateId: t.id,
+          concurrency: templateConcurrency,
+        });
+
+        results.push({
+          templateId: t.id,
+          ok: true,
+          updated: r.updated,
+          perHoleUpdated: r.perHoleUpdated,
+        });
+        ok += 1;
+      } catch (e: unknown) {
+        failed += 1;
+
+        const err =
+          e instanceof Error
+            ? e.message
+            : typeof e === 'string'
+              ? e
+              : 'Unknown error';
+
+        const errorDetails = this.toSafeErrorDetails(e);
+
+        results.push({
+          templateId: t.id,
+          ok: false,
+          error: err,
+          errorDetails,
+        });
+
+        if (stopOnError) break;
+      }
+    }
+
+    return {
+      total: templates.length,
+      ok,
+      failed,
+      results,
+    };
   }
 }

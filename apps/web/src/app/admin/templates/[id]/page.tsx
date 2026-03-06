@@ -37,17 +37,14 @@ function buildFinishPricesMap(
     const finish = r.finish;
     if (finish !== 'MATTE' && finish !== 'GLOSS') continue;
 
-    const price = Number(r.price ?? 0);
+    const price = Number(r.price ?? 0) / 100;
     out[sizeId] = { ...(out[sizeId] ?? {}), [finish]: price };
   }
   return out;
 }
 
-// ---------- component ----------
 export default function TemplateEdit() {
   const { id } = useParams<{ id: string }>();
-
-  // ---------- state ----------
   const [refs, setRefs] = useState<Refs>({
     sizes: [],
     frames: [],
@@ -60,6 +57,7 @@ export default function TemplateEdit() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [syncing, setSyncing] = useState(false);
 
   const [code, setCode] = useState('');
   const [label, setLabel] = useState('');
@@ -76,7 +74,6 @@ export default function TemplateEdit() {
     return m;
   }, [refs.sizes]);
 
-  // ---------- data load ----------
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -93,11 +90,13 @@ export default function TemplateEdit() {
 
         setCode(fetchedTpl?.code ?? '');
         setLabel(fetchedTpl?.label ?? '');
-        setPerHolePrice(Number(fetchedTpl?.perHolePrice ?? 0));
+        setPerHolePrice(
+          Number(fetchedTpl?.perHolePrice ? fetchedTpl?.perHolePrice / 100 : 0),
+        );
 
         const prices: Record<number, number> = {};
         for (const row of fetchedTpl?.allowedSizes ?? []) {
-          prices[Number(row.sizeId)] = Number(row.price ?? 0);
+          prices[Number(row.sizeId)] = Number(row.price ?? 0) / 100;
         }
         setSizePrices(prices);
         setFinishPricesBySizeId(
@@ -114,7 +113,6 @@ export default function TemplateEdit() {
     };
   }, [id]);
 
-  // ---------- actions ----------
   async function saveAll(e?: React.FormEvent) {
     e?.preventDefault();
     if (!tpl) return;
@@ -171,6 +169,53 @@ export default function TemplateEdit() {
     }
   }
 
+  async function syncPricesFromMoysklad() {
+    if (!confirm('Синхронизировать цены из МойСклада по SKU?')) return;
+    setSyncing(true);
+    try {
+      const res = await api<{
+        updated: number;
+        skipped: number;
+        errors: number;
+        rows: Array<{ status: string; sku: string; message?: string }>;
+      }>(`/api/moy-sklad/${id}/sync-moysklad-prices`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode: 'overwrite' }),
+      });
+
+      const fresh = await api<Template>(`/api/admin/templates/${id}`);
+      setTpl(fresh);
+
+      const freshPrices: Record<number, number> = {};
+      for (const row of fresh?.allowedSizes ?? []) {
+        freshPrices[Number(row.sizeId)] = Number(row.price ?? 0);
+      }
+      setSizePrices(freshPrices);
+
+      setFinishPricesBySizeId(
+        buildFinishPricesMap((fresh as any)?.finishPrices),
+      );
+
+      const firstErrors = (res.rows ?? [])
+        .filter((r) => r.status === 'error' || r.status === 'not-found')
+        .slice(0, 5)
+        .map((r) => `${r.sku}: ${r.message ?? r.status}`)
+        .join('\n');
+
+      alert(
+        `Синхронизация завершена.\n` +
+          `Обновлено: ${res.updated}\n` +
+          `Пропущено: ${res.skipped}\n` +
+          `Ошибок: ${res.errors}` +
+          (firstErrors ? `\n\nПервые ошибки:\n${firstErrors}` : ''),
+      );
+    } catch (e: unknown) {
+      alert(`Ошибка синхронизации: ${errMessage(e)}`);
+    } finally {
+      setSyncing(false);
+    }
+  }
   async function uploadPreview(f: File) {
     try {
       const fd = new FormData();
@@ -200,7 +245,6 @@ export default function TemplateEdit() {
     }
   }
 
-  // ---------- render ----------
   if (err) return <div className="text-red-600">{err}</div>;
   if (loading || !tpl) return <div>Загрузка…</div>;
 
@@ -386,6 +430,14 @@ export default function TemplateEdit() {
           className="px-4 py-2 rounded-xl border disabled:opacity-60"
         >
           {deleting ? 'Удаление…' : 'Удалить'}
+        </button>
+        <button
+          type="button"
+          onClick={syncPricesFromMoysklad}
+          disabled={syncing || saving || deleting}
+          className="px-4 py-2 rounded-xl border disabled:opacity-60"
+        >
+          {syncing ? 'Синхронизация…' : 'Синхронизировать цены (МойСклад)'}
         </button>
       </div>
     </form>

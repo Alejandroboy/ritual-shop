@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { EmailService } from '../../email/email.service';
@@ -19,6 +19,7 @@ export class AdminOrdersService {
     private email: EmailService,
     private telegram: TelegramService,
     private remindersService: RemindersService,
+    private logger: Logger,
   ) {}
 
   async getList(dto: AdminOrdersQueryDto) {
@@ -168,11 +169,13 @@ export class AdminOrdersService {
       dto.status === OrderStatus.APPROVAL &&
       prevStatus !== OrderStatus.APPROVAL
     ) {
+      this.logger.log(`Scheduling approval reminder for order=${id}`);
       await this.remindersService.startApprovalReminder({
         orderId: id,
         userId: dto.userId,
         orderNumber: prevOrder?.number || '',
       });
+      this.logger.log(`Approval reminder scheduled for order=${id}`);
     }
 
     if (
