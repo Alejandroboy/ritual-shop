@@ -51,8 +51,8 @@ const SKU_CODES_COLOR: Record<string, string> = {
 };
 
 const SKU_CODES_GOLD: Record<string, string> = {
-  '13×18': '20230',
-  '17×22': '20229',
+  '13×18': '20166',
+  '17×22': '20165',
 };
 
 export const metalOvalVertTemplates: TemplateConfig[] = [

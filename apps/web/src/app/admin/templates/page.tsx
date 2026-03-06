@@ -11,29 +11,59 @@ export default function TemplatesPage() {
     adminApiFetch(u).then((r) => r.json()),
   );
   const [syncing, setSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState<null | {
+    total: number;
+    ok: number;
+    failed: number;
+    results: Array<{
+      templateId: number;
+      ok: boolean;
+      updated?: number;
+      perHoleUpdated?: boolean;
+      error?: string;
+      errorDetails?: {
+        message?: unknown;
+        errors?: unknown;
+        statusCode?: unknown;
+      };
+    }>;
+  }>(null);
 
   async function syncAllTemplates() {
     if (!confirm('Синхронизировать цены всех шаблонов из МойСклада?')) return;
 
     setSyncing(true);
+    setSyncResult(null);
 
     try {
       const res = await api<{
         total: number;
         ok: number;
         failed: number;
+        results: Array<{
+          templateId: number;
+          ok: boolean;
+          updated?: number;
+          perHoleUpdated?: boolean;
+          error?: string;
+          errorDetails?: {
+            message?: unknown;
+            errors?: unknown;
+            statusCode?: unknown;
+          };
+        }>;
       }>('/api/moy-sklad/sync-templates-prices', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          stopOnError: false,
+          templateConcurrency: 6,
+        }),
       });
 
-      alert(
-        `Синхронизация завершена\n\n` +
-          `Всего шаблонов: ${res.total}\n` +
-          `Успешно: ${res.ok}\n` +
-          `Ошибок: ${res.failed}`,
-      );
+      setSyncResult(res);
     } catch (e) {
-      alert('Ошибка синхронизации');
+      alert(e instanceof Error ? e.message : 'Ошибка синхронизации');
     } finally {
       setSyncing(false);
     }
@@ -53,6 +83,75 @@ export default function TemplatesPage() {
           {syncing ? 'Синхронизация...' : 'Синхронизировать цены (МойСклад)'}
         </button>
       </div>
+      {syncResult && (
+        <div className="mt-6 space-y-4">
+          <div className="rounded-2xl border p-4 bg-white">
+            <h2 className="text-lg font-semibold mb-2">
+              Результат синхронизации
+            </h2>
+            <div className="text-sm space-y-1">
+              <div>Всего шаблонов: {syncResult.total}</div>
+              <div>Успешно: {syncResult.ok}</div>
+              <div>Ошибок: {syncResult.failed}</div>
+            </div>
+          </div>
+
+          {syncResult.failed > 0 && (
+            <div className="rounded-2xl border border-red-200 bg-red-50 p-4">
+              <h3 className="text-base font-semibold text-red-700 mb-3">
+                Шаблоны с ошибками
+              </h3>
+
+              <div className="space-y-3">
+                {syncResult.results
+                  .filter((item) => !item.ok)
+                  .map((item) => {
+                    const message = item.errorDetails?.message;
+                    const nestedErrors = item.errorDetails?.errors;
+
+                    return (
+                      <div
+                        key={item.templateId}
+                        className="rounded-xl border border-red-200 bg-white p-3"
+                      >
+                        <div className="font-medium">
+                          Template ID: {item.templateId}
+                        </div>
+
+                        {item.error && (
+                          <div className="text-sm text-red-700 mt-1">
+                            Ошибка: {item.error}
+                          </div>
+                        )}
+
+                        {typeof message === 'string' && message.trim() && (
+                          <div className="text-sm text-neutral-700 mt-1">
+                            Сообщение: {message}
+                          </div>
+                        )}
+
+                        {Array.isArray(message) && message.length > 0 && (
+                          <div className="text-sm text-neutral-700 mt-1">
+                            Сообщение: {message.join(', ')}
+                          </div>
+                        )}
+
+                        {Array.isArray(nestedErrors) &&
+                          nestedErrors.length > 0 && (
+                            <ul className="mt-2 text-sm text-neutral-700 list-disc pl-5 space-y-1">
+                              {nestedErrors.map((err, idx) => (
+                                <li key={idx}>{String(err)}</li>
+                              ))}
+                            </ul>
+                          )}
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
       <div className="mt-4 space-y-2">
         {items.map((t: Template) => (
           <Link

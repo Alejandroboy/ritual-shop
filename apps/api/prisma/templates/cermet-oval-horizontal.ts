@@ -38,8 +38,8 @@ const SIZE_HOLES_GOLD: Record<string, HolePattern[]> = {
 };
 
 const SKU_CODES_GOLD: Record<string, string> = {
-  '13×18': '20230',
-  '17×22': '20229',
+  '13×18': '20166',
+  '17×22': '20165',
 };
 
 const SKU_CODES_BW: Record<string, string> = {

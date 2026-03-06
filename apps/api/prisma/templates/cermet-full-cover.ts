@@ -106,11 +106,11 @@ const ARCH_SKU_CODES_COLOR: Record<string, string> = {
 };
 
 const HEART_SKU_CODES_BW: Record<string, string> = {
-  '17×24': '20033',
+  '16×18': '20033',
 };
 
 const HEART_SKU_CODES_COLOR: Record<string, string> = {
-  '17×24': '20034',
+  '16×18': '20034',
 };
 
 export const metalFullTemplates: TemplateConfig[] = [
