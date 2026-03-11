@@ -33,6 +33,7 @@ export type CustomerOrderItem = {
   template: {
     label: string;
     fullTitle: string;
+    material: string;
     allowedSizes: {
       sizeId: string;
       price: number;
@@ -56,6 +57,7 @@ export type CustomerOrderItem = {
   approveNeeded: boolean;
   approved: boolean;
   approvalStage: string;
+  skuCode: string;
 };
 
 export type CustomerOrderItemAsset = {

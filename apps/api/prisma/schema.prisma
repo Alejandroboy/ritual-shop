@@ -101,6 +101,13 @@ enum AssetStage {
   RETOUCHED
 }
 
+enum PendingUploadStatus {
+  PENDING
+  ATTACHED
+  DELETED
+  FAILED
+}
+
 enum ApprovalStage {
   NOT_STARTED
   IN_PROGRESS
@@ -323,6 +330,7 @@ model Order {
   @@index([createdAt])
   @@index([orderStatus, createdAt])
   @@index([customerId, createdAt])
+  pendingUploads PendingUpload[]
 }
 
 model OrderItem {
@@ -479,4 +487,35 @@ model DiscussComment {
   date        DateTime   @default(now())
   OrderItem   OrderItem? @relation(fields: [orderItemId], references: [id])
   orderItemId String?
+}
+
+model PendingUpload {
+  id           String              @id @default(cuid())
+  orderId      String
+  itemId       String?
+  userId       String?
+
+  bucket       String
+  key          String              @unique
+
+  originalName String?
+  contentType  String?
+  size         Int?
+  etag         String?
+
+  status       PendingUploadStatus @default(PENDING)
+  mode         AssetStage   @default(ORIGINAL)
+  retouchOf    String?
+
+  createdAt    DateTime            @default(now())
+  expiresAt    DateTime
+  attachedAt   DateTime?
+  deletedAt    DateTime?
+  lastError    String?
+
+  order        Order               @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId, status])
+  @@index([expiresAt, status])
+  @@index([itemId])
 }

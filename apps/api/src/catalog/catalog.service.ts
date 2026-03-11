@@ -274,7 +274,9 @@ export class CatalogService {
         finishes: v.allowedFinishes.map((f) => f.finish),
       })),
       defaults: {
-        ...(tpl.requiresFinish ? { finish: 'MATTE' } : {}),
+        ...(tpl.requiresFinish
+          ? { finish: tpl.allowedFinishes[0].finish }
+          : {}),
         sizeId: defaultSizeId(),
         holePattern: defaultHolePattern(),
         frameId:

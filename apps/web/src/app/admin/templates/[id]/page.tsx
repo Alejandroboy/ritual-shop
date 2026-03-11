@@ -277,7 +277,10 @@ export default function TemplateEdit() {
         <h2 className="font-semibold text-lg">Цены</h2>
 
         {(tpl.material === 'WHITE_CERAMIC_GRANITE' ||
-          tpl.material === 'BLACK_CERAMIC_GRANITE') && (
+          tpl.material === 'BLACK_CERAMIC_GRANITE' ||
+          tpl.material == 'GLASS' ||
+          tpl.material === 'GROWTH_PHOTOCERAMICS' ||
+          tpl.material === 'ENGRAVING') && (
           <div>
             <div className="text-sm text-neutral-600 mb-1">
               Материал шаблона: <b>{tpl.material}</b>

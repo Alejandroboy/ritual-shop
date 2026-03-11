@@ -12,42 +12,139 @@ export default function InvoicePage() {
     adminApiFetch(u).then((r) => r.json()),
   );
 
-  const skuCodesForAdditional = [
-    {
-      name: 'Дополнительный фон на трафарете',
-      skuCode: '20174',
-    },
-    {
-      name: 'Дополнительный человек на трафарете',
-      skuCode: '20173',
-    },
+  type Material =
+    | 'CERMET'
+    | 'WHITE_CERAMIC_GRANITE'
+    | 'BLACK_CERAMIC_GRANITE'
+    | 'GLASS'
+    | 'GROWTH_PHOTOCERAMICS'
+    | 'ENGRAVING';
 
-    {
-      name: 'Оцветнение фотографии',
-      skuCode: '20172',
-    },
+  type AdditionalSku = string;
 
-    {
-      name: 'Ретушь',
-      skuCode: '20170',
-    },
+  type AdditionalOption = {
+    name: string;
+    skuCode: AdditionalSku;
+  };
 
-    {
-      name: 'Ретушь с другой фотографии',
-      skuCode: '20171',
-    },
-    {
-      name: 'Сверление отверстий',
-      skuCode: '20169',
-    },
+  function getAdditionalOptions(
+    material?: Material | null,
+  ): AdditionalOption[] {
+    const common: AdditionalOption[] = [
+      {
+        name: 'Дополнительный фон на трафарете',
+        skuCode: '20174',
+      },
+      {
+        name: 'Оцветнение фотографии',
+        skuCode: '20172',
+      },
+      {
+        name: 'Согласование',
+        skuCode: '20168',
+      },
+    ];
 
-    {
-      name: 'Согласование',
-      skuCode: '20168',
-    },
-  ];
+    const isKeramogranit =
+      material === 'WHITE_CERAMIC_GRANITE' ||
+      material === 'BLACK_CERAMIC_GRANITE' ||
+      material === 'GROWTH_PHOTOCERAMICS';
 
-  type AdditionalSku = (typeof skuCodesForAdditional)[number]['skuCode'];
+    if (isKeramogranit) {
+      return [
+        ...common,
+        {
+          name: 'Дополнительный человек на трафарете (керамогранит)',
+          skuCode: '20175',
+        },
+        {
+          name: 'Ретушь (керамогранит)',
+          skuCode: '20181',
+        },
+        {
+          name: 'Ретушь с другой фотографии (керамогранит)',
+          skuCode: '20178',
+        },
+        {
+          name: 'Сверление отверстий (керамогранит)',
+          skuCode: '20169',
+        },
+      ];
+    }
+
+    if (material === 'GLASS') {
+      return [
+        ...common,
+        {
+          name: 'Дополнительный человек на трафарете (стекло)',
+          skuCode: '20176',
+        },
+        {
+          name: 'Ретушь (стекло)',
+          skuCode: '20182',
+        },
+        {
+          name: 'Ретушь с другой фотографии (стекло)',
+          skuCode: '20179',
+        },
+        {
+          name: 'Сверление отверстий (стекло)',
+          skuCode: '20185',
+        },
+      ];
+    }
+
+    if (material === 'ENGRAVING') {
+      return [
+        ...common,
+        {
+          name: 'Дополнительный человек на трафарете (гравировка)',
+          skuCode: '20177',
+        },
+        {
+          name: 'Ретушь (гравировка)',
+          skuCode: '20183',
+        },
+        {
+          name: 'Ретушь с другой фотографии (гравировка)',
+          skuCode: '20180',
+        },
+        {
+          name: 'Сверление отверстий (гравировка)',
+          skuCode: '20186',
+        },
+      ];
+    }
+
+    if (material === 'CERMET') {
+      return [
+        ...common,
+        {
+          name: 'Дополнительный человек на трафарете (металлокерамика)',
+          skuCode: '20173',
+        },
+        {
+          name: 'Ретушь (металлокерамика)',
+          skuCode: '20184',
+        },
+        {
+          name: 'Ретушь с другой фотографии (металлокерамика)',
+          skuCode: '20171',
+        },
+      ];
+    }
+
+    return common;
+  }
+
+  function getAdditionalLabel(
+    material: Material | null | undefined,
+    sku: string,
+  ): string {
+    return (
+      getAdditionalOptions(material).find((x) => x.skuCode === sku)?.name ?? sku
+    );
+  }
 
   const [extraByOrderId, setExtraByOrderId] = useState<
     Record<string, Record<AdditionalSku, number>>
@@ -71,8 +168,9 @@ export default function InvoicePage() {
 
   const toggleOrder = (order: CustomerOrder, checked: boolean) => {
     const orderId = order.id;
+    console.log('order', order);
 
-    const sku = (order.items as any).skuCode as string | undefined;
+    const sku = order.items.skuCode as string | undefined;
 
     const price = (order.items as any).template?.allowedSizes?.find(
       (x: any) => x.sizeId === (order.items as any).sizeId,
@@ -290,9 +388,9 @@ export default function InvoicePage() {
           {busy ? 'Создаю…' : `Создать счёт (${ordersIds.length})`}
         </button>
 
-        <div className="text-sm opacity-70">
-          Контрагент: {counterpartyId ?? 'не задан'}
-        </div>
+        {/*<div className="text-sm opacity-70">*/}
+        {/*  Контрагент: {counterpartyId ?? 'не задан'}*/}
+        {/*</div>*/}
       </div>
 
       {orders.map((order: CustomerOrder) => {
@@ -309,6 +407,10 @@ export default function InvoicePage() {
         const invoiceName = order.invoiceName;
         const selectedExtras = extraByOrderId[order.id] ?? {};
         const isChecked = !!selected[order.id] && !includedInInvoice;
+        const material = order.items?.template?.material as
+          | Material
+          | undefined;
+        const additionalOptions = getAdditionalOptions(material);
         return (
           <Fragment key={order.id}>
             <div
@@ -360,7 +462,7 @@ export default function InvoicePage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <select
-                    className="border rounded-md p-2 bg-white"
+                    className={`border rounded-md p-2 bg-white disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed`}
                     disabled={!isChecked}
                     value={selectValueByOrderId[order.id] ?? ''}
                     onChange={(e) =>
@@ -371,9 +473,9 @@ export default function InvoicePage() {
                     }
                   >
                     <option value="">— выбрать —</option>
-                    {skuCodesForAdditional.map((s) => (
+                    {additionalOptions.map((s) => (
                       <option key={s.skuCode} value={s.skuCode}>
-                        {s.name} ({s.skuCode})
+                        {s.name}
                       </option>
                     ))}
                   </select>
@@ -381,7 +483,7 @@ export default function InvoicePage() {
                   <button
                     type="button"
                     onClick={() => addExtra(order.id)}
-                    className="border rounded-md px-3 py-2 bg-[#f1f1f1] disabled:opacity-50"
+                    className="border rounded-md px-3 py-2 bg-[#f1f1f1] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                     disabled={!isChecked || !selectValueByOrderId[order.id]}
                   >
                     Добавить
@@ -391,17 +493,14 @@ export default function InvoicePage() {
                 {Object.keys(selectedExtras).length > 0 && (
                   <div className="flex flex-wrap gap-2 justify-end">
                     {Object.entries(selectedExtras).map(([sku, qty]) => {
-                      const label =
-                        skuCodesForAdditional.find((x) => x.skuCode === sku)
-                          ?.name ?? sku;
-
+                      const label = getAdditionalLabel(material, sku);
                       return (
                         <div
                           key={sku}
                           className="flex items-center gap-2 border rounded-full px-3 py-1 bg-white"
                         >
                           <span className="text-sm">
-                            {label} ({sku}) × {qty}
+                            {label} × {qty}
                           </span>
 
                           <button
@@ -409,7 +508,7 @@ export default function InvoicePage() {
                             onClick={() =>
                               removeExtra(order.id, sku as AdditionalSku)
                             }
-                            className="text-sm opacity-70 hover:opacity-100"
+                            className="text-sm opacity-70 hover:opacity-100 cursor-pointer"
                           >
                             −
                           </button>
@@ -427,7 +526,7 @@ export default function InvoicePage() {
                                 },
                               }));
                             }}
-                            className="text-sm opacity-70 hover:opacity-100"
+                            className="text-sm opacity-70 hover:opacity-100 cursor-pointer"
                           >
                             +
                           </button>
@@ -442,18 +541,18 @@ export default function InvoicePage() {
         );
       })}
 
-      <pre className="mt-4 text-xs whitespace-pre-wrap">
-        {JSON.stringify(
-          {
-            ordersIds,
-            positions,
-            extraByOrderId,
-            extraPositions,
-          },
-          null,
-          2,
-        )}
-      </pre>
+      {/*<pre className="mt-4 text-xs whitespace-pre-wrap">*/}
+      {/*  {JSON.stringify(*/}
+      {/*    {*/}
+      {/*      ordersIds,*/}
+      {/*      positions,*/}
+      {/*      extraByOrderId,*/}
+      {/*      extraPositions,*/}
+      {/*    },*/}
+      {/*    null,*/}
+      {/*    2,*/}
+      {/*  )}*/}
+      {/*</pre>*/}
     </div>
   );
 }

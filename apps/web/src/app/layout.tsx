@@ -4,6 +4,7 @@ import './globals.css';
 import Link from 'next/link';
 import React, { useEffect } from 'react';
 import { useAppStore } from '@state';
+import CookieBanner from '../components/cookie-banner';
 export default function RootLayout({
   children,
 }: {
@@ -41,6 +42,7 @@ export default function RootLayout({
           </div>
         </header>
         <main className="mx-auto max-w-6xl px-4 py-6">{children}</main>
+        <CookieBanner />
       </body>
     </html>
   );

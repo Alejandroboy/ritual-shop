@@ -29,7 +29,7 @@ export class OrdersItemsService {
     orderId: string,
     itemId: string,
     stage: ApprovalStage,
-    userId: string,
+    userId: string | undefined,
   ) {
     if (stage === ApprovalStage.IN_PROGRESS) {
       await this.adminOrdersService.updateStatus(orderId, {

@@ -42,8 +42,13 @@ export type UploadsSlice = {
     files: File[],
     opts?: { mode?: Mode; retouchOf?: Id; userId?: string },
   ) => void;
+
   attachPendingToItem: (orderId: Id, itemId: Id) => void;
+
   clearFinished: () => void;
+  clearQueueByOrder: (orderId: Id) => void;
+  clearQueueByItem: (orderId: Id, itemId: Id | null) => void;
+  clearTerminalByOrder: (orderId: Id) => void;
 
   _pump: () => void;
 };
@@ -59,6 +64,12 @@ type UploadsCreator = StateCreator<AppState, MW, [], UploadsSlice>;
 
 const rid = () => Math.random().toString(36).slice(2, 10);
 
+const isActiveState = (state: UploadState) =>
+  state === 'queued' ||
+  state === 'uploading' ||
+  state === 'registering' ||
+  state === 'uploaded';
+
 export const createUploadsSlice: UploadsCreator = (
   set,
   get,
@@ -70,6 +81,7 @@ export const createUploadsSlice: UploadsCreator = (
 
   enqueueFiles: (orderId, itemId, files, opts) => {
     if (!files?.length) return;
+
     const jobs: UploadJob[] = files.map((f) => ({
       id: rid(),
       orderId,
@@ -81,7 +93,11 @@ export const createUploadsSlice: UploadsCreator = (
       retouchOf: opts?.retouchOf ?? null,
       userId: opts?.userId ?? null,
     }));
-    set((s) => ({ queue: [...s.queue, ...jobs] }));
+
+    set((s) => ({
+      queue: [...s.queue, ...jobs],
+    }));
+
     get()._pump();
   },
 
@@ -94,19 +110,69 @@ export const createUploadsSlice: UploadsCreator = (
         }
       });
     });
+
     get()._pump();
   },
 
   clearFinished: () =>
-    set((s) => ({
-      queue: s.queue.filter(
-        (j: UploadJob) =>
-          j.state === 'uploading' ||
-          j.state === 'queued' ||
-          j.state === 'registering' ||
-          j.state === 'uploaded',
-      ),
-    })),
+    set((s) => {
+      const nextQueue = s.queue.filter((j: UploadJob) =>
+        isActiveState(j.state),
+      );
+      const nextRunning = nextQueue.filter(
+        (j: UploadJob) => j.state === 'uploading' || j.state === 'registering',
+      ).length;
+
+      return {
+        queue: nextQueue,
+        running: nextRunning,
+      };
+    }),
+
+  clearQueueByOrder: (orderId) =>
+    set((s) => {
+      const nextQueue = s.queue.filter((j: UploadJob) => j.orderId !== orderId);
+      const nextRunning = nextQueue.filter(
+        (j: UploadJob) => j.state === 'uploading' || j.state === 'registering',
+      ).length;
+
+      return {
+        queue: nextQueue,
+        running: nextRunning,
+      };
+    }),
+
+  clearQueueByItem: (orderId, itemId) =>
+    set((s) => {
+      const nextQueue = s.queue.filter(
+        (j: UploadJob) => !(j.orderId === orderId && j.itemId === itemId),
+      );
+      const nextRunning = nextQueue.filter(
+        (j: UploadJob) => j.state === 'uploading' || j.state === 'registering',
+      ).length;
+
+      return {
+        queue: nextQueue,
+        running: nextRunning,
+      };
+    }),
+
+  clearTerminalByOrder: (orderId) =>
+    set((s) => {
+      const nextQueue = s.queue.filter((j: UploadJob) => {
+        if (j.orderId !== orderId) return true;
+        return isActiveState(j.state);
+      });
+
+      const nextRunning = nextQueue.filter(
+        (j: UploadJob) => j.state === 'uploading' || j.state === 'registering',
+      ).length;
+
+      return {
+        queue: nextQueue,
+        running: nextRunning,
+      };
+    }),
 
   _pump: async () => {
     const { queue, running, concurrency } = get() as UploadsSlice;
@@ -115,9 +181,10 @@ export const createUploadsSlice: UploadsCreator = (
     const job = queue.find((j) => j.state === 'queued');
     if (!job) return;
 
-    // пометили как занятый
     set((s) => {
-      const j = s.queue.find((x: UploadJob) => x.id === job.id)!;
+      const j = s.queue.find((x: UploadJob) => x.id === job.id);
+      if (!j) return;
+
       j.state = j.key ? 'registering' : 'uploading';
       s.running += 1;
     });
@@ -132,7 +199,7 @@ export const createUploadsSlice: UploadsCreator = (
             itemId: job.itemId || undefined,
             filename: job.file.name,
             contentType: job.file.type || undefined,
-            retouchOf: job.retouchOf || undefined, // optional
+            retouchOf: job.retouchOf || undefined,
           }),
         });
 
@@ -141,14 +208,18 @@ export const createUploadsSlice: UploadsCreator = (
           headers: presign.requiredHeaders ?? {},
           body: job.file,
         });
+
         if (!res.ok) {
           const text = await res.text().catch(() => '');
           throw new Error(`S3 PUT ${res.status} ${text.slice(0, 120)}`);
         }
+
         const etag = res.headers.get('ETag')?.replace(/"/g, '') ?? null;
 
         set((s) => {
-          const j = s.queue.find((x: UploadJob) => x.id === job.id)!;
+          const j = s.queue.find((x: UploadJob) => x.id === job.id);
+          if (!j) return;
+
           j.bucket = presign.bucket;
           j.key = presign.key;
           j.etag = etag;
@@ -157,9 +228,18 @@ export const createUploadsSlice: UploadsCreator = (
 
       const current = (get() as UploadsSlice).queue.find(
         (x) => x.id === job.id,
-      )!;
+      );
+      if (!current) {
+        set((s) => {
+          s.running = Math.max(0, s.running - 1);
+        });
+        get()._pump();
+        return;
+      }
+
       if (current.itemId) {
         const isRetouch = current.mode === 'retouch';
+
         if (isRetouch && !current.retouchOf) {
           throw new Error('retouchOf is required for retouch mode');
         }
@@ -199,24 +279,31 @@ export const createUploadsSlice: UploadsCreator = (
         });
 
         set((s) => {
-          const j = s.queue.find((x: UploadJob) => x.id === job.id)!;
+          const j = s.queue.find((x: UploadJob) => x.id === job.id);
+          if (!j) return;
+
           j.state = 'done';
-          s.running -= 1;
+          s.running = Math.max(0, s.running - 1);
         });
       } else {
         set((s) => {
-          const j = s.queue.find((x: UploadJob) => x.id === job.id)!;
+          const j = s.queue.find((x: UploadJob) => x.id === job.id);
+          if (!j) return;
+
           j.state = 'uploaded';
-          s.running -= 1;
+          s.running = Math.max(0, s.running - 1);
         });
       }
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : '';
+
       set((s) => {
-        const j = s.queue.find((x: UploadJob) => x.id === job.id)!;
+        const j = s.queue.find((x: UploadJob) => x.id === job.id);
+        if (!j) return;
+
         j.state = 'error';
         j.error = message || 'Ошибка загрузки';
-        s.running -= 1;
+        s.running = Math.max(0, s.running - 1);
       });
     } finally {
       get()._pump();

@@ -19,17 +19,6 @@ type AssortmentResolved = {
   name?: string;
 };
 
-type SyncResultRow = {
-  sku: string;
-  target: 'size' | 'finish';
-  sizeId: number;
-  finish?: string;
-  oldPrice: number | null;
-  newPrice: number | null;
-  status: 'updated' | 'skipped' | 'no-price' | 'no-sku' | 'not-found' | 'error';
-  message?: string;
-};
-
 @Injectable()
 export class MoySkladService {
   private readonly http: AxiosInstance;
@@ -49,6 +38,36 @@ export class MoySkladService {
       },
       timeout: 20_000,
     });
+  }
+
+  private getDrillingSkuByMaterial(
+    material:
+      | 'CERMET'
+      | 'WHITE_CERAMIC_GRANITE'
+      | 'BLACK_CERAMIC_GRANITE'
+      | 'GLASS'
+      | 'GROWTH_PHOTOCERAMICS'
+      | 'ENGRAVING'
+      | null
+      | undefined,
+  ): string | null {
+    if (
+      material === 'WHITE_CERAMIC_GRANITE' ||
+      material === 'BLACK_CERAMIC_GRANITE' ||
+      material === 'GROWTH_PHOTOCERAMICS'
+    ) {
+      return '20169';
+    }
+
+    if (material === 'GLASS') {
+      return '20185';
+    }
+
+    if (material === 'ENGRAVING') {
+      return '20186';
+    }
+
+    return null;
   }
 
   private toSafeErrorDetails(e: unknown):
@@ -336,8 +355,6 @@ export class MoySkladService {
   }> {
     const concurrency = input.concurrency ?? 6;
 
-    const DRILLING_SKU = '20169';
-
     const tpl = await this.prismaService.template.findUnique({
       where: { id: input.templateId },
       select: {
@@ -367,11 +384,9 @@ export class MoySkladService {
 
     if (!tpl) throw new NotFoundException('Template not found');
 
-    const shouldSyncPerHole =
-      tpl.material === 'WHITE_CERAMIC_GRANITE' ||
-      tpl.material === 'BLACK_CERAMIC_GRANITE' ||
-      tpl.material === 'GLASS' ||
-      tpl.material === 'GROWTH_PHOTOCERAMICS';
+    const drillingSku = this.getDrillingSkuByMaterial(tpl.material);
+
+    const shouldSyncPerHole = Boolean(drillingSku);
 
     const shouldUseFinishPrices =
       tpl.requiresFinish && (tpl.finishPrices?.length ?? 0) > 0;
@@ -379,19 +394,19 @@ export class MoySkladService {
     const errors: string[] = [];
 
     let perHoleResolved: number | null = null;
-    if (shouldSyncPerHole) {
+    if (shouldSyncPerHole && drillingSku) {
       try {
-        const a = await this.resolveAssortmentMetaBySku(DRILLING_SKU);
+        const a = await this.resolveAssortmentMetaBySku(drillingSku);
         if (typeof a.price !== 'number' || !Number.isFinite(a.price)) {
           errors.push(
-            `drilling sku=${DRILLING_SKU}: no sale price (salePrices.value missing)`,
+            `drilling sku=${drillingSku}: no sale price (salePrices.value missing)`,
           );
         } else {
-          perHoleResolved = Number(a.price); // копейки
+          perHoleResolved = Number(a.price);
         }
       } catch (e: unknown) {
         const msg = e instanceof Error ? e.message : String(e);
-        errors.push(`drilling sku=${DRILLING_SKU}: ${msg}`);
+        errors.push(`drilling sku=${drillingSku}: ${msg}`);
       }
     }
 
