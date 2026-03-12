@@ -14,7 +14,11 @@ export class RemindersService {
   private readonly log = new Logger(RemindersService.name);
   constructor(@InjectQueue(REMINDERS_QUEUE) private readonly queue: Queue) {}
 
-  async startApprovalReminder(data: ReminderJobData) {
+  async startApprovalReminder(data: {
+    orderId: string;
+    userId: string | undefined;
+    orderNumber: any;
+  }) {
     this.log.log(`startApprovalReminder orderId=${data.orderId}`);
     const existing = await this.queue.getJob(jobIdForOrder(data.orderId));
     if (existing) {

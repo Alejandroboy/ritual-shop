@@ -134,7 +134,10 @@ export class AdminOrdersService {
     });
   }
 
-  async updateStatus(id: string, dto: UpdateOrderStatusDto) {
+  async updateStatus(
+    id: string,
+    dto: { status: OrderStatus; userId: string | undefined },
+  ) {
     const prevOrder = await this.prisma.order.findUnique({
       where: { id },
       select: {
