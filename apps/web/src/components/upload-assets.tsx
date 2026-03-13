@@ -92,7 +92,7 @@ export function UploadAsset({
           onChange={onSelect}
           multiple
         />
-        {mode === 'retouch' ? 'Добавить ретушь' : 'Прикрепить файлы'}
+        {mode === 'retouch' ? 'Добавить макет' : 'Прикрепить файлы'}
       </label>
 
       {error && <div className="text-sm text-red-600">{error}</div>}
