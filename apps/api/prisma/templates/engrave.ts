@@ -12,6 +12,7 @@ import {
 
 const engravingBases = ['G1', 'G2', 'G3', 'G4', 'G5', 'G6', 'G7'];
 const PRICES: Record<string, number> = {
+  '13×18': 1500,
   '15×20': 1500,
   '20×25': 2500,
   '20×30': 3500,
@@ -22,6 +23,7 @@ const PRICES: Record<string, number> = {
 };
 
 const SKU_CODES: Record<string, string> = {
+  '13×18': '20187',
   '15×20': '20161',
   '20×25': '20162',
   '20×30': '20158',

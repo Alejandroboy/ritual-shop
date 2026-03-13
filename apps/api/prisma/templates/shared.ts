@@ -45,6 +45,7 @@ export const sizesStdGlass = [
 ];
 
 export const sizesEngraving = [
+  '13×18',
   '15×20',
   '20×25',
   '20×30',

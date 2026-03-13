@@ -100,6 +100,7 @@ export default function AddToOrderForm({ tpl }: Props) {
   const finishOptions = useMemo(() => {
     return tpl.allowedFinishes.map((v) => v.finish);
   }, [holePattern, tpl.allowedFinishes]);
+
   useEffect(() => {
     let scuCode: string | undefined;
     if (tpl.finishSkuCodesBySizeId) {
@@ -110,6 +111,11 @@ export default function AddToOrderForm({ tpl }: Props) {
     }
     setSkuCode(scuCode ?? '');
   }, [sizeId, finish]);
+  useEffect(() => {
+    if (availableSizes.length) {
+      setSizeId(availableSizes[0].size.id);
+    }
+  }, [holePattern]);
 
   async function submit() {
     if (!readAgreement) {
