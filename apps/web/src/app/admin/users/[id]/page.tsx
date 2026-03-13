@@ -82,7 +82,10 @@ export default function UserDetails() {
           {data?.user?.customerOrders.map((order: CustomerOrder) => {
             const createdAt = new Date(order.createdAt);
             return (
-              <div key={order.id}>
+              <div
+                key={order.id}
+                className="border rounded-xl mb-[20px] p-[10px]"
+              >
                 <div className="flex w-96">
                   <div className="w-1/2 text-right">Статус:</div>
                   <div className="w-1/2 text-right">

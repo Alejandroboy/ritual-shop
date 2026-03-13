@@ -64,7 +64,7 @@ export default function AddToOrderForm({ tpl }: Props) {
 
     if (tpl.perHolePrice && holePattern) {
       const firstFour = holePattern.slice(0, 4);
-      if (firstFour.includes('TWO') && price) {
+      if (firstFour.includes('TWO') && price && tpl.perHolePrice) {
         price += tpl.perHolePrice * 2;
       }
       if (firstFour.includes('FOUR') && price) {
@@ -101,11 +101,15 @@ export default function AddToOrderForm({ tpl }: Props) {
     return tpl.allowedFinishes.map((v) => v.finish);
   }, [holePattern, tpl.allowedFinishes]);
   useEffect(() => {
-    const scuCode = tpl.allowedSizes.filter(
-      (item) => item.size.id === sizeId,
-    )[0]?.skuCode;
+    let scuCode: string | undefined;
+    if (tpl.finishSkuCodesBySizeId) {
+      scuCode = tpl.finishSkuCodesBySizeId?.[sizeId]?.[finish];
+    } else {
+      scuCode = tpl.allowedSizes.filter((item) => item.size.id === sizeId)[0]
+        ?.skuCode;
+    }
     setSkuCode(scuCode ?? '');
-  }, [sizeId]);
+  }, [sizeId, finish]);
 
   async function submit() {
     if (!readAgreement) {

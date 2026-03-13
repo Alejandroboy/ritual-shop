@@ -13,6 +13,7 @@ const templateSelect = {
   coverage: true,
   fullTitle: true,
   allowedFinishes: true,
+  finishPrices: true,
   allowedSizes: {
     select: {
       size: true,
@@ -137,13 +138,7 @@ export class CatalogService {
         personsMax: true,
         notes: true,
         perHolePrice: true,
-        finishPrices: {
-          select: {
-            price: true,
-            finish: true,
-            sizeId: true,
-          },
-        },
+        finishPrices: true,
         goldTypes: true,
         allowedSizes: {
           select: {
@@ -190,7 +185,6 @@ export class CatalogService {
 
       return null;
     };
-
     const finishPricesBySizeId = tpl.finishPrices.reduce<
       Record<number, Record<string, number>>
     >((acc, row) => {
@@ -199,6 +193,18 @@ export class CatalogService {
       acc[row.sizeId][row.finish] = row.price;
       return acc;
     }, {});
+    const finishSkuCodesBySizeId: Record<
+      number,
+      Record<string, string | null>
+    > = tpl.finishPrices.reduce<Record<number, Record<string, string | null>>>(
+      (acc, row) => {
+        if (!row.sizeId) return acc;
+        acc[row.sizeId] ??= {};
+        acc[row.sizeId][row.finish] = row.skuCode ?? null;
+        return acc;
+      },
+      {},
+    );
 
     const defaultHolePattern = () => {
       if (
@@ -267,6 +273,9 @@ export class CatalogService {
       backgrounds: tpl.allowedBackgrounds.map((x) => x.background),
       finishPricesBySizeId: tpl.requiresFinish
         ? finishPricesBySizeId
+        : undefined,
+      finishSkuCodesBySizeId: tpl.requiresFinish
+        ? finishSkuCodesBySizeId
         : undefined,
       variants: tpl.variants.map((v) => ({
         holePattern: v.holePattern,

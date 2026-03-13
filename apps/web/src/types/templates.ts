@@ -96,6 +96,9 @@ export type TemplateDetails = TemplateListItem & {
   finishPricesBySizeId: Partial<
     Record<number, Partial<Record<string, number>>>
   >;
+  finishSkuCodesBySizeId: Partial<
+    Record<number, Partial<Record<string, string>>>
+  >;
   allowedSizes: {
     skuCode?: string;
     size: { id: number; label: string; widthCm: number; heightCm: number };
