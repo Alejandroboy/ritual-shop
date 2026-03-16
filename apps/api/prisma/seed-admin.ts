@@ -33,7 +33,7 @@ async function main() {
     },
   });
 
-  console.log(`Admin seeded: ${email}`);
+  console.log(`Admin seeded: ${email}, role: ${'ADMIN_GOD'}`);
 }
 
 main().finally(() => prisma.$disconnect());
