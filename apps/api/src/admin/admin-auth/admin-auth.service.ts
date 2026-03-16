@@ -67,8 +67,12 @@ export class AdminAuthService {
     const user = await this.prisma.user.findUnique({ where: { id: p.sub } });
     if (!user) throw new UnauthorizedException('User not found');
 
-    if (user.role !== 'ADMIN') {
-      throw new ForbiddenException('Not an admin');
+    if (
+      user.role !== 'ADMIN' &&
+      user.role !== 'MANAGER' &&
+      user.role !== 'ADMIN_GOD'
+    ) {
+      throw new ForbiddenException('Not an admin or manager');
     }
 
     return user;

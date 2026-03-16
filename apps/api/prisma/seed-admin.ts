@@ -28,7 +28,7 @@ async function main() {
     create: {
       email,
       passwordHash,
-      role: 'ADMIN',
+      role: 'ADMIN_GOD',
       name: 'Alejandro',
     },
   });

@@ -78,7 +78,7 @@ export default function UserDetails() {
     if (data?.user?.customerOrders.length > 0) {
       return (
         <div>
-          Заказы:
+          <div className="mb-[10px]">Заказы:</div>
           {data?.user?.customerOrders.map((order: CustomerOrder) => {
             const createdAt = new Date(order.createdAt);
             return (

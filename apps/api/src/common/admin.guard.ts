@@ -29,12 +29,11 @@ export class AdminGuard implements CanActivate {
     if (access) {
       try {
         const payload: any = await this.jwtService.verifyAsync(access);
-        if (payload?.role !== 'admin') throw new ForbiddenException();
+        if (payload?.role !== 'admin' || payload?.role !== 'manager')
+          throw new ForbiddenException();
         (req as any).admin = payload;
         return true;
-      } catch {
-        /* истёк/битый — попробуем refresh ниже */
-      }
+      } catch {}
     }
     const refresh = req.cookies?.refresh_token;
     if (refresh) {
@@ -47,14 +46,12 @@ export class AdminGuard implements CanActivate {
           sameSite: 'lax',
           secure: req.secure,
           path: '/',
-          maxAge: +(process.env.ADMIN_ACCESS_TTL_MIN ?? 15) * 60 * 1000, // 15 мин по умолчанию
+          maxAge: +(process.env.ADMIN_ACCESS_TTL_MIN ?? 15) * 60 * 1000,
         });
 
         (req as any).admin = admin;
         return true;
-      } catch {
-        /* refresh невалидный — падаем 401 ниже */
-      }
+      } catch (e) {}
     }
     throw new UnauthorizedException('No admin token');
   }

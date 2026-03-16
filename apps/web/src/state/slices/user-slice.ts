@@ -8,6 +8,7 @@ export type UserSlice = {
   me: Me;
   setMe: (u: Me) => void;
   fetchMe: () => Promise<void>;
+  updateMe: () => Promise<void>;
 };
 
 type MW = [
@@ -37,5 +38,9 @@ export const createUserSlice: UserCreator = (set, _get, _api): UserSlice => ({
     } catch {
       /* ignore */
     }
+  },
+  updateMe: async () => {
+    try {
+    } catch {}
   },
 });

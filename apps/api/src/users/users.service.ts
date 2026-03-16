@@ -231,7 +231,16 @@ export class UsersService {
     }
   }
 
-  async deleteUser(id: string) {
+  async deleteUser(id: string, role: Role) {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      select: {
+        role: true,
+      },
+    });
+    if (user?.role === Role.ADMIN_GOD && role !== Role.ADMIN_GOD) {
+      return "Can't delete Super Admin";
+    }
     return this.prisma.user.delete({
       where: {
         id,

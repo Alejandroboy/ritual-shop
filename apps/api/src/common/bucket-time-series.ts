@@ -1,5 +1,5 @@
-type Grain = 'day' | 'week' | 'month';
-function step(d: Date, g: Grain): void {
+export type Grain = 'day' | 'week' | 'month';
+export function step(d: Date, g: Grain): void {
   if (g === 'day') {
     d.setDate(d.getDate() + 1);
     return;
@@ -32,7 +32,7 @@ export function bucketTimeSeries(
   return labels.map((l) => ({ bucket: l, count: counts[l] }));
 }
 
-function startOf(d: Date, g: 'day' | 'week' | 'month') {
+export function startOf(d: Date, g: 'day' | 'week' | 'month') {
   const x = new Date(d);
   if (g === 'day') {
     x.setHours(0, 0, 0, 0);
@@ -49,7 +49,7 @@ function startOf(d: Date, g: 'day' | 'week' | 'month') {
   x.setHours(0, 0, 0, 0);
   return x;
 }
-function endOf(d: Date, g: 'day' | 'week' | 'month') {
+export function endOf(d: Date, g: 'day' | 'week' | 'month') {
   const x = new Date(d);
   if (g === 'day') {
     x.setHours(23, 59, 59, 999);
@@ -66,7 +66,7 @@ function endOf(d: Date, g: 'day' | 'week' | 'month') {
   x.setHours(23, 59, 59, 999);
   return x;
 }
-function keyOf(d: Date, g: 'day' | 'week' | 'month') {
+export function keyOf(d: Date, g: 'day' | 'week' | 'month') {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, '0');
   const day = String(d.getDate()).padStart(2, '0');

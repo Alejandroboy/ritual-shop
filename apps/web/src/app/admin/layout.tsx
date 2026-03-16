@@ -19,6 +19,19 @@ export default function AdminLayout({
     if (!me) fetchMe().catch(() => {});
   }, [me, fetchMe]);
 
+  const renderAdminGodLink = () => {
+    if (me && me.role === 'ADMIN_GOD') {
+      return (
+        <>
+          <Link href="/admin/templates">Шаблоны</Link>
+          <br />
+        </>
+      );
+    }
+
+    return '';
+  };
+
   const handleExit: MouseEventHandler<HTMLDivElement> = async () => {
     try {
       const res = await adminApiFetch('/api/admin/auth/logout', {
@@ -40,8 +53,7 @@ export default function AdminLayout({
           <br />
           <Link href="/admin/orders">Заказы</Link>
           <br />
-          <Link href="/admin/templates">Шаблоны</Link>
-          <br />
+          {renderAdminGodLink()}
           <Link href="/admin/users">Пользователи</Link>
           <br />
           <Link href="/admin/users/new">Создать пользователя</Link>

@@ -14,11 +14,14 @@ export default function RootLayout({
   const fetchMe = useAppStore((s) => s.fetchMe);
 
   useEffect(() => {
-    fetchMe();
-  }, []);
+    if (!me) fetchMe().catch(() => {});
+  }, [me, fetchMe]);
 
   const renderAdminLink = () => {
-    if (me && me.role === 'ADMIN') {
+    if (
+      me &&
+      (me.role === 'ADMIN' || me.role === 'ADMIN_GOD' || me.role === 'MANAGER')
+    ) {
       return <Link href="/admin">Админка</Link>;
     }
   };

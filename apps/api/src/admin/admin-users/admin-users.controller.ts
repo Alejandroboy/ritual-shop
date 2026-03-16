@@ -19,13 +19,17 @@ import { AdminUpdateUserDto } from '../../users/dto/admin-update-user.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../../auth/guards/roles.guard';
 import { Roles } from '../../auth/decorators/roles.decorator';
+import {
+  CurrentUser,
+  type CurrentUserShape,
+} from '../../auth/decorators/current-user.decorator';
 
 @Controller('admin/users')
 export class AdminUsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('ADMIN', 'MANAGER')
+  @Roles('ADMIN_GOD', 'ADMIN', 'MANAGER')
   @Get('list')
   async list(
     @Query('q') q?: string,
@@ -37,14 +41,13 @@ export class AdminUsersController {
   }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('ADMIN', 'MANAGER')
+  @Roles('ADMIN_GOD', 'ADMIN', 'MANAGER')
   @Get(':id')
   async byId(@Param('id') id: string) {
     try {
       if (!id) throw new BadRequestException('id required');
       const user = await this.usersService.findByIdAdmin(id);
       if (!user) throw new NotFoundException('User not found');
-
       return { user };
     } catch (e) {
       console.log('User error', e);
@@ -52,7 +55,7 @@ export class AdminUsersController {
   }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('ADMIN', 'MANAGER')
+  @Roles('ADMIN_GOD', 'ADMIN', 'MANAGER')
   @Post()
   async create(@Body() dto: AdminCreateUserDto) {
     const u = await this.usersService.adminCreate(dto);
@@ -61,21 +64,25 @@ export class AdminUsersController {
   }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('ADMIN')
+  @Roles('ADMIN_GOD', 'ADMIN', 'MANAGER')
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() dto: AdminUpdateUserDto) {
+  async update(
+    @Param('id') id: string,
+    @CurrentUser() user: CurrentUserShape,
+    @Body() dto: AdminUpdateUserDto,
+  ) {
     const u = await this.usersService.adminUpdate({
       targetUserId: id,
-      actorRole: 'ADMIN',
+      actorRole: user.role,
       dto,
     });
     return { user: u };
   }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('ADMIN')
+  @Roles('ADMIN_GOD', 'ADMIN')
   @Delete(':id')
-  async delete(@Param('id') id: string) {
-    return this.usersService.deleteUser(id);
+  async delete(@Param('id') id: string, @CurrentUser() user: CurrentUserShape) {
+    return this.usersService.deleteUser(id, user.role);
   }
 }
