@@ -442,7 +442,7 @@ export default function AddToOrderForm({ tpl }: Props) {
                 }
               >
                 {tpl.backgrounds.map((b) => (
-                  <option key={b.id} value={b.id}>
+                  <option key={b.id} value={b.code}>
                     {b.name}
                   </option>
                 ))}
@@ -562,7 +562,7 @@ export default function AddToOrderForm({ tpl }: Props) {
       <div className="flex justify-between">
         <div>
           Итоговая цена: {Number.isFinite(price()) ? price() / 100 : 0}
-          &nbsp;&#8381;
+          &nbsp;руб
         </div>
       </div>
       <div>

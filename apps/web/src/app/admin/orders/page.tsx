@@ -20,7 +20,7 @@ export default function Page({
     <div>
       <h1 className="text-2xl font-semibold mb-4">Заказы</h1>
       <Suspense fallback={<div> Загружаем заказы ... </div>}>
-        <Orders qs={qs} />
+        <Orders />
       </Suspense>
     </div>
   );

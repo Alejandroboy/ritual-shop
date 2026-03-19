@@ -86,6 +86,11 @@ export class MoySkladController {
     });
   }
 
+  @Get('invoiceout/:id')
+  getInvoiceOut(@Param() params: { id: string }) {
+    return this.moySkladService.getInvoiceOutById(params.id);
+  }
+
   @Get('orders/:orderId/invoice-publication-url')
   async getPublicationUrl(
     @Param('orderId') orderId: string,

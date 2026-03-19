@@ -6,6 +6,10 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Prisma } from '@prisma/client';
+import {
+  getNextInvoiceCheckAt,
+  resolveInvoiceStatus,
+} from '../../common/helpers';
 
 type MsMeta = {
   href: string;
@@ -229,7 +233,6 @@ export class MoySkladService {
         quantity: p.qty ?? 1,
         ...(typeof price === 'number' ? { price } : {}),
         assortment: { meta: a.meta },
-
         ...(p.description ? { description: p.description } : {}),
       };
     });
@@ -261,6 +264,59 @@ export class MoySkladService {
       (created.data?.number as string | undefined) ??
       null;
 
+    const totalMinor =
+      typeof created.data?.sum === 'number' ? created.data.sum : 0;
+
+    const paidMinor =
+      typeof created.data?.payedSum === 'number' ? created.data.payedSum : 0;
+
+    const status = resolveInvoiceStatus({
+      sum: totalMinor,
+      payedSum: paidMinor,
+    });
+
+    const now = new Date();
+
+    await this.prismaService.invoice.upsert({
+      where: { id: invoiceId },
+      create: {
+        id: invoiceId,
+        name: invoiceName,
+        description: input.invoiceDescription ?? null,
+        status,
+        totalMinor,
+        paidMinor,
+        createdAtRemote: created.data?.created
+          ? new Date(created.data.created)
+          : null,
+        updatedAtRemote: created.data?.updated
+          ? new Date(created.data.updated)
+          : null,
+        lastCheckedAt: now,
+        nextCheckAt: getNextInvoiceCheckAt({
+          status,
+          createdAt: now,
+        }),
+        paidAt: status === 'PAID' ? now : null,
+      },
+      update: {
+        name: invoiceName,
+        description: input.invoiceDescription ?? null,
+        status,
+        totalMinor,
+        paidMinor,
+        updatedAtRemote: created.data?.updated
+          ? new Date(created.data.updated)
+          : null,
+        lastCheckedAt: now,
+        nextCheckAt: getNextInvoiceCheckAt({
+          status,
+          createdAt: now,
+        }),
+        paidAt: status === 'PAID' ? now : null,
+      },
+    });
+
     if (input.orderIds?.length) {
       await this.prismaService.order.updateMany({
         where: { id: { in: input.orderIds } },
@@ -273,6 +329,17 @@ export class MoySkladService {
     }
 
     return created.data;
+  }
+
+  async getInvoiceOutById(invoiceId: string) {
+    const res = await this.http.get(`/entity/invoiceout/${invoiceId}`, {
+      headers: { Accept: 'application/json;charset=utf-8' },
+    });
+
+    if (!res.data?.id) {
+      throw new Error(`Moysklad: invoiceout ${invoiceId} not found`);
+    }
+    return res.data;
   }
 
   async getOrCreateOrderInvoicePublicationHtmlUrl(
@@ -657,6 +724,116 @@ export class MoySkladService {
       total: templates.length,
       ok,
       failed,
+      results,
+    };
+  }
+
+  async syncInvoiceById(invoiceId: string) {
+    const remote = await this.getInvoiceOutById(invoiceId);
+
+    const totalMinor = typeof remote.sum === 'number' ? remote.sum : 0;
+    const paidMinor = typeof remote.payedSum === 'number' ? remote.payedSum : 0;
+
+    const status = resolveInvoiceStatus({
+      sum: totalMinor,
+      payedSum: paidMinor,
+    });
+
+    const existing = await this.prismaService.invoice.findUnique({
+      where: { id: invoiceId },
+      select: { id: true, createdAt: true },
+    });
+
+    const baseCreatedAt = existing?.createdAt ?? new Date();
+    const now = new Date();
+
+    const invoice = await this.prismaService.invoice.upsert({
+      where: { id: invoiceId },
+      create: {
+        id: remote.id,
+        name: remote.name ?? null,
+        description: remote.description ?? null,
+        status,
+        totalMinor,
+        paidMinor,
+        createdAtRemote: remote.created ? new Date(remote.created) : null,
+        updatedAtRemote: remote.updated ? new Date(remote.updated) : null,
+        lastCheckedAt: now,
+        nextCheckAt: getNextInvoiceCheckAt({
+          status,
+          createdAt: baseCreatedAt,
+        }),
+        paidAt: status === 'PAID' ? now : null,
+      },
+      update: {
+        name: remote.name ?? null,
+        description: remote.description ?? null,
+        status,
+        totalMinor,
+        paidMinor,
+        createdAtRemote: remote.created ? new Date(remote.created) : undefined,
+        updatedAtRemote: remote.updated ? new Date(remote.updated) : undefined,
+        lastCheckedAt: now,
+        nextCheckAt: getNextInvoiceCheckAt({
+          status,
+          createdAt: baseCreatedAt,
+        }),
+        paidAt: status === 'PAID' ? now : null,
+      },
+    });
+
+    await this.prismaService.order.updateMany({
+      where: { invoiceId: invoice.id },
+      data: {
+        invoiceName: invoice.name ?? undefined,
+      },
+    });
+
+    return invoice;
+  }
+
+  async syncPendingInvoices(limit = 50) {
+    const now = new Date();
+
+    const pending = await this.prismaService.invoice.findMany({
+      where: {
+        status: { in: ['UNPAID', 'PARTIAL'] },
+        OR: [{ nextCheckAt: null }, { nextCheckAt: { lte: now } }],
+      },
+      orderBy: [{ nextCheckAt: 'asc' }, { createdAt: 'asc' }],
+      take: limit,
+      select: {
+        id: true,
+      },
+    });
+
+    const results = await this.mapLimit(pending, 5, async (item) => {
+      try {
+        const invoice = await this.syncInvoiceById(item.id);
+        return {
+          invoiceId: item.id,
+          ok: true as const,
+          status: invoice.status,
+        };
+      } catch (error) {
+        await this.prismaService.invoice.update({
+          where: { id: item.id },
+          data: {
+            lastCheckedAt: new Date(),
+            nextCheckAt: new Date(Date.now() + 30 * 60 * 1000),
+          },
+        });
+
+        return {
+          invoiceId: item.id,
+          ok: false as const,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        };
+      }
+    });
+
+    return {
+      total: pending.length,
       results,
     };
   }

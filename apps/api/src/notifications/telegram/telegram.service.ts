@@ -52,7 +52,7 @@ export class TelegramService {
       [OrderStatus.ACCEPTED]: 'Принят',
       [OrderStatus.IN_PROGRESS]: 'В работе',
       [OrderStatus.APPROVAL]: 'Согласование',
-      [OrderStatus.SENT]: 'Отправлен',
+      [OrderStatus.COMPLETED]: 'Выполнен',
       [OrderStatus.READY]: 'Готов',
       [OrderStatus.CANCELLED]: 'Отменен',
     };

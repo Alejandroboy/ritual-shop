@@ -1,4 +1,4 @@
-import { Injectable, Query } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Finish, OrderStatus } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { bucketTimeSeries } from '../../common/bucket-time-series';
@@ -29,7 +29,7 @@ export class AdminStatsService {
       ACCEPTED: 0,
       APPROVAL: 0,
       IN_PROGRESS: 0,
-      SENT: 0,
+      COMPLETED: 0,
       READY: 0,
     };
     for (const r of byStatus) ordersByStatus[r.orderStatus] = r._count._all;
@@ -163,7 +163,7 @@ export class AdminStatsService {
       'ACCEPTED',
       'IN_PROGRESS',
       'APPROVAL',
-      'SENT',
+      'COMPLETED',
     ];
     const openOrders = await this.prisma.order.findMany({
       where: { orderStatus: { in: openStatuses } },
@@ -245,7 +245,7 @@ export class AdminStatsService {
       ACCEPTED: '2d',
       IN_PROGRESS: '5d',
       APPROVAL: '3d',
-      SENT: '7d',
+      COMPLETED: '7d',
       READY: '0d',
     };
     let slaCfg: Record<OrderStatus, string> = defaultSla;
@@ -279,7 +279,7 @@ export class AdminStatsService {
       ACCEPTED: 0,
       IN_PROGRESS: 0,
       APPROVAL: 0,
-      SENT: 0,
+      COMPLETED: 0,
       READY: 0,
     };
     const topBreaches: Breach[] = [];

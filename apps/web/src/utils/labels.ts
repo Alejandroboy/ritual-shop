@@ -9,6 +9,7 @@ import {
   HolePatternEnum,
   FinishEnum,
   ApprovalStage,
+  InvoiceStatusEnum,
 } from '@types';
 
 export const orderStatusLabels = {
@@ -16,10 +17,16 @@ export const orderStatusLabels = {
   [OrderStatusEnum.IN_PROGRESS]: 'В работе',
   [OrderStatusEnum.DRAFT]: 'Черновик',
   [OrderStatusEnum.READY]: 'Готов',
-  [OrderStatusEnum.SENT]: 'Отправлен',
+  [OrderStatusEnum.COMPLETED]: 'Выполнен',
   [OrderStatusEnum.APPROVAL]: 'Согласование',
   [OrderStatusEnum.CANCELLED]: 'Отменен',
 } satisfies Record<OrderStatusEnum, string>;
+
+export const invoiceStatusLabel = {
+  [InvoiceStatusEnum.PARTIAL]: 'Оплачен частично',
+  [InvoiceStatusEnum.PAID]: 'Оплачен',
+  [InvoiceStatusEnum.UNPAID]: 'Не оплачен',
+} satisfies Record<InvoiceStatusEnum, string>;
 
 export const materialLabels = {
   [MaterialEnum.BLACK_CERAMIC_GRANITE]: 'Черный керамогранит',

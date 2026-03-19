@@ -1,4 +1,4 @@
-import { ApprovalStage, OrderStatusEnum } from './enums';
+import { ApprovalStage, InvoiceStatusEnum, OrderStatusEnum } from './enums';
 
 export type OrderItemDetails = {
   comment?: string;
@@ -40,4 +40,9 @@ export type Order = {
   customerPhone: string;
   orderNumber: string;
   items: OrderItemDetails;
+  includedInInvoice: boolean;
+  invoice: {
+    status: InvoiceStatusEnum;
+  };
+  invoiceName?: string;
 };

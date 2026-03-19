@@ -56,10 +56,6 @@ export class OrdersItemsService {
   }
 
   async updateApproval(orderId: string, itemId: string, dto: ApproveDto) {
-    await this.adminOrdersService.updateStatus(orderId, {
-      status: OrderStatus.IN_PROGRESS,
-      userId: dto.userId,
-    });
     return this.prismaService.orderItem.update({
       where: { id: itemId, orderId },
       data: {

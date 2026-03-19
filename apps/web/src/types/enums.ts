@@ -48,13 +48,19 @@ export enum Role {
   CUSTOMER = 'CUSTOMER',
 }
 
+export enum InvoiceStatusEnum {
+  UNPAID = 'UNPAID',
+  PARTIAL = 'PARTIAL',
+  PAID = 'PAID',
+}
+
 export enum OrderStatusEnum {
   CANCELLED = 'CANCELLED',
   DRAFT = 'DRAFT',
   ACCEPTED = 'ACCEPTED',
   APPROVAL = 'APPROVAL',
   IN_PROGRESS = 'IN_PROGRESS',
-  SENT = 'SENT',
+  COMPLETED = 'COMPLETED',
   READY = 'READY',
 }
 

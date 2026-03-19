@@ -70,7 +70,7 @@ enum OrderStatus {
   ACCEPTED
   IN_PROGRESS
   APPROVAL
-  SENT
+  COMPLETED
   READY
 }
 
@@ -112,6 +112,12 @@ enum ApprovalStage {
   NOT_STARTED
   IN_PROGRESS
   APPROVED
+}
+
+enum InvoiceStatus {
+  UNPAID
+  PARTIAL
+  PAID
 }
 
 // ====== СПРАВОЧНИКИ ======
@@ -326,10 +332,12 @@ model Order {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  invoice           Invoice? @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
 
   @@index([createdAt])
   @@index([orderStatus, createdAt])
   @@index([customerId, createdAt])
+  @@index([invoiceId])
   pendingUploads PendingUpload[]
 }
 
@@ -518,4 +526,30 @@ model PendingUpload {
   @@index([orderId, status])
   @@index([expiresAt, status])
   @@index([itemId])
+}
+
+model Invoice {
+  id             String   @id
+  name           String?
+  status         InvoiceStatus @default(UNPAID)
+
+  totalMinor     Int      @default(0)
+  paidMinor      Int      @default(0)
+
+  description    String?
+
+  createdAtRemote DateTime?
+  updatedAtRemote DateTime?
+
+  lastCheckedAt  DateTime?
+  nextCheckAt    DateTime?
+  paidAt         DateTime?
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  orders         Order[]
+
+  @@index([status, nextCheckAt])
+  @@index([paidAt])
 }

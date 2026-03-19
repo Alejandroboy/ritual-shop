@@ -293,7 +293,7 @@ export class CatalogService {
           (tpl.material === 'CERMET' && tpl.shape === 'RECTANGLE')
             ? 0
             : tpl.allowedFrames[0]?.frame.id,
-        backgroundId: tpl.allowedBackgrounds[0]?.background.id ?? null,
+        backgroundId: tpl.allowedBackgrounds[0]?.background.code ?? null,
       },
     };
   }

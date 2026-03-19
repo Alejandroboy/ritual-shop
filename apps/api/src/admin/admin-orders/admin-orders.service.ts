@@ -85,6 +85,7 @@ export class AdminOrdersService {
         take,
         skip,
         include: {
+          invoice: true,
           items: { include: { assets: true } },
           customer: { select: { id: true, email: true, name: true } },
         },

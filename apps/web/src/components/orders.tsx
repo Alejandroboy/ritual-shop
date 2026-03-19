@@ -2,16 +2,29 @@
 import useSWR from 'swr';
 import Link from 'next/link';
 import { adminApiFetch } from '@utils';
-import { Order, OrderItemDetails, OrderStatusEnum } from '@types';
-import { labelOf, orderStatusLabels } from '@utils';
+import {
+  InvoiceStatusEnum,
+  Order,
+  OrderItemDetails,
+  OrderStatusEnum,
+} from '@types';
+import { labelOf, orderStatusLabels, invoiceStatusLabel } from '@utils';
 import { OrdersFilterBar } from './orders-filter-bar';
+import { useSearchParams } from 'next/navigation';
 
-const orderLabel = labelOf<OrderStatusEnum>(orderStatusLabels);
-export function Orders({ qs }: { qs: string }) {
+export function Orders() {
+  const sp = useSearchParams();
+  const qs = sp.toString();
   const key = `/api/admin/orders${qs ? `?${qs}` : ''}`;
   const { data } = useSWR(key, (u) => adminApiFetch(u).then((r) => r.json()));
   const items = data?.items ?? [];
+  const orderLabel = labelOf<string>(orderStatusLabels);
+  const invoiceLabel = labelOf<string>(invoiceStatusLabel);
 
+  function chooseClass(status: string): string {
+    if (status === 'PAID') return 'text-green-600';
+    return 'text-red-600';
+  }
   const renderApproval = (item: OrderItemDetails) => {
     if (item?.approved && item?.approveNeeded) {
       return (
@@ -68,6 +81,18 @@ export function Orders({ qs }: { qs: string }) {
                 {' • '}
                 {o.customerName ?? 'без имени'}
               </div>
+              {o.includedInInvoice && (
+                <div className="text-sm ">
+                  Включен в счет {o.invoiceName}&nbsp;
+                  {o?.invoice ? (
+                    <span className={chooseClass(o?.invoice.status)}>
+                      {invoiceLabel(o?.invoice.status as InvoiceStatusEnum)}
+                    </span>
+                  ) : (
+                    ''
+                  )}
+                </div>
+              )}
               <Link className="underline" href={`/admin/orders/${o.id}`}>
                 Открыть
               </Link>
