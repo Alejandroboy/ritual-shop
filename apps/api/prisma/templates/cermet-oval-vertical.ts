@@ -65,7 +65,7 @@ export const metalOvalVertTemplates: TemplateConfig[] = [
       orientation: Orientation.VERTICAL,
       colorMode: ColorMode.BW,
       coverage: Coverage.NORMAL,
-      supportsFrame: false,
+      supportsFrame: true,
       fullTitle: `Вертикальный овал ${base.replace('F', 'Ф')}`,
       requiresBackground: true,
       requiresFinish: false,
