@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo } from 'react';
+import React, { Suspense, useEffect, useMemo } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { useAppStore } from '@state';
 import { LogoutButton } from '../../components/logout-button';
@@ -12,7 +12,7 @@ import { OrderItem } from '../../components/order-item';
 
 const orderLabel = labelOf<string>(orderStatusLabels);
 
-export default function AccountPage() {
+function Account() {
   const router = useRouter();
   const pathname = usePathname();
   const sp = useSearchParams();
@@ -263,6 +263,18 @@ export default function AccountPage() {
           telegramChatId={me.telegramChatId}
         />
       </section>
+    </main>
+  );
+}
+
+export default function AccountPage() {
+  return (
+    <main className="max-w-3xl mx-auto p-6 space-y-6">
+      <Suspense
+        fallback={<div className="max-w-3xl mx-auto p-6">Загрузка…</div>}
+      >
+        <Account />
+      </Suspense>
     </main>
   );
 }
