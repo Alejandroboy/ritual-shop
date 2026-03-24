@@ -55,7 +55,7 @@ export function OrderItemsDetails({
       <div className="text-sm">
         {data.templateFullTitle ? data.templateFullTitle : data.templateLabel}
       </div>
-      <div className="text-sm">Вид фона: {data.backgroundId}</div>
+      <div className="text-sm">Вид фона: {data.background?.name}</div>
       <div className="text-sm">Размер: {data.size?.label}</div>
       {data.frameId && <div className="text-sm">Вид рамки: {data.frameId}</div>}
       {data.finish && (

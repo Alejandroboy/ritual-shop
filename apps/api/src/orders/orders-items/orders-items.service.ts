@@ -17,6 +17,7 @@ export class OrdersItemsService {
       include: {
         size: true,
         assets: true,
+        background: true,
         discussComments: {
           select: { id: true, text: true, date: true },
           orderBy: { date: 'desc' },
@@ -34,7 +35,6 @@ export class OrdersItemsService {
     if (stage === ApprovalStage.IN_PROGRESS) {
       await this.adminOrdersService.updateStatus(orderId, {
         status: OrderStatus.APPROVAL,
-        userId: userId,
       });
     }
     return this.prismaService.orderItem.update({

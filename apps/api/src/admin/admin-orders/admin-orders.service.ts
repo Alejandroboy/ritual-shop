@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { EmailService } from '../../email/email.service';
@@ -102,6 +102,7 @@ export class AdminOrdersService {
       include: {
         items: {
           include: {
+            background: true,
             discussComments: {
               select: { id: true, text: true, date: true },
               orderBy: { date: 'desc' },
@@ -135,51 +136,84 @@ export class AdminOrdersService {
     });
   }
 
-  async updateStatus(
-    id: string,
-    dto: { status: OrderStatus; userId: string | undefined },
-  ) {
+  async bulkUpdateStatus(dto: { ids: string[]; status: OrderStatus }) {
+    const results: Array<{
+      id: string;
+      ok: boolean;
+      error?: string;
+    }> = [];
+
+    for (const id of dto.ids) {
+      try {
+        await this.updateStatus(id, { status: dto.status });
+        results.push({ id, ok: true });
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : 'Unknown error';
+        results.push({ id, ok: false, error: message });
+      }
+    }
+
+    return {
+      total: dto.ids.length,
+      successCount: results.filter((x) => x.ok).length,
+      failCount: results.filter((x) => !x.ok).length,
+      results,
+    };
+  }
+
+  async updateStatus(id: string, dto: { status: OrderStatus }) {
     const prevOrder = await this.prisma.order.findUnique({
       where: { id },
       select: {
+        id: true,
         number: true,
         orderStatus: true,
         customerEmail: true,
+        customerId: true,
       },
     });
 
-    if (prevOrder?.orderStatus === dto.status) return;
-    const prevStatus = prevOrder?.orderStatus;
+    if (!prevOrder) {
+      throw new NotFoundException('Order not found');
+    }
 
-    const user = await this.prisma.user.findUnique({
-      where: { id: dto.userId },
-      select: { notifyChannel: true, telegramChatId: true },
-    });
+    if (prevOrder.orderStatus === dto.status) {
+      return prevOrder;
+    }
+
+    const prevStatus = prevOrder.orderStatus;
+
+    const user = prevOrder.customerId
+      ? await this.prisma.user.findUnique({
+          where: { id: prevOrder.customerId },
+          select: { notifyChannel: true, telegramChatId: true },
+        })
+      : null;
 
     const order = await this.prisma.order.update({
       where: { id },
       data: { orderStatus: dto.status },
     });
 
-    if (prevOrder?.customerEmail) {
+    if (prevOrder.customerEmail) {
       await this.email.orderStatusChanged(
         prevOrder.customerEmail,
-        prevOrder?.number || '',
+        prevOrder.number || '',
         prevOrder.orderStatus,
         dto.status,
       );
     }
+
     if (
       dto.status === OrderStatus.APPROVAL &&
       prevStatus !== OrderStatus.APPROVAL
     ) {
-      this.logger.log(`Scheduling approval reminder for order=${id}`);
       await this.remindersService.startApprovalReminder({
         orderId: id,
-        userId: dto.userId,
-        orderNumber: prevOrder?.number || '',
+        userId: prevOrder.customerId ?? undefined,
+        orderNumber: prevOrder.number || '',
       });
-      this.logger.log(`Approval reminder scheduled for order=${id}`);
     }
 
     if (
@@ -192,8 +226,8 @@ export class AdminOrdersService {
     if (user?.telegramChatId) {
       await this.telegram.orderStatusChanged(
         user.telegramChatId,
-        prevOrder?.number || '',
-        prevOrder?.orderStatus || '',
+        prevOrder.number || '',
+        prevOrder.orderStatus,
         dto.status,
       );
     }

@@ -1,17 +1,18 @@
 'use client';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { api } from '@utils';
+import { api, holePatternLabels, labelOf } from '@utils';
 import { useAppStore } from '@state';
 import { AssetThumb } from '../../components/asset-thumb';
 import { bytesToSize } from '@utils';
 import { OrderItemDetails } from '@types';
 import { useHydrated } from '../../utils/use-hydrated';
-import { SubscribeTelegramButton } from '../../components/subscribe-telegram-button';
 
 type OrderDetails = {
   items: OrderItemDetails[];
 };
+
+const holePatternLabel = labelOf<string>(holePatternLabels);
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -162,7 +163,10 @@ export default function CheckoutPage() {
                 </svg>
               </div>
               <p>{item.templateLabel}</p>
-              <p>{item.size?.label}</p>
+              {item.background && <p>Фон:&nbsp;{item.background?.name}</p>}
+              <p>Рамка:&nbsp;{item.frameId ? item.frameId : 'Без рамки'}</p>
+              <p>Отверстия:&nbsp;{holePatternLabel(item.holePattern)}</p>
+              <p>Размер:&nbsp;{item.size?.label}</p>
               {!!item?.firstName && <p>{item?.firstName}</p>}
               {!!item?.middleName && <p>{item?.middleName}</p>}
               {!!item?.lastName && <p>{item?.lastName}</p>}

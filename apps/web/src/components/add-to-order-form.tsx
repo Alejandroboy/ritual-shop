@@ -442,7 +442,7 @@ export default function AddToOrderForm({ tpl }: Props) {
                 }
               >
                 {tpl.backgrounds.map((b) => (
-                  <option key={b.id} value={b.code}>
+                  <option key={b.id} value={b.id}>
                     {b.name}
                   </option>
                 ))}

@@ -118,6 +118,7 @@ export class OrdersService {
         items: {
           include: {
             size: true,
+            background: true,
             assets: { orderBy: { createdAt: 'asc' } },
           },
         },
@@ -145,6 +146,7 @@ export class OrdersService {
             sizeId: rawItem.sizeId,
             holePattern: rawItem.holePattern,
             frameId: rawItem.frameId,
+            background: rawItem.background,
             backgroundId: rawItem.backgroundId,
             finish: rawItem.finish,
             assets: await Promise.all(
@@ -156,6 +158,7 @@ export class OrdersService {
 
     return { id: order.id, items };
   }
+
   async getOrdersForUser(userId: string): Promise<OrderDto[]> {
     const orders = await this.prisma.order.findMany({
       where: { customerId: userId },
@@ -261,6 +264,8 @@ export class OrdersService {
       throw new BadRequestException('Background is required for this template');
     }
     if (!bgAllowed(dto.backgroundId)) {
+      console.log('>>>>>>> tpl.allowedBackgrounds', tpl.allowedBackgrounds);
+      console.log('>>>>>>> dto.backgroundId)', dto.backgroundId);
       throw new BadRequestException(
         'Background is not allowed for this template',
       );
@@ -611,7 +616,7 @@ export class OrdersService {
       },
     });
 
-    if (order?.orderStatus === dto.status) return;
+    // if (order?.orderStatus === dto.status) return;
 
     return this.prisma.order.update({
       where: { id },

@@ -52,7 +52,7 @@ export function OrderBlankButton({ order }: OrderBlankButtonProps) {
     material: order.items?.template?.material,
     size: sizeLabel,
     finish: order.items?.finish,
-    background: order.items?.backgroundId,
+    background: order.items?.background?.name,
     frame: order.items?.frameId,
     holePattern: order.items?.holePattern,
     hasHoles:

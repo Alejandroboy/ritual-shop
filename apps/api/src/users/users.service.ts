@@ -7,6 +7,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { Prisma, Role, User } from '@prisma/client';
 import * as argon2 from 'argon2';
 import { AdminCreateUserDto } from './dto/admin-create-user.dto';
+import { MyOrdersQueryDto } from './dto/my-orders.query.dto';
 
 @Injectable()
 export class UsersService {
@@ -88,19 +89,6 @@ export class UsersService {
             managedOrders: true,
           },
         },
-        customerOrders: {
-          select: {
-            id: true,
-            orderStatus: true,
-            orderNumber: true,
-            createdAt: true,
-            items: {
-              include: { size: true },
-            },
-          },
-          take: 10,
-          orderBy: { createdAt: 'desc' },
-        },
       },
     });
     if (!user) throw new NotFoundException('User not found');
@@ -109,6 +97,42 @@ export class UsersService {
 
   findByEmail(email: string) {
     return this.prisma.user.findUnique({ where: { email } });
+  }
+
+  async getMyOrders(userId: string, dto: MyOrdersQueryDto) {
+    const page = Math.max(1, Number(dto.page ?? 1));
+    const pageSize = Math.max(1, Math.min(100, Number(dto.pageSize ?? 10)));
+    const skip = (page - 1) * pageSize;
+
+    const where: Prisma.OrderWhereInput = {
+      customerId: userId,
+    };
+
+    const [items, total] = await Promise.all([
+      this.prisma.order.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: pageSize,
+        select: {
+          id: true,
+          orderStatus: true,
+          orderNumber: true,
+          createdAt: true,
+          items: {
+            include: { size: true, background: true },
+          },
+        },
+      }),
+      this.prisma.order.count({ where }),
+    ]);
+
+    return {
+      items,
+      total,
+      page,
+      pageSize,
+    };
   }
 
   async list(params: { q?: string; skip?: number; take?: number }) {

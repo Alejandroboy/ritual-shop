@@ -11,6 +11,7 @@ import { AdminGuard } from '../../common/admin.guard';
 import { AdminOrdersService } from './admin-orders.service';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { AdminOrdersQueryDto } from './dto/admin-orders.query.dto';
+import { BulkUpdateOrderStatusDto } from './dto/bulk-update-order-status.dto';
 
 @Controller('admin/orders')
 export class AdminOrdersPingController {
@@ -38,5 +39,11 @@ export class AdminOrdersController {
   @Patch(':id/status')
   async setStatus(@Param('id') id: string, @Body() dto: UpdateOrderStatusDto) {
     return this.adminOrdersService.updateStatus(id, dto);
+  }
+
+  @Patch('status/bulk')
+  async bulkSetStatus(@Body() dto: BulkUpdateOrderStatusDto) {
+    console.log(1);
+    return this.adminOrdersService.bulkUpdateStatus(dto);
   }
 }

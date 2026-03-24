@@ -1,12 +1,7 @@
 import { api } from '@utils';
 import { StateCreator } from 'zustand/vanilla';
 import { AppState } from '../app-store';
-import {
-  CustomerOrder,
-  CustomerOrderItem,
-  CustomerOrderItemAsset,
-  User,
-} from '@types';
+import { CustomerOrder, User } from '@types';
 
 export type MyAsset = {
   id: string;
@@ -44,7 +39,10 @@ export type MyOrder = {
 export type OrdersSlice = {
   myOrders: MyOrder[] | null;
   isLoadingOrders: boolean;
-  loadMyOrders: () => Promise<MyOrder[]>;
+  ordersTotal: number;
+  ordersPage: number;
+  ordersPageSize: number;
+  loadMyOrders: (page?: number, pageSize?: number) => Promise<MyOrder[]>;
   clearOrders: () => void;
 };
 
@@ -66,8 +64,11 @@ const mapOrder = (o: CustomerOrder): MyOrder => ({
   items: o.items,
 });
 
-type UserResponse = {
-  user: User;
+type MyOrdersResponse = {
+  items: CustomerOrder[];
+  total: number;
+  page: number;
+  pageSize: number;
 };
 
 export const createOrdersSlice: OrdersCreator = (
@@ -77,23 +78,41 @@ export const createOrdersSlice: OrdersCreator = (
 ): OrdersSlice => ({
   myOrders: null,
   isLoadingOrders: false,
+  ordersTotal: 0,
+  ordersPage: 1,
+  ordersPageSize: 10,
 
-  loadMyOrders: async () => {
+  loadMyOrders: async (page = 1, pageSize = 10) => {
     set({ isLoadingOrders: true });
+
     try {
-      const resp = await api<UserResponse>('/users/me', {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+      const resp = await api<MyOrdersResponse>(
+        `/users/me/orders?page=${page}&pageSize=${pageSize}`,
+        {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+        },
+      );
+      const orders = (resp?.items ?? []).map(mapOrder);
+      set({
+        myOrders: orders,
+        ordersTotal: Number(resp?.total ?? 0),
+        ordersPage: Number(resp?.page ?? page),
+        ordersPageSize: Number(resp?.pageSize ?? pageSize),
       });
-      const ordersRaw = resp?.user?.customerOrders ?? [];
-      const orders = ordersRaw.map(mapOrder);
-      set({ myOrders: orders });
+
       return orders;
     } finally {
       set({ isLoadingOrders: false });
     }
   },
 
-  clearOrders: () => set({ myOrders: null }),
+  clearOrders: () =>
+    set({
+      myOrders: null,
+      ordersTotal: 0,
+      ordersPage: 1,
+      ordersPageSize: 10,
+    }),
 });

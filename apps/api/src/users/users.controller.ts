@@ -21,6 +21,7 @@ import { UpdateMeDto } from './dto/update-me.dto';
 import { AdminUpdateUserDto } from './dto/admin-update-user.dto';
 import { Role } from '@prisma/client';
 import { ListUsersQueryDto } from './dto/list-user.query';
+import { MyOrdersQueryDto } from './dto/my-orders.query.dto';
 
 @Controller('users')
 export class UsersController {
@@ -41,6 +42,15 @@ export class UsersController {
   ) {
     const u = await this.users.updateSelf(me!.userId, dto);
     return { user: u };
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('me/orders')
+  async myOrders(
+    @CurrentUser() me: CurrentUserShape,
+    @Query() dto: MyOrdersQueryDto,
+  ) {
+    return this.users.getMyOrders(me!.userId, dto);
   }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)

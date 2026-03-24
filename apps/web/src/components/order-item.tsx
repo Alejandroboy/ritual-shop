@@ -35,6 +35,9 @@ interface OrderItemProps {
   size?: {
     label: string;
   };
+  background?: {
+    name: string;
+  };
 }
 
 const approvalStageLabel = labelOf<string>(approvalStageLabels);
@@ -61,7 +64,7 @@ export const OrderItem = ({
   approved,
   managerActionNeeded,
   userActionNeeded,
-  backgroundId,
+  background,
   size,
   retouchNeeded,
 }: OrderItemProps) => {
@@ -296,8 +299,8 @@ export const OrderItem = ({
       <div className="font-medium">
         {templateFullTitle ? templateFullTitle : templateLabel}
       </div>
-      {backgroundId ? (
-        <div className="text-sm text-gray-600">Фон: {backgroundId}</div>
+      {background ? (
+        <div className="text-sm text-gray-600">Фон: {background?.name}</div>
       ) : (
         ''
       )}

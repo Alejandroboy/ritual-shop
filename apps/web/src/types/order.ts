@@ -21,6 +21,10 @@ export type OrderItemDetails = {
   retouchNeeded: boolean;
   approveNeeded: boolean;
   approvalStage: ApprovalStage;
+  background: {
+    name: string;
+  };
+  holePattern: string;
 };
 
 export type OrderItemAsset = {

@@ -1,5 +1,6 @@
 'use client';
-import { useRouter, useSearchParams } from 'next/navigation';
+
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { labelOf, orderStatusLabels } from '@utils';
 import type { OrderStatusEnum } from '@types';
@@ -9,7 +10,8 @@ const STATUSES = Object.keys(orderStatusLabels) as OrderStatusEnum[];
 
 export function OrdersFilterBar() {
   const sp = useSearchParams();
-  const r = useRouter();
+  const router = useRouter();
+  const pathname = usePathname();
 
   const [status, setStatus] = useState<string>(sp.get('status') || '');
   const [user, setUser] = useState<string>(
@@ -26,22 +28,42 @@ export function OrdersFilterBar() {
   }, [sp]);
 
   const apply = () => {
-    const q = new URLSearchParams();
-    if (status) q.set('status', status);
+    const q = new URLSearchParams(sp.toString());
 
-    if (user) {
-      if (user.includes('@')) q.set('userEmail', user);
-      else q.set('userId', user);
+    if (status) q.set('status', status);
+    else q.delete('status');
+
+    q.delete('userEmail');
+    q.delete('userId');
+
+    const normalizedUser = user.trim();
+    if (normalizedUser) {
+      if (normalizedUser.includes('@')) q.set('userEmail', normalizedUser);
+      else q.set('userId', normalizedUser);
     }
 
     if (dateFrom) q.set('dateFrom', dateFrom);
+    else q.delete('dateFrom');
+
     if (dateTo) q.set('dateTo', dateTo);
+    else q.delete('dateTo');
     q.set('page', '1');
 
-    r.push(`/admin/orders?${q.toString()}`);
+    router.push(`${pathname}?${q.toString()}`);
   };
 
-  const reset = () => r.push('/admin/orders');
+  const reset = () => {
+    const q = new URLSearchParams(sp.toString());
+
+    q.delete('status');
+    q.delete('userEmail');
+    q.delete('userId');
+    q.delete('dateFrom');
+    q.delete('dateTo');
+    q.delete('page');
+
+    router.push(`${pathname}${q.toString() ? `?${q.toString()}` : ''}`);
+  };
 
   const statusOptions = useMemo(
     () =>
@@ -54,11 +76,11 @@ export function OrdersFilterBar() {
   );
 
   return (
-    <div className="bg-white border rounded-xl p-3 mb-4 flex flex-wrap gap-4 items-end">
+    <div className="mb-4 flex flex-wrap items-end gap-4 rounded-xl border bg-white p-3">
       <label className="text-sm">
-        <span className="block mb-1 text-neutral-600">Статус</span>
+        <span className="mb-1 block text-neutral-600">Статус</span>
         <select
-          className="border rounded-md px-2 py-1 bg-white min-w-40"
+          className="min-w-40 rounded-md border bg-white px-2 py-1"
           value={status}
           onChange={(e) => setStatus(e.target.value)}
         >
@@ -68,9 +90,9 @@ export function OrdersFilterBar() {
       </label>
 
       <label className="text-sm">
-        <span className="block mb-1 text-neutral-600">Пользователь</span>
+        <span className="mb-1 block text-neutral-600">Пользователь</span>
         <input
-          className="border rounded-md px-2 py-1 bg-white min-w-64"
+          className="min-w-64 rounded-md border bg-white px-2 py-1"
           value={user}
           onChange={(e) => setUser(e.target.value)}
           placeholder="email или userId"
@@ -78,20 +100,20 @@ export function OrdersFilterBar() {
       </label>
 
       <label className="text-sm">
-        <span className="block mb-1 text-neutral-600">От даты</span>
+        <span className="mb-1 block text-neutral-600">От даты</span>
         <input
           type="date"
-          className="border rounded-md px-2 py-1 bg-white"
+          className="rounded-md border bg-white px-2 py-1"
           value={dateFrom}
           onChange={(e) => setDateFrom(e.target.value)}
         />
       </label>
 
       <label className="text-sm">
-        <span className="block mb-1 text-neutral-600">До даты</span>
+        <span className="mb-1 block text-neutral-600">До даты</span>
         <input
           type="date"
-          className="border rounded-md px-2 py-1 bg-white"
+          className="rounded-md border bg-white px-2 py-1"
           value={dateTo}
           onChange={(e) => setDateTo(e.target.value)}
         />
@@ -99,12 +121,17 @@ export function OrdersFilterBar() {
 
       <div className="ml-auto flex gap-2">
         <button
+          type="button"
           onClick={apply}
-          className="px-3 py-1.5 rounded-md bg-neutral-900 text-white"
+          className="rounded-md bg-neutral-900 px-3 py-1.5 text-white"
         >
           Фильтр
         </button>
-        <button onClick={reset} className="px-3 py-1.5 rounded-md border">
+        <button
+          type="button"
+          onClick={reset}
+          className="rounded-md border px-3 py-1.5"
+        >
           Сброс
         </button>
       </div>
