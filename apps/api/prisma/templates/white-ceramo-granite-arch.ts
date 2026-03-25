@@ -31,12 +31,12 @@ const sizeFinishArchPrice: Record<string, Partial<Record<Finish, number>>> = {
 };
 
 const SKU_CODES: Record<string, Partial<Record<Finish, string>>> = {
-  '13×18': { GLOSS: '20057', MATTE: '20058' },
-  '15×20': { GLOSS: '20059', MATTE: '20060' },
-  '20×25': { GLOSS: '20061', MATTE: '20062' },
-  '20×30': { GLOSS: '20053', MATTE: '20054' },
-  '25×30': { GLOSS: '20063', MATTE: '20064' },
-  '30×40': { GLOSS: '20055', MATTE: '20056' },
+  '13×18': { MATTE: '20057', GLOSS: '20058' },
+  '15×20': { MATTE: '20059', GLOSS: '20060' },
+  '20×25': { MATTE: '20061', GLOSS: '20062' },
+  '20×30': { MATTE: '20053', GLOSS: '20054' },
+  '25×30': { MATTE: '20063', GLOSS: '20064' },
+  '30×40': { MATTE: '20055', GLOSS: '20056' },
 };
 
 export const whiteArchTemplates: TemplateConfig[] = [

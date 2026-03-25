@@ -117,6 +117,7 @@ export class OrdersService {
       include: {
         items: {
           include: {
+            frame: true,
             size: true,
             background: true,
             assets: { orderBy: { createdAt: 'asc' } },
@@ -135,6 +136,7 @@ export class OrdersService {
             id: rawItem.id,
             templateLabel: rawItem.templateLabel,
             size: rawItem.size ? { label: rawItem.size.label } : null,
+            frame: rawItem.frame ? { name: rawItem.frame.code } : null,
             approveNeeded: rawItem.approveNeeded ?? null,
             retouchNeeded: rawItem.retouchNeeded ?? null,
             comment: rawItem.comment ?? null,
@@ -264,8 +266,6 @@ export class OrdersService {
       throw new BadRequestException('Background is required for this template');
     }
     if (!bgAllowed(dto.backgroundId)) {
-      console.log('>>>>>>> tpl.allowedBackgrounds', tpl.allowedBackgrounds);
-      console.log('>>>>>>> dto.backgroundId)', dto.backgroundId);
       throw new BadRequestException(
         'Background is not allowed for this template',
       );

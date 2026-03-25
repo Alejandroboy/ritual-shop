@@ -455,17 +455,20 @@ export default function AddToOrderForm({ tpl }: Props) {
         <label className="text-sm">
           <div className="mb-1 text-neutral-600">Отверстия</div>
           {tpl.holes.length > 1 ? (
-            <select
-              className="border rounded-md px-2 py-1 bg-white w-full"
-              value={holePattern}
-              onChange={(e) => setHolePattern(e.target.value || '')}
-            >
-              {tpl.holes.map((h) => (
-                <option key={h} value={h}>
-                  {holePatternLabel(h)}
-                </option>
-              ))}
-            </select>
+            <>
+              <select
+                className="border rounded-md px-2 py-1 bg-white w-full"
+                value={holePattern}
+                onChange={(e) => setHolePattern(e.target.value || '')}
+              >
+                {tpl.holes.map((h) => (
+                  <option key={h} value={h}>
+                    {holePatternLabel(h)}
+                  </option>
+                ))}
+              </select>
+              *при выборе отверстий проверьте размер*
+            </>
           ) : (
             <span>{holePatternLabel(tpl.holes[0])}</span>
           )}

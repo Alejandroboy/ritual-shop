@@ -40,8 +40,8 @@ const SKU_CODES: Record<string, Partial<Record<Finish, string>>> = {
   '13×18': { MATTE: '20071', GLOSS: '20072' },
   '15×20': { MATTE: '20073', GLOSS: '20074' },
   '20×25': { MATTE: '20075', GLOSS: '20076' },
-  '20×30': { MATTE: '20077', GLOSS: '20078' },
-  '25×30': { MATTE: '20053', GLOSS: '20054' },
+  '20×30': { MATTE: '20065', GLOSS: '20066' },
+  '25×30': { MATTE: '20077', GLOSS: '20078' },
   '30×40': { MATTE: '20067', GLOSS: '20068' },
   '30×60': { MATTE: '20069', GLOSS: '20070' },
 };

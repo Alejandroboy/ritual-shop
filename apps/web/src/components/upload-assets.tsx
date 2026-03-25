@@ -21,9 +21,11 @@ export function UploadAsset({
   onDone,
   userId,
 }: Props) {
+  const inputId = React.useId();
   const enqueueFiles = useAppStore((s) => s.enqueueFiles);
   const ensureOrder = useAppStore((s) => s.ensureOrder);
   const queue = useAppStore((s) => s.queue);
+  const removeUploadJob = useAppStore((s) => s.removeUploadJob);
 
   const jobs = useMemo(() => {
     if (!orderId) return [];
@@ -39,7 +41,7 @@ export function UploadAsset({
 
   const [error, setError] = useState<string | null>(null);
 
-  const ACCEPTED = ['image/png', 'image/jpeg', 'image/webp', 'application/pdf'];
+  const ACCEPTED = ['image/png', 'image/jpeg', 'image/webp'];
   const MAX_FILES = 8;
   const MAX_SIZE = 15 * 1024 * 1024;
 
@@ -82,11 +84,11 @@ export function UploadAsset({
   return (
     <div>
       <label
-        htmlFor="files"
+        htmlFor={inputId}
         className="bg-[#f1f1f1] border rounded-md p-[10px] cursor-pointer inline-block"
       >
         <input
-          id="files"
+          id={inputId}
           type="file"
           className="hidden"
           onChange={onSelect}
@@ -101,8 +103,29 @@ export function UploadAsset({
         <div className="space-y-1 text-sm mt-[20px]">
           {visibleJobs.map((j) => (
             <div key={j.id}>
-              {j.file.name} — {j.state}
-              {j.error ? ` (${j.error})` : ''}
+              <div className="flex items-center gap-3">
+                <div>
+                  {j.file.name} — {j.state}
+                  {j.error ? ` (${j.error})` : ''}
+                </div>
+                {j.state === 'uploaded' && (
+                  <button
+                    type="button"
+                    onClick={() => removeUploadJob(j.id)}
+                    className="border rounded-md px-3 py-1 text-sm cursor-pointer"
+                  >
+                    Удалить
+                  </button>
+                )}
+              </div>
+              {j.previewUrl && j.state === 'uploaded' && (
+                <img
+                  src={j.previewUrl ?? ''}
+                  alt="preview"
+                  style={{ width: 220, height: 'auto' }}
+                  className="mt-[20px]"
+                />
+              )}
             </div>
           ))}
         </div>

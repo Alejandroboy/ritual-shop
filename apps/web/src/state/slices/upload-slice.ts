@@ -25,7 +25,7 @@ export type UploadJob = {
   bucket?: string;
   key?: string;
   etag?: string | null;
-
+  previewUrl?: string;
   mode?: Mode;
   retouchOf?: Id | null;
   userId: string | null;
@@ -49,6 +49,7 @@ export type UploadsSlice = {
   clearQueueByOrder: (orderId: Id) => void;
   clearQueueByItem: (orderId: Id, itemId: Id | null) => void;
   clearTerminalByOrder: (orderId: Id) => void;
+  removeUploadJob: (jobId: string) => void;
 
   _pump: () => void;
 };
@@ -69,6 +70,39 @@ const isActiveState = (state: UploadState) =>
   state === 'uploading' ||
   state === 'registering' ||
   state === 'uploaded';
+
+const revokePreviewUrl = (job: UploadJob) => {
+  if (job.previewUrl?.startsWith('blob:')) {
+    URL.revokeObjectURL(job.previewUrl);
+  }
+};
+
+const countRunning = (queue: UploadJob[]) =>
+  queue.filter((j) => j.state === 'uploading' || j.state === 'registering')
+    .length;
+
+const splitQueue = (
+  queue: UploadJob[],
+  shouldKeep: (job: UploadJob) => boolean,
+) => {
+  const nextQueue: UploadJob[] = [];
+  const removed: UploadJob[] = [];
+
+  for (const job of queue) {
+    if (shouldKeep(job)) {
+      nextQueue.push(job);
+    } else {
+      removed.push(job);
+    }
+  }
+
+  removed.forEach(revokePreviewUrl);
+
+  return {
+    nextQueue,
+    running: countRunning(nextQueue),
+  };
+};
 
 export const createUploadsSlice: UploadsCreator = (
   set,
@@ -92,6 +126,7 @@ export const createUploadsSlice: UploadsCreator = (
       mode: opts?.mode ?? 'original',
       retouchOf: opts?.retouchOf ?? null,
       userId: opts?.userId ?? null,
+      previewUrl: URL.createObjectURL(f),
     }));
 
     set((s) => ({
@@ -116,61 +151,52 @@ export const createUploadsSlice: UploadsCreator = (
 
   clearFinished: () =>
     set((s) => {
-      const nextQueue = s.queue.filter((j: UploadJob) =>
+      const { nextQueue, running } = splitQueue(s.queue, (j) =>
         isActiveState(j.state),
       );
-      const nextRunning = nextQueue.filter(
-        (j: UploadJob) => j.state === 'uploading' || j.state === 'registering',
-      ).length;
 
       return {
         queue: nextQueue,
-        running: nextRunning,
+        running,
       };
     }),
 
   clearQueueByOrder: (orderId) =>
     set((s) => {
-      const nextQueue = s.queue.filter((j: UploadJob) => j.orderId !== orderId);
-      const nextRunning = nextQueue.filter(
-        (j: UploadJob) => j.state === 'uploading' || j.state === 'registering',
-      ).length;
+      const { nextQueue, running } = splitQueue(
+        s.queue,
+        (j) => j.orderId !== orderId,
+      );
 
       return {
         queue: nextQueue,
-        running: nextRunning,
+        running,
       };
     }),
 
   clearQueueByItem: (orderId, itemId) =>
     set((s) => {
-      const nextQueue = s.queue.filter(
-        (j: UploadJob) => !(j.orderId === orderId && j.itemId === itemId),
+      const { nextQueue, running } = splitQueue(
+        s.queue,
+        (j) => !(j.orderId === orderId && j.itemId === itemId),
       );
-      const nextRunning = nextQueue.filter(
-        (j: UploadJob) => j.state === 'uploading' || j.state === 'registering',
-      ).length;
 
       return {
         queue: nextQueue,
-        running: nextRunning,
+        running,
       };
     }),
 
   clearTerminalByOrder: (orderId) =>
     set((s) => {
-      const nextQueue = s.queue.filter((j: UploadJob) => {
+      const { nextQueue, running } = splitQueue(s.queue, (j) => {
         if (j.orderId !== orderId) return true;
         return isActiveState(j.state);
       });
 
-      const nextRunning = nextQueue.filter(
-        (j: UploadJob) => j.state === 'uploading' || j.state === 'registering',
-      ).length;
-
       return {
         queue: nextQueue,
-        running: nextRunning,
+        running,
       };
     }),
 
@@ -309,4 +335,14 @@ export const createUploadsSlice: UploadsCreator = (
       get()._pump();
     }
   },
+
+  removeUploadJob: (jobId) =>
+    set((s) => {
+      const { nextQueue, running } = splitQueue(s.queue, (j) => j.id !== jobId);
+
+      return {
+        queue: nextQueue,
+        running,
+      };
+    }),
 });

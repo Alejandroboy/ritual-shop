@@ -163,8 +163,8 @@ export default function CheckoutPage() {
                 </svg>
               </div>
               <p>{item.templateLabel}</p>
-              {item.background && <p>Фон:&nbsp;{item.background?.name}</p>}
-              <p>Рамка:&nbsp;{item.frameId ? item.frameId : 'Без рамки'}</p>
+              {item.background && <p>{item.background?.name}</p>}
+              {item.frame && <p>Рамка:&nbsp;{item.frame?.name}</p>}
               <p>Отверстия:&nbsp;{holePatternLabel(item.holePattern)}</p>
               <p>Размер:&nbsp;{item.size?.label}</p>
               {!!item?.firstName && <p>{item?.firstName}</p>}

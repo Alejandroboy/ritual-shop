@@ -21,6 +21,15 @@ export default function CreateUserForm() {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [ok, setOk] = useState<string | null>(null);
+  const [type, setType] = useState('password');
+
+  function handleToggleType() {
+    if (type === 'password') {
+      setType('text');
+    } else {
+      setType('password');
+    }
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -81,22 +90,30 @@ export default function CreateUserForm() {
             type="email"
             required
             value={form.email}
+            id="email"
             onChange={(e) => setForm({ ...form, email: e.target.value })}
             placeholder="user@example.com"
           />
         </label>
 
-        <label className="block">
+        <label className="block relative">
           <span className="text-sm font-medium">Пароль</span>
           <input
             className="mt-1 w-full rounded-xl border p-3 outline-none"
-            type="password"
+            type={type}
             required
             minLength={6}
             value={form.password}
+            id="password"
             onChange={(e) => setForm({ ...form, password: e.target.value })}
             placeholder="минимум 6 символов"
           />
+          <div
+            onClick={handleToggleType}
+            className="absolute top-[40px] right-[5px] cursor-pointer"
+          >
+            {type === 'password' ? 'Показать' : 'Скрыть'}
+          </div>
         </label>
 
         <label className="block">

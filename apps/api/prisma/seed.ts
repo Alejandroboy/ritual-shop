@@ -159,7 +159,7 @@ function familyOvalCermet(codePrefix: string, labelPrefix: string): FamilyBase {
     shape: Shape.OVAL,
     colorModes: [ColorMode.BW, ColorMode.COLOR],
     orientations: [Orientation.VERTICAL, Orientation.HORIZONTAL],
-    supportsFrame: true, // в каталоге есть «рамки» для овалов
+    supportsFrame: true,
     holesByOrientation: {
       [Orientation.VERTICAL]: [HolePattern.NONE, HolePattern.TWO_VERTICAL],
       [Orientation.HORIZONTAL]: [HolePattern.NONE, HolePattern.TWO_HORIZONTAL],

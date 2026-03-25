@@ -24,6 +24,9 @@ export type OrderItemDetails = {
   background: {
     name: string;
   };
+  frame: {
+    name: string;
+  };
   holePattern: string;
 };
 
