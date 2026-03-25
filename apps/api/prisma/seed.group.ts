@@ -50,10 +50,254 @@ const ALL_HOLES: HolePattern[] = [
   HolePattern.FOUR_CORNERS,
 ];
 
+async function syncTemplateSizes(templateId: number, cfg: TemplateConfig) {
+  const defaultHoles = cfg.holePatterns ?? [HolePattern.NONE];
+  const defaultPrice = cfg.basePrice ?? 0;
+
+  if (!cfg.sizeLabels.length) {
+    await prisma.templateSize.deleteMany({
+      where: { templateId },
+    });
+    return;
+  }
+
+  const sizes = await prisma.size.findMany({
+    where: { label: { in: cfg.sizeLabels } },
+  });
+
+  const desiredSizeIds = sizes.map((s) => s.id);
+
+  await prisma.templateSize.deleteMany({
+    where: {
+      templateId,
+      sizeId: { notIn: desiredSizeIds },
+    },
+  });
+
+  for (const s of sizes) {
+    const data = {
+      availableHolePattern: cfg.sizeHolePatterns?.[s.label] ?? defaultHoles,
+      price: cfg.sizePrice?.[s.label] ?? defaultPrice,
+      skuCode: cfg.skuCodes?.[s.label] ?? null,
+    };
+
+    await prisma.templateSize.upsert({
+      where: {
+        templateId_sizeId: {
+          templateId,
+          sizeId: s.id,
+        },
+      },
+      update: data,
+      create: {
+        templateId,
+        sizeId: s.id,
+        ...data,
+      },
+    });
+  }
+}
+
+async function syncTemplateSizeFinishPrices(
+  templateId: number,
+  cfg: TemplateConfig,
+) {
+  const finishes = cfg.finishes ?? [];
+
+  if (!finishes.length || !cfg.sizeFinishPrice) {
+    await prisma.templateSizeFinishPrice.deleteMany({
+      where: { templateId },
+    });
+    return;
+  }
+
+  const sizes = await prisma.size.findMany({
+    where: { label: { in: cfg.sizeLabels } },
+  });
+
+  const desiredKeys = new Set<string>();
+
+  for (const s of sizes) {
+    const pricePerFinish = cfg.sizeFinishPrice[s.label];
+    const skuCodePerFinish = cfg.skuCodesFinish && cfg.skuCodesFinish[s.label];
+
+    if (!pricePerFinish) continue;
+
+    for (const finish of finishes) {
+      const price = pricePerFinish[finish];
+      if (price == null) continue;
+
+      desiredKeys.add(`${s.id}:${finish}`);
+
+      const data = {
+        price,
+        skuCode: skuCodePerFinish?.[finish] ?? '',
+      };
+
+      const existing = await prisma.templateSizeFinishPrice.findUnique({
+        where: {
+          templateId_sizeId_finish: {
+            templateId,
+            sizeId: s.id,
+            finish,
+          },
+        },
+      });
+
+      if (existing) {
+        await prisma.templateSizeFinishPrice.update({
+          where: {
+            templateId_sizeId_finish: {
+              templateId,
+              sizeId: s.id,
+              finish,
+            },
+          },
+          data,
+        });
+      } else {
+        await prisma.templateSizeFinishPrice.create({
+          data: {
+            templateId,
+            sizeId: s.id,
+            finish,
+            ...data,
+          },
+        });
+      }
+    }
+  }
+
+  const existingRows = await prisma.templateSizeFinishPrice.findMany({
+    where: { templateId },
+    select: { sizeId: true, finish: true },
+  });
+
+  const rowsToDelete = existingRows.filter(
+    (row) => !desiredKeys.has(`${row.sizeId}:${row.finish}`),
+  );
+
+  for (const row of rowsToDelete) {
+    await prisma.templateSizeFinishPrice.delete({
+      where: {
+        templateId_sizeId_finish: {
+          templateId,
+          sizeId: row.sizeId,
+          finish: row.finish,
+        },
+      },
+    });
+  }
+}
+
+async function replaceTemplateHoles(
+  templateId: number,
+  patterns: HolePattern[],
+) {
+  await prisma.templateHole.deleteMany({
+    where: { templateId },
+  });
+
+  if (!patterns.length) return;
+
+  await prisma.templateHole.createMany({
+    data: patterns.map((pattern) => ({
+      templateId,
+      pattern,
+    })),
+    skipDuplicates: true,
+  });
+}
+
+async function replaceTemplateFrames(templateId: number, frameIds: number[]) {
+  await prisma.templateFrame.deleteMany({
+    where: { templateId },
+  });
+
+  if (!frameIds.length) return;
+
+  await prisma.templateFrame.createMany({
+    data: frameIds.map((frameId) => ({
+      templateId,
+      frameId,
+    })),
+    skipDuplicates: true,
+  });
+}
+
+async function replaceTemplateGoldTypes(
+  templateId: number,
+  goldTypes: string[],
+) {
+  await prisma.templateGoldType.deleteMany({
+    where: { templateId },
+  });
+
+  if (!goldTypes.length) return;
+
+  await prisma.templateGoldType.createMany({
+    data: goldTypes.map((goldType) => ({
+      templateId,
+      goldType,
+    })),
+    skipDuplicates: true,
+  });
+}
+
+async function replaceTemplateBackgrounds(
+  templateId: number,
+  backgroundIds: number[],
+) {
+  await prisma.templateBackground.deleteMany({
+    where: { templateId },
+  });
+
+  if (!backgroundIds.length) return;
+
+  await prisma.templateBackground.createMany({
+    data: backgroundIds.map((backgroundId) => ({
+      templateId,
+      backgroundId,
+    })),
+    skipDuplicates: true,
+  });
+}
+
+async function replaceTemplateFinishes(templateId: number, finishes: Finish[]) {
+  await prisma.templateFinish.deleteMany({
+    where: { templateId },
+  });
+
+  if (!finishes.length) return;
+
+  await prisma.templateFinish.createMany({
+    data: finishes.map((finish) => ({
+      templateId,
+      finish,
+    })),
+    skipDuplicates: true,
+  });
+}
+
 async function createTemplate(cfg: TemplateConfig) {
   const template = await prisma.template.upsert({
     where: { code: cfg.code },
-    update: {},
+    update: {
+      label: cfg.label,
+      material: cfg.material,
+      shape: cfg.shape,
+      singlePerson: cfg.singlePerson ?? true,
+      orientation: cfg.orientation ?? null,
+      colorMode: cfg.colorMode,
+      coverage: cfg.coverage ?? Coverage.NORMAL,
+      supportsFrame: cfg.supportsFrame ?? false,
+      requiresBackground: cfg.requiresBackground ?? false,
+      requiresFinish: cfg.requiresFinish ?? false,
+      supportsHoles: cfg.supportsHoles ?? true,
+      fullTitle: cfg.fullTitle ?? null,
+      perHolePrice: cfg.perHolePrice ?? 0,
+      inscribed: cfg.inscribed ?? null,
+    },
     create: {
       code: cfg.code,
       label: cfg.label,
@@ -68,115 +312,36 @@ async function createTemplate(cfg: TemplateConfig) {
       requiresFinish: cfg.requiresFinish ?? false,
       supportsHoles: cfg.supportsHoles ?? true,
       fullTitle: cfg.fullTitle ?? null,
-      perHolePrice: cfg.perHolePrice ?? null,
+      perHolePrice: cfg.perHolePrice ?? 0,
       inscribed: cfg.inscribed ?? null,
     },
   });
 
-  const defaultHoles = cfg.holePatterns ?? [HolePattern.NONE];
+  await syncTemplateSizes(template.id, cfg);
+  await syncTemplateSizeFinishPrices(template.id, cfg);
 
-  const defaultPrice = cfg.basePrice ?? 0;
-  if (cfg.sizeLabels.length) {
-    const sizes = await prisma.size.findMany({
-      where: { label: { in: cfg.sizeLabels } },
-    });
-
-    await prisma.templateSize.deleteMany({
-      where: { templateId: template.id },
-    });
-
-    await prisma.templateSize.createMany({
-      data: sizes.map((s) => ({
-        templateId: template.id,
-        sizeId: s.id,
-        availableHolePattern: cfg.sizeHolePatterns?.[s.label] ?? defaultHoles,
-        price: cfg.sizePrice?.[s.label] ?? defaultPrice,
-        skuCode: cfg.skuCodes?.[s.label] ?? null,
-      })),
-      skipDuplicates: true,
-    });
-  }
-
-  if (cfg.finishes?.length && cfg.sizeFinishPrice) {
-    const sizes = await prisma.size.findMany({
-      where: { label: { in: cfg.sizeLabels } },
-    });
-
-    await prisma.templateSizeFinishPrice.deleteMany({
-      where: { templateId: template.id },
-    });
-
-    const rows: Array<{
-      templateId: number;
-      sizeId: number;
-      finish: Finish;
-      price: number;
-    }> = [];
-
-    for (const s of sizes) {
-      const pricePerFinish = cfg.sizeFinishPrice[s.label];
-      const skuCodePerFinish =
-        cfg.skuCodesFinish && cfg.skuCodesFinish[s.label];
-      if (!pricePerFinish) continue;
-
-      for (const finish of cfg.finishes) {
-        const price = pricePerFinish[finish];
-        let skuCodeValue;
-        if (skuCodePerFinish) {
-          skuCodeValue = skuCodePerFinish[finish];
-        }
-        if (price == null) continue;
-
-        rows.push({
-          templateId: template.id,
-          sizeId: s.id,
-          finish,
-          price,
-          skuCode: skuCodeValue ? skuCodeValue : '',
-        });
-      }
-    }
-
-    if (rows.length) {
-      await prisma.templateSizeFinishPrice.createMany({
-        data: rows,
-        skipDuplicates: true,
-      });
-    }
-  }
-
-  const holes = cfg.holePatterns ?? ALL_HOLES;
-  if (holes.length && (cfg.supportsHoles ?? true)) {
-    await prisma.templateHole.createMany({
-      data: holes.map((pattern) => ({
-        templateId: template.id,
-        pattern,
-      })),
-      skipDuplicates: true,
-    });
-  }
+  const holes =
+    cfg.supportsHoles === false ? [] : (cfg.holePatterns ?? ALL_HOLES);
+  await replaceTemplateHoles(template.id, holes);
 
   if (cfg.frameCodes?.length) {
     const frames = await prisma.frame.findMany({
       where: { code: { in: cfg.frameCodes } },
+      select: { id: true },
     });
-    await prisma.templateFrame.createMany({
-      data: frames.map((f) => ({
-        templateId: template.id,
-        frameId: f.id,
-      })),
-      skipDuplicates: true,
-    });
+
+    await replaceTemplateFrames(
+      template.id,
+      frames.map((f) => f.id),
+    );
+  } else {
+    await replaceTemplateFrames(template.id, []);
   }
 
-  if (cfg.goldTypes) {
-    await prisma.templateGoldType.createMany({
-      data: cfg.goldTypes.map((goldType) => ({
-        templateId: template.id,
-        goldType,
-      })),
-      skipDuplicates: true,
-    });
+  if (cfg.goldTypes?.length) {
+    await replaceTemplateGoldTypes(template.id, cfg.goldTypes);
+  } else {
+    await replaceTemplateGoldTypes(template.id, []);
   }
 
   if (cfg.requiresBackground || (cfg.backgroundCodes?.length ?? 0) > 0) {
@@ -184,24 +349,23 @@ async function createTemplate(cfg: TemplateConfig) {
       cfg.backgroundCodes && cfg.backgroundCodes.length
         ? { code: { in: cfg.backgroundCodes } }
         : {};
-    const backgrounds = await prisma.background.findMany({ where });
-    await prisma.templateBackground.createMany({
-      data: backgrounds.map((b) => ({
-        templateId: template.id,
-        backgroundId: b.id,
-      })),
-      skipDuplicates: true,
+    const backgrounds = await prisma.background.findMany({
+      where,
+      select: { id: true },
     });
+
+    await replaceTemplateBackgrounds(
+      template.id,
+      backgrounds.map((b) => b.id),
+    );
+  } else {
+    await replaceTemplateBackgrounds(template.id, []);
   }
 
   if (cfg.finishes?.length) {
-    await prisma.templateFinish.createMany({
-      data: cfg.finishes.map((finish) => ({
-        templateId: template.id,
-        finish,
-      })),
-      skipDuplicates: true,
-    });
+    await replaceTemplateFinishes(template.id, cfg.finishes);
+  } else {
+    await replaceTemplateFinishes(template.id, []);
   }
 }
 
@@ -242,17 +406,28 @@ async function seedSizes() {
     }
   }
 
-  const data = Array.from(unique.values()).map(({ widthCm, heightCm }) => ({
-    widthCm,
-    heightCm,
-    label: `${widthCm}×${heightCm}`,
-    priceMinor: 0,
-  }));
+  for (const { widthCm, heightCm } of unique.values()) {
+    const existing = await prisma.size.findUnique({
+      where: {
+        widthCm_heightCm: {
+          widthCm,
+          heightCm,
+        },
+      },
+      select: { id: true },
+    });
 
-  await prisma.size.createMany({
-    data,
-    skipDuplicates: true,
-  });
+    if (!existing) {
+      await prisma.size.create({
+        data: {
+          widthCm,
+          heightCm,
+          label: `${widthCm}×${heightCm}`,
+          priceMinor: 0,
+        },
+      });
+    }
+  }
 }
 
 async function seedFrames() {
@@ -267,10 +442,15 @@ async function seedFrames() {
     });
   }
 
-  await prisma.frame.createMany({
-    data: frames,
-    skipDuplicates: true,
-  });
+  for (const frame of frames) {
+    await prisma.frame.upsert({
+      where: { code: frame.code },
+      update: {
+        name: frame.name,
+      },
+      create: frame,
+    });
+  }
 }
 
 async function seedBackgrounds() {
@@ -318,22 +498,30 @@ async function seedBackgrounds() {
     { code: 200, name: 'Фон 200 (чёрный)' },
   ];
 
-  await prisma.background.createMany({
-    data: bgs,
-    skipDuplicates: true,
-  });
+  for (const bg of bgs) {
+    await prisma.background.upsert({
+      where: { code: bg.code },
+      update: {
+        name: bg.name,
+      },
+      create: bg,
+    });
+  }
 }
 
 async function seedMaterialHolePrices() {
   const materials = Object.values(Material) as Material[];
 
-  await prisma.materialHolePrice.createMany({
-    data: materials.map((material) => ({
-      material,
-      perHoleMinor: 0,
-    })),
-    skipDuplicates: true,
-  });
+  for (const material of materials) {
+    await prisma.materialHolePrice.upsert({
+      where: { material },
+      update: {},
+      create: {
+        material,
+        perHoleMinor: 0,
+      },
+    });
+  }
 }
 
 async function seedTemplates() {
