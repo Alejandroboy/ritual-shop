@@ -1,13 +1,18 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { adminApiFetch } from '@utils';
+import { adminApiFetch, labelOf, roleLabels } from '@utils';
+import { useAppStore } from '@state';
 
 type Role = 'ADMIN' | 'MANAGER' | 'CUSTOMER';
 
+const roleLabel = labelOf<Role>(roleLabels);
+
 export default function CreateUserForm() {
   const router = useRouter();
+  const me = useAppStore((s) => s.me);
+  const fetchMe = useAppStore((s) => s.fetchMe);
   const [form, setForm] = useState({
     email: '',
     password: '',
@@ -22,6 +27,10 @@ export default function CreateUserForm() {
   const [error, setError] = useState<string | null>(null);
   const [ok, setOk] = useState<string | null>(null);
   const [type, setType] = useState('password');
+
+  useEffect(() => {
+    if (!me) fetchMe().catch(() => {});
+  }, [me, fetchMe]);
 
   function handleToggleType() {
     if (type === 'password') {
@@ -168,18 +177,24 @@ export default function CreateUserForm() {
           />
         </label>
 
-        <label className="block">
-          <span className="text-sm font-medium">Роль</span>
-          <select
-            className="mt-1 w-full rounded-xl border p-3 outline-none bg-white"
-            value={form.role}
-            onChange={(e) => setForm({ ...form, role: e.target.value as Role })}
-          >
-            <option value="CUSTOMER">CUSTOMER</option>
-            <option value="MANAGER">MANAGER</option>
-            <option value="ADMIN">ADMIN</option>
-          </select>
-        </label>
+        {me && me.role !== 'ADMIN' ? (
+          ' '
+        ) : (
+          <label className="block">
+            <span className="text-sm font-medium">Роль</span>
+            <select
+              className="mt-1 w-full rounded-xl border p-3 outline-none bg-white"
+              value={form.role}
+              onChange={(e) =>
+                setForm({ ...form, role: e.target.value as Role })
+              }
+            >
+              <option value="CUSTOMER">{roleLabel('CUSTOMER')}</option>
+              <option value="MANAGER">{roleLabel('MANAGER')}</option>
+              <option value="ADMIN">{roleLabel('ADMIN')}</option>
+            </select>
+          </label>
+        )}
       </div>
 
       {error && <p className="text-sm text-red-600">{error}</p>}

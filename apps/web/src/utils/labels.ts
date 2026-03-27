@@ -63,6 +63,7 @@ export const finishLabels = {
   [FinishEnum.GLOSS]: 'Глянец',
   [FinishEnum.MATTE]: 'Матовый',
 } satisfies Record<FinishEnum, string>;
+
 export const roleLabels = {
   [Role.ADMIN]: 'Администратор',
   [Role.ADMIN_GOD]: 'Админ-бог',

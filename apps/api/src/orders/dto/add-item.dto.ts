@@ -14,6 +14,9 @@ export class AddOrderItemDto {
   @IsString()
   templateCode!: string;
 
+  @IsString()
+  userId!: string;
+
   @IsOptional()
   @Transform(({ value }) =>
     value === '' || value == null ? undefined : Number(value),

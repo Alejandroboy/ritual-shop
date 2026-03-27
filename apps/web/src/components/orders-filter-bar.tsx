@@ -19,12 +19,16 @@ export function OrdersFilterBar() {
   );
   const [dateFrom, setDateFrom] = useState<string>(sp.get('dateFrom') || '');
   const [dateTo, setDateTo] = useState<string>(sp.get('dateTo') || '');
+  const [userNameContains, setUserNameContains] = useState<string>(
+    sp.get('userNameContains') || '',
+  );
 
   useEffect(() => {
     setStatus(sp.get('status') || '');
     setUser(sp.get('userEmail') || sp.get('userId') || '');
     setDateFrom(sp.get('dateFrom') || '');
     setDateTo(sp.get('dateTo') || '');
+    setUserNameContains(sp.get('userNameContains') || '');
   }, [sp]);
 
   const apply = () => {
@@ -32,6 +36,9 @@ export function OrdersFilterBar() {
 
     if (status) q.set('status', status);
     else q.delete('status');
+
+    if (userNameContains) q.set('userNameContains', userNameContains);
+    else q.delete('userNameContains');
 
     q.delete('userEmail');
     q.delete('userId');
@@ -87,6 +94,16 @@ export function OrdersFilterBar() {
           <option value="">—</option>
           {statusOptions}
         </select>
+      </label>
+
+      <label className="text-sm">
+        <span className="mb-1 block text-neutral-600">Имя пользователя</span>
+        <input
+          className="min-w-64 rounded-md border bg-white px-2 py-1"
+          value={userNameContains}
+          onChange={(e) => setUserNameContains(e.target.value)}
+          placeholder="Имя"
+        />
       </label>
 
       <label className="text-sm">

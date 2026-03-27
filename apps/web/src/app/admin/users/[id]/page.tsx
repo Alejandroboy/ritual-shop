@@ -112,11 +112,9 @@ export default function UserDetails() {
                     {order?.items && (
                       <div key={order?.items.id}>
                         <p>{order?.items.templateLabel}</p>
-                        <p>Размер: {order?.items.sizeId}</p>
-                        {order?.items.frameId && (
-                          <p>Вид рамки:{order?.items.frameId}</p>
-                        )}
-                        <p>Вид фона: {order?.items.backgroundId}</p>
+                        <p>Размер: {order?.items.size.label}</p>
+                        {order?.items.frame && <p>{order?.items.frame.name}</p>}
+                        <p>{order?.items.background.name}</p>
                         <p>
                           Отверстия:&nbsp;
                           {holePatternLabel(order?.items.holePattern)}

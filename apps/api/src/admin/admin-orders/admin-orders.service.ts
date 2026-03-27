@@ -1,6 +1,5 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { EmailService } from '../../email/email.service';
 import { TelegramService } from '../../notifications/telegram/telegram.service';
 import { OrderStatus, Prisma } from '@prisma/client';
@@ -32,6 +31,7 @@ export class AdminOrdersService {
       userEmail,
       dateFrom,
       dateTo,
+      userNameContains,
     } = dto;
 
     const and: Prisma.OrderWhereInput[] = [];
@@ -41,6 +41,19 @@ export class AdminOrdersService {
     if (userId) {
       and.push({
         OR: [{ customerId: userId }, { customer: { id: userId } }],
+      });
+    }
+
+    if (userNameContains) {
+      and.push({
+        OR: [
+          { customerName: { contains: userNameContains, mode: 'insensitive' } },
+          {
+            customer: {
+              name: { contains: userNameContains, mode: 'insensitive' },
+            },
+          },
+        ],
       });
     }
 

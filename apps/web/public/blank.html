@@ -22,6 +22,15 @@
   padding: 0;
   border: 0;
 }
+.photo {
+  position: relative;
+}
+
+.photo-img {
+  width: 250px;
+  height: auto;
+  object-fit: cover;
+}
 .container {
   width: 894px;
   height: 1264px;
@@ -431,6 +440,7 @@ table {
 
     const map = {
       orderNumber: order.number || order.publicId || '',
+      assetUrl: order.assetUrl,
       goldType: order.goldType,
       dateAccepted: formatDate(order.dateAccepted) || formatDate(order.createdAt) || '',
       dateDelivery: formatDate(order.dateDelivery) || formatDate(order.deadline) || '',
@@ -445,6 +455,12 @@ table {
       comment: order.comment || '',
       deceasedBirthDate: formatDate(order.deceased?.birthDate) || '',
       deceasedDeathDate: formatDate(order.deceased?.deathDate) || '',
+
+      deceasedSecondLastName: order.deceased?.secondLastName || '',
+      deceasedSecondFirstName: order.deceased?.secondFirstName || '',
+      deceasedSecondMiddleName: order.deceased?.secondMiddleName || '',
+      deceasedSecondBirthDate: formatDate(order.deceased?.secondBirthDate) || '',
+      deceasedSecondDeathDate: formatDate(order.deceased?.secondDeathDate) || '',
     };
     const materialType = order.material;
     if (materialType === "CERMET") map.materialCermet = order.label;
@@ -479,6 +495,14 @@ table {
       if (!field) return;
 
       const value = map[field];
+
+      if (el.tagName === 'IMG') {
+        if (value) {
+          el.setAttribute('src', value);
+        }
+        return;
+      }
+
       if (value != null) {
         el.textContent = String(value);
       } else {
@@ -612,35 +636,35 @@ table {
               <div>Фамилия</div>
             </td>
             <td colspan="3"><span data-field="deceasedLastName" class="field"></span></td>
-            <td colspan="3" class="table-third-right"></td>
+            <td colspan="3" class="table-third-right"><span data-field="deceasedSecondLastName" class="field"></span></td>
           </tr>
           <tr class="table-row-forth">
             <td class="table-forth-left">
               <div>Имя</div>
             </td>
             <td colspan="3"><span data-field="deceasedFirstName" class="field"></span></td>
-            <td colspan="3" class="table-forth-right"></td>
+            <td colspan="3" class="table-forth-right"><span data-field="deceasedSecondFirstName" class="field"></span></td>
           </tr>
           <tr class="table-row-fifth">
             <td class="table-fifth-left">
               <div>Отчество</div>
             </td>
             <td colspan="3"><span data-field="deceasedMiddleName" class="field"></span></td>
-            <td colspan="3" class="table-fifth-right"></td>
+            <td colspan="3" class="table-fifth-right"><span data-field="deceasedSecondMiddleName" class="field"></span></td>
           </tr>
           <tr class="table-row-sixth">
             <td class="table-sixth-left">
               <div>Дата рождения</div>
             </td>
             <td colspan="3"><span data-field="deceasedBirthDate" class="field"></span></td>
-            <td colspan="3" class="table-sixth-right"></td>
+            <td colspan="3" class="table-sixth-right"><span data-field="deceasedSecondBirthDate" class="field"></span></td>
           </tr>
           <tr class="table-row-seventh">
             <td class="table-seventh-left">
               <div>Дата смерти</div>
             </td>
             <td colspan="3" class="table-seventh-center"><span data-field="deceasedDeathDate" class="field"></span></td>
-            <td colspan="3" class="table-seventh-right"></td>
+            <td colspan="3" class="table-seventh-right"><span data-field="deceasedSecondDeathDate" class="field"></span></td>
           </tr>
         </table>
         <div class="signature-block">
@@ -648,44 +672,9 @@ table {
           <span class="signature-line"></span>
         </div>
         <div class="warning-block">
-          <div class="warning-title">ВНИМАНИЕ!</div>
-          <ol class="warning-list">
-            <li>
-              Готовое изделие может отличаться по цветовой гамме и насыщенности от макета,
-              который вы согласовываете, что не является браком или недоработкой со стороны
-              нашей организации, а является результатом технического процесса производства.
-              Цветовой охват керамических красок, используемых при производстве портретов,
-              значительно меньше, чем количество цветов на дисплее смартфона или монитора.
-              Поэтому претензии, что цвета на готовом портрете и мониторе отличаются,
-              приниматься не будут.
-            </li>
-            <li>
-              Внимательно проверяйте данные на макете! После согласования макета заказчиком
-              претензии по обнаруженным ошибкам и исправлениям не принимаются.
-            </li>
-          </ol>
-        </div>
-      </div>
-      <div class="page-separator"></div>
-      <div class="container">
-        <div class="warning-block">
-          <ol class="warning-list" start="3">
-            <li>
-              При значительном увеличении фотографии потеря резкости неизбежна. Изображения
-              размером менее 1,5 см, а также фотографии низкого качества принимаются без
-              претензий со стороны заказчика.
-            </li>
-            <li>
-              Браком не являются мелкие точки и вкрапления на эмали или глазури. Они могут
-              появиться в результате технологического процесса и не влияют на качество и
-              долговечность изображения.
-            </li>
-            <li>
-              К возврату не принимаются металлокерамические овалы и таблички с механическими
-              повреждениями эмали (полученными в результате падения, удара или неправильной
-              установки на памятник).
-            </li>
-          </ol>
+          <div class="photo">
+            <img data-field="assetUrl" class="photo-img" />
+          </div>
         </div>
       </div>
     </div>

@@ -8,6 +8,15 @@ function AdminLoginPage() {
   const [err, setErr] = useState('');
   const router = useRouter();
   const next = useSearchParams().get('next') || '/admin';
+  const [type, setType] = useState('password');
+
+  function handleToggleType() {
+    if (type === 'password') {
+      setType('text');
+    } else {
+      setType('password');
+    }
+  }
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErr('');
@@ -36,13 +45,22 @@ function AdminLoginPage() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
-        <input
-          className="w-full border rounded p-2"
-          type="password"
-          placeholder="Пароль"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+        <div className="relative">
+          <input
+            className="w-full border rounded p-2"
+            type={type}
+            placeholder="Пароль"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <div
+            onClick={handleToggleType}
+            className="absolute top-[10px] right-[10px] cursor-pointer"
+          >
+            {type === 'password' ? 'Показать' : 'Скрыть'}
+          </div>
+        </div>
+
         {err && <p className="text-red-600 text-sm">{err}</p>}
         <button className="w-full rounded-xl py-2 bg-black text-white">
           Войти

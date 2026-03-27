@@ -10,6 +10,15 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [type, setType] = useState('password');
+
+  function handleToggleType() {
+    if (type === 'password') {
+      setType('text');
+    } else {
+      setType('password');
+    }
+  }
 
   type UserData = {
     user: User;
@@ -23,7 +32,7 @@ export default function LoginPage() {
       const data: UserData = await api('/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // важно для httpOnly-куки
+        credentials: 'include',
         body: JSON.stringify({ email: email.trim(), password }),
       });
       if (data?.user) {
@@ -61,11 +70,11 @@ export default function LoginPage() {
             />
           </label>
 
-          <label className="block">
+          <label className="block relative">
             <span className="text-sm font-medium">Пароль</span>
             <input
               className="mt-1 w-full rounded-xl border p-3 outline-none focus:ring"
-              type="password"
+              type={type}
               autoComplete="current-password"
               placeholder="••••••••"
               value={password}
@@ -73,6 +82,12 @@ export default function LoginPage() {
               required
               minLength={6}
             />
+            <div
+              onClick={handleToggleType}
+              className="absolute top-[40px] right-[5px] cursor-pointer"
+            >
+              {type === 'password' ? 'Показать' : 'Скрыть'}
+            </div>
           </label>
 
           {error && (
@@ -89,13 +104,12 @@ export default function LoginPage() {
             {pending ? 'Входим…' : 'Войти'}
           </button>
         </form>
-
-        <div className="mt-4 text-sm text-gray-500">
-          Нет аккаунта?{' '}
-          <Link className="underline hover:no-underline" href="/register">
-            Зарегистрироваться
-          </Link>
-        </div>
+        {/*<div className="mt-4 text-sm text-gray-500">*/}
+        {/*  Нет аккаунта?{' '}*/}
+        {/*  <Link className="underline hover:no-underline" href="/register">*/}
+        {/*    Зарегистрироваться*/}
+        {/*  </Link>*/}
+        {/*</div>*/}
       </div>
     </main>
   );

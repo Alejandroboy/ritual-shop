@@ -14,11 +14,14 @@ const finishLabel = labelOf<string>(finishLabels);
 
 export default function AddToOrderForm({ tpl }: Props) {
   const router = useRouter();
+
   const attachPendingToItem = useAppStore((s) => s.attachPendingToItem);
   const draftOrderId = useAppStore((s) => s.draftOrderId);
   const ensureOrder = useAppStore((s) => s.ensureOrder);
   const addItem = useAppStore((s) => s.addItem);
   const queue = useAppStore((s) => s.queue);
+  const me = useAppStore((s) => s.me);
+  const fetchMe = useAppStore((s) => s.fetchMe);
   const assetUploaded = queue.filter(
     (item) => item.state === 'uploaded' || item.state === 'done',
   );
@@ -117,6 +120,13 @@ export default function AddToOrderForm({ tpl }: Props) {
     }
   }, [holePattern]);
 
+  useEffect(() => {
+    if (!me) fetchMe().catch(() => {});
+  }, [me, fetchMe]);
+
+  if (!me) {
+    router.push('/login');
+  }
   async function submit() {
     if (!readAgreement) {
       alert(
@@ -126,6 +136,7 @@ export default function AddToOrderForm({ tpl }: Props) {
     }
     const orderId = await ensureOrder();
     const payload = {
+      userId: me ? me.id : '',
       dateOfBirth,
       dateOfDeath,
       firstName,

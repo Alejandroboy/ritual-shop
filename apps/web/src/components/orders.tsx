@@ -2,7 +2,7 @@
 
 import useSWR from 'swr';
 import Link from 'next/link';
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { adminApiFetch } from '@utils';
 import {
@@ -13,6 +13,34 @@ import {
 } from '@types';
 import { labelOf, orderStatusLabels, invoiceStatusLabel } from '@utils';
 import { OrdersFilterBar } from './orders-filter-bar';
+import { AssetThumb } from './asset-thumb';
+
+function isOlderThanDays(
+  dateValue: string | Date | null | undefined,
+  days: number,
+) {
+  if (!dateValue) return false;
+
+  const createdAt = new Date(dateValue);
+  if (Number.isNaN(createdAt.getTime())) return false;
+
+  const diffMs = Date.now() - createdAt.getTime();
+  return diffMs > days * 24 * 60 * 60 * 1000;
+}
+
+function shouldHighlightOrder(order: Order) {
+  const isOld = isOlderThanDays(order.createdAt as unknown as string, 7);
+
+  const pendingStatuses: OrderStatusEnum[] = [
+    OrderStatusEnum.IN_PROGRESS,
+    OrderStatusEnum.ACCEPTED,
+    OrderStatusEnum.APPROVAL,
+  ];
+
+  return (
+    isOld && pendingStatuses.includes(order.orderStatus as OrderStatusEnum)
+  );
+}
 
 export function Orders() {
   const sp = useSearchParams();
@@ -151,34 +179,61 @@ export function Orders() {
           const created = o.createdAt
             ? new Date(o.createdAt as unknown as string)
             : null;
+
+          const isDelayed = shouldHighlightOrder(o);
+
           return (
-            <li key={o.id} className="p-3 border rounded-xl">
-              <div className="font-mono">{o.number}</div>
-              {renderRetouch(o.items)}
-              {renderApproval(o.items)}
-              <div className="text-sm text-gray-600">
-                {orderLabel(o.orderStatus as OrderStatusEnum)}
-              </div>
-              <div className="text-sm text-gray-500">
-                {created ? created.toLocaleString() : '—'}
-                {' • '}
-                {o.customerEmail ?? 'без пользователя'}
-                {' • '}
-                {o.customerName ?? 'без имени'}
-              </div>
-              {o.includedInInvoice && (
-                <div className="text-sm">
-                  Включен в счет {o.invoiceName}&nbsp;
-                  {o?.invoice ? (
-                    <span className={chooseClass(o.invoice.status)}>
-                      {invoiceLabel(o.invoice.status as InvoiceStatusEnum)}
-                    </span>
-                  ) : null}
+            <li
+              key={o.id}
+              className={`p-3 rounded-xl border-2 ${
+                isDelayed ? 'border-red-500' : 'border-gray-200'
+              }`}
+            >
+              <div className="flex items-center gap-2 justify-between">
+                <div>
+                  <div className="font-mono">{o.number}</div>
+                  {renderRetouch(o.items)}
+                  {renderApproval(o.items)}
+                  <div className="text-sm text-gray-600">
+                    {orderLabel(o.orderStatus as OrderStatusEnum)}
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    {created ? created.toLocaleString() : '—'}
+                    {' • '}
+                    {o.customerEmail ?? 'без пользователя'}
+                    {' • '}
+                    {o.customerName ?? 'без имени'}
+                  </div>
+                  {o.includedInInvoice && (
+                    <div className="text-sm">
+                      Включен в счет {o.invoiceName}&nbsp;
+                      {o?.invoice ? (
+                        <span className={chooseClass(o.invoice.status)}>
+                          {invoiceLabel(o.invoice.status as InvoiceStatusEnum)}
+                        </span>
+                      ) : null}
+                    </div>
+                  )}
+                  <Link className="underline" href={`/admin/orders/${o.id}`}>
+                    Открыть
+                  </Link>
                 </div>
-              )}
-              <Link className="underline" href={`/admin/orders/${o.id}`}>
-                Открыть
-              </Link>
+                <div>
+                  {o.items?.assets.length ? (
+                    <AssetThumb
+                      asset={{
+                        id: o.items.assets[0].id,
+                        originalName: o.items.assets[0].originalName,
+                        contentType: o.items.assets[0].contentType,
+                      }}
+                      size={180}
+                      primary={o.items.assets[0].primary}
+                    />
+                  ) : (
+                    ''
+                  )}
+                </div>
+              </div>
             </li>
           );
         })}

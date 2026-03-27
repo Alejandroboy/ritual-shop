@@ -196,7 +196,16 @@ export class OrdersService {
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },
     });
+    const user = await this.prisma.user.findUnique({
+      where: { id: dto.userId },
+    });
+
     if (!order) throw new NotFoundException('Order not found 2');
+    if (!user) throw new NotFoundException('User not found');
+    await this.prisma.order.update({
+      where: { id: orderId },
+      data: { customerEmail: user?.email },
+    });
 
     const tpl = await this.prisma.template.findUnique({
       where: { code: dto.templateCode },

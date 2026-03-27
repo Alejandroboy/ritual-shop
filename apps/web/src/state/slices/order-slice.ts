@@ -31,6 +31,7 @@ export type OrderSlice = {
   }) => Promise<OrderDetails>;
 
   addItem: (payload: {
+    userId: string;
     dateOfBirth: string;
     dateOfDeath: string;
     firstName: string;

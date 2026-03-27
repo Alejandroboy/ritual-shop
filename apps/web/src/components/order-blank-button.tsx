@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { HolePatternEnum } from '@types';
+import { getAssetUrl } from '@utils';
 type Order = any;
 
 type OrderBlankButtonProps = {
@@ -32,6 +33,13 @@ interface ExtendedWindow extends Window {
 
 export function OrderBlankButton({ order }: OrderBlankButtonProps) {
   const [loading, setLoading] = useState(false);
+  const [url, setUrl] = React.useState<string | null>(null);
+  console.log('order', order.items);
+  getAssetUrl(order.items?.assets[0]?.id)
+    .then(({ url }) => {
+      setUrl(url);
+    })
+    .catch(() => {});
   const sizeObject = order.items?.template.allowedSizes.filter(
     (item: { size: { id: string } }) => item.size.id === order.items.sizeId,
   );
@@ -64,7 +72,13 @@ export function OrderBlankButton({ order }: OrderBlankButtonProps) {
       middleName: order.items?.middleName,
       birthDate: order.items?.dateOfBirth,
       deathDate: order.items?.dateOfDeath,
+      secondLastName: order.items?.lastNameSecondPerson,
+      secondFirstName: order.items?.firstNameSecondPerson,
+      secondMiddleName: order.items?.middleNameSecondPerson,
+      secondBirthDate: order.items?.dateOfBirthSecondPerson,
+      secondDeathDate: order.items?.dateOfDeathSecondPerson,
     },
+    assetUrl: url,
   };
 
   const handleClick = async () => {

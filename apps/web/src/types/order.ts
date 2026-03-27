@@ -35,6 +35,8 @@ export type OrderItemAsset = {
   originalName: string;
   size: number;
   stage: string;
+  contentType: string;
+  primary: boolean;
 };
 
 export type Order = {

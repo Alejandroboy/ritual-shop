@@ -43,6 +43,12 @@ export type CustomerOrderItem = {
     id: string;
     label: string;
   };
+  background: {
+    name: string;
+  };
+  frame: {
+    name: string;
+  };
   userActionNeeded: boolean;
   templateCode: string;
   templateId: string;

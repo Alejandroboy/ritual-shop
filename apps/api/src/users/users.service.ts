@@ -46,6 +46,9 @@ export class UsersService {
             invoiceName: true,
             items: {
               include: {
+                size: true,
+                frame: true,
+                background: true,
                 assets: true,
                 template: {
                   include: {
