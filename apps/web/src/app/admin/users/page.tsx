@@ -6,6 +6,7 @@ import { adminApiFetch, api } from '@utils';
 import useSWR from 'swr';
 import { labelOf, roleLabels } from '@utils';
 import { Role } from '@types';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 type User = {
   id: string;
@@ -18,9 +19,19 @@ type User = {
 const roleLabel = labelOf<Role>(roleLabels);
 
 export default function AdminUsersListPage() {
-  const [query, setQuery] = useState('');
+  const qs = new URLSearchParams();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  const qFromUrl = searchParams.get('q') || '';
+  const [query, setQuery] = useState(qFromUrl);
   const [error, setError] = useState<boolean>(false);
-  const { data, mutate } = useSWR(`/api/admin/users/list`, (u) =>
+
+  if (qFromUrl) qs.set('q', qFromUrl);
+
+  const key = `/api/admin/users/list${qs.toString() ? `?${qs}` : ''}`;
+
+  const { data, mutate } = useSWR(key, (u) =>
     adminApiFetch(u).then((r) => r.json()),
   );
 
@@ -37,6 +48,19 @@ export default function AdminUsersListPage() {
       console.log('e', e);
     }
   }
+
+  function handleSearch() {
+    const params = new URLSearchParams(searchParams.toString());
+
+    if (query) {
+      params.set('q', query);
+    } else {
+      params.delete('q');
+    }
+
+    router.push(`${pathname}?${params.toString()}`);
+  }
+
   return (
     <div>
       <div className="flex items-center justify-between">
@@ -52,8 +76,16 @@ export default function AdminUsersListPage() {
           placeholder="Поиск по email/имени/телефону"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') handleSearch();
+          }}
         />
-        <button className="rounded-xl border px-4">Найти</button>
+        <button
+          className="rounded-xl border px-4 cursor-pointer"
+          onClick={handleSearch}
+        >
+          Найти
+        </button>
       </div>
 
       {error && <p className="text-sm text-red-600 mt-3">{error}</p>}
