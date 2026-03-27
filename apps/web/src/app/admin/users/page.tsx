@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { Suspense, useState } from 'react';
 import Link from 'next/link';
 import { adminApiFetch, api } from '@utils';
 import useSWR from 'swr';
@@ -18,7 +18,7 @@ type User = {
 
 const roleLabel = labelOf<Role>(roleLabels);
 
-export default function AdminUsersListPage() {
+function AdminUsersList() {
   const qs = new URLSearchParams();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -130,5 +130,15 @@ export default function AdminUsersListPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function AdminUsersListPage() {
+  return (
+    <main>
+      <Suspense fallback={<div>Loading ...</div>}>
+        <AdminUsersList />
+      </Suspense>
+    </main>
   );
 }
