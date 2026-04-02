@@ -261,7 +261,7 @@ export default function InvoicePage() {
   }, [ordersIds, extraByOrderId]);
 
   async function getDownloadUrl(orderId: string) {
-    const templateId = '6f3c9a47-6772-4944-9723-92d0d7be2a9c';
+    const templateId = 'dae3ba0e-2d11-11ed-a261-0242ac120002';
     try {
       const res = await api<{ url: string }>(
         `/moy-sklad/orders/${orderId}/invoice-publication-url?templateId=${templateId}`,
