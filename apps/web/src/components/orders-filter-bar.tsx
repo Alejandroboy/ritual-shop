@@ -22,6 +22,12 @@ export function OrdersFilterBar() {
   const [userNameContains, setUserNameContains] = useState<string>(
     sp.get('userNameContains') || '',
   );
+  const [includedInInvoice, setIncludedInInvoice] = useState<string>(
+    sp.get('includedInInvoice') || '',
+  );
+  const [invoiceStatus, setInvoiceStatus] = useState<string>(
+    sp.get('invoiceStatus') || '',
+  );
 
   useEffect(() => {
     setStatus(sp.get('status') || '');
@@ -29,6 +35,8 @@ export function OrdersFilterBar() {
     setDateFrom(sp.get('dateFrom') || '');
     setDateTo(sp.get('dateTo') || '');
     setUserNameContains(sp.get('userNameContains') || '');
+    setIncludedInInvoice(sp.get('includedInInvoice') || '');
+    setInvoiceStatus(sp.get('invoiceStatus') || '');
   }, [sp]);
 
   const apply = () => {
@@ -39,6 +47,14 @@ export function OrdersFilterBar() {
 
     if (userNameContains) q.set('userNameContains', userNameContains);
     else q.delete('userNameContains');
+
+    if (includedInInvoice) {
+      q.set('includedInInvoice', includedInInvoice);
+    } else q.delete('includedInInvoice');
+
+    if (invoiceStatus) {
+      q.set('invoiceStatus', invoiceStatus);
+    } else q.delete('invoiceStatus');
 
     q.delete('userEmail');
     q.delete('userId');
@@ -64,10 +80,13 @@ export function OrdersFilterBar() {
 
     q.delete('status');
     q.delete('userEmail');
+    q.delete('userNameContains');
     q.delete('userId');
     q.delete('dateFrom');
     q.delete('dateTo');
     q.delete('page');
+    q.delete('invoiceStatus');
+    q.delete('includedInInvoice');
 
     router.push(`${pathname}${q.toString() ? `?${q.toString()}` : ''}`);
   };
@@ -134,6 +153,32 @@ export function OrdersFilterBar() {
           value={dateTo}
           onChange={(e) => setDateTo(e.target.value)}
         />
+      </label>
+
+      <label className="text-sm">
+        <span className="mb-1 block text-neutral-600">Включен в счет</span>
+        <select
+          className="min-w-40 rounded-md border bg-white px-2 py-1"
+          value={includedInInvoice}
+          onChange={(e) => setIncludedInInvoice(e.target.value)}
+        >
+          <option value="">—</option>
+          <option value="yes">Да</option>
+          <option value="no">Нет</option>
+        </select>
+      </label>
+
+      <label className="text-sm">
+        <span className="mb-1 block text-neutral-600">Статус оплаты</span>
+        <select
+          className="min-w-40 rounded-md border bg-white px-2 py-1"
+          value={invoiceStatus}
+          onChange={(e) => setInvoiceStatus(e.target.value)}
+        >
+          <option value="">—</option>
+          <option value="yes">Оплачен</option>
+          <option value="no">Не оплачен</option>
+        </select>
       </label>
 
       <div className="ml-auto flex gap-2">

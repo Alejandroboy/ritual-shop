@@ -570,7 +570,14 @@ export class OrdersService {
           customerId: dto.userId,
         },
         include: {
-          items: { include: { assets: true } },
+          items: {
+            include: {
+              assets: true,
+              size: true,
+              frame: true,
+              background: true,
+            },
+          },
           customer: true,
         },
       });
@@ -604,6 +611,21 @@ export class OrdersService {
     });
 
     if (result.customerEmail) {
+      const order = {
+        customerName: result.customerName || '',
+        customerEmail: result.customerEmail || '',
+        orderNumber: result.orderNumber || '',
+        templateLabel: result.items?.templateFullTitle || '',
+        backgroundLabel: result.items?.background?.name || '',
+        sizeLabel: result.items?.size?.label || '',
+        frameLabel: result.items?.frame?.id
+          ? String(result.items?.frame.id)
+          : 'Без рамки',
+        holeLabel: result.items?.holePattern || '',
+        finishLabel: result.items?.finish || '',
+      };
+      // await this.email.orderPlacedAdmin('art-memory@yandex', order);
+      await this.email.orderPlacedAdmin('shepardhero@gmail.com', order);
       await this.email.orderPlaced(
         result.customerEmail || '',
         result.number || '',

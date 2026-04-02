@@ -2,7 +2,7 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { EmailService } from '../../email/email.service';
 import { TelegramService } from '../../notifications/telegram/telegram.service';
-import { OrderStatus, Prisma } from '@prisma/client';
+import { Prisma, InvoiceStatus, OrderStatus } from '@prisma/client';
 import { AdminOrdersQueryDto } from './dto/admin-orders.query.dto';
 import { RemindersService } from '../../reminders/reminders.service';
 
@@ -32,16 +32,18 @@ export class AdminOrdersService {
       dateFrom,
       dateTo,
       userNameContains,
+      includedInInvoice,
+      invoiceStatus,
     } = dto;
 
     const and: Prisma.OrderWhereInput[] = [];
 
-    if (status) and.push({ orderStatus: status as any });
+    if (status) {
+      and.push({ orderStatus: status });
+    }
 
     if (userId) {
-      and.push({
-        OR: [{ customerId: userId }, { customer: { id: userId } }],
-      });
+      and.push({ customerId: userId });
     }
 
     if (userNameContains) {
@@ -75,10 +77,38 @@ export class AdminOrdersService {
       });
     }
 
+    if (includedInInvoice === 'yes') {
+      and.push({ includedInInvoice: true });
+    }
+
+    if (includedInInvoice === 'no') {
+      and.push({ includedInInvoice: false });
+    }
+
+    if (invoiceStatus === 'yes') {
+      and.push({
+        invoice: {
+          status: InvoiceStatus.PAID,
+        },
+      });
+    }
+
+    if (invoiceStatus === 'no') {
+      and.push({
+        invoice: {
+          status: {
+            in: [InvoiceStatus.UNPAID, InvoiceStatus.PARTIAL],
+          },
+        },
+      });
+    }
+
     if (q) {
       and.push({
         OR: [
           { number: { contains: q, mode: 'insensitive' } },
+          { orderNumber: { contains: q, mode: 'insensitive' } },
+          { customerName: { contains: q, mode: 'insensitive' } },
           { customerEmail: { contains: q, mode: 'insensitive' } },
           { customer: { email: { contains: q, mode: 'insensitive' } } },
           { customer: { name: { contains: q, mode: 'insensitive' } } },
