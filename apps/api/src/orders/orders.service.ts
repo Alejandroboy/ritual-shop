@@ -624,8 +624,7 @@ export class OrdersService {
         holeLabel: result.items?.holePattern || '',
         finishLabel: result.items?.finish || '',
       };
-      // await this.email.orderPlacedAdmin('art-memory@yandex', order);
-      await this.email.orderPlacedAdmin('shepardhero@gmail.com', order);
+      await this.email.orderPlacedAdmin('art-memory@yandex', order);
       await this.email.orderPlaced(
         result.customerEmail || '',
         result.number || '',
