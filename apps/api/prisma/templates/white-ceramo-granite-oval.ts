@@ -71,6 +71,7 @@ export const whiteOvalTemplates: TemplateConfig[] = [
       ],
       inscribed: index !== 0,
       skuCodesFinish: SKU_CODES,
+      requiresAsset: true,
     };
     const color: TemplateConfig = {
       ...bw,
@@ -119,6 +120,7 @@ export const whiteOvalTemplates: TemplateConfig[] = [
       ],
       inscribed: index !== 0,
       skuCodesFinish: SKU_CODES,
+      requiresAsset: true,
     };
     const color: TemplateConfig = {
       ...bw,

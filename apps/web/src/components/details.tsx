@@ -50,6 +50,60 @@ export function OrderItemsDetails({
     return <div>нет</div>;
   }
 
+  const renderDates = () => {
+    if (data.dateOfBirth && data.dateOfDeath) {
+      const dateOfBirth = new Date(data.dateOfBirth);
+      const dateOfDeath = new Date(data.dateOfDeath);
+      return (
+        <>
+          <div className="text-sm pl-[15px]">
+            Дата рождения:&nbsp;
+            {dateOfBirth.toLocaleString('ru-RU', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            })}
+          </div>
+          <div className="text-sm pl-[15px]">
+            Дата смерти:&nbsp;
+            {dateOfDeath.toLocaleString('ru-RU', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            })}
+          </div>
+        </>
+      );
+    } else return null;
+  };
+
+  const renderSecondDates = () => {
+    if (data.dateOfBirthSecondPerson && data.dateOfDeathSecondPerson) {
+      const dateOfBirthSecondPerson = new Date(data.dateOfBirthSecondPerson);
+      const dateOfDeathSecondPerson = new Date(data.dateOfDeathSecondPerson);
+      return (
+        <>
+          <div className="text-sm pl-[15px]">
+            Дата рождения:&nbsp;
+            {dateOfBirthSecondPerson.toLocaleString('ru-RU', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            })}
+          </div>
+          <div className="text-sm pl-[15px]">
+            Дата смерти:&nbsp;
+            {dateOfDeathSecondPerson.toLocaleString('ru-RU', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            })}
+          </div>
+        </>
+      );
+    } else return null;
+  };
+
   return (
     <div className="p-3 my-2">
       <div className="text-sm">
@@ -66,64 +120,53 @@ export function OrderItemsDetails({
           Отверстия: {holePatternLabel(data.holePattern)}
         </div>
       )}
-      {data.firstName ? (
-        <div>
-          <div>Данные для надписи</div>
-          {data.firstName && (
-            <div className="text-sm pl-[15px]">Имя: {data.firstName}</div>
-          )}
-          {data.middleName && (
-            <div className="text-sm pl-[15px]">Отчество: {data.middleName}</div>
-          )}
-          {data.lastName && (
-            <div className="text-sm pl-[15px]">Фамилия: {data.lastName}</div>
-          )}
-          {data.dateOfBirth && (
-            <div className="text-sm pl-[15px]">
-              Дата рождения: {data.dateOfBirth}
-            </div>
-          )}
-          {data.dateOfDeath && (
-            <div className="text-sm pl-[15px]">
-              Дата смерти: {data.dateOfDeath}
-            </div>
-          )}
-        </div>
-      ) : (
-        ''
-      )}
-      {data.firstNameSecondPerson ? (
-        <div>
-          <div>Данные для надписи второго человека</div>
-          {data.firstNameSecondPerson && (
-            <div className="text-sm pl-[15px]">
-              Имя: {data.firstNameSecondPerson}
-            </div>
-          )}
-          {data.middleNameSecondPerson && (
-            <div className="text-sm pl-[15px]">
-              Отчество: {data.middleNameSecondPerson}
-            </div>
-          )}
-          {data.lastNameSecondPerson && (
-            <div className="text-sm pl-[15px]">
-              Фамилия: {data.lastNameSecondPerson}
-            </div>
-          )}
-          {data.dateOfBirthSecondPerson && (
-            <div className="text-sm pl-[15px]">
-              Дата рождения: {data.dateOfBirthSecondPerson}
-            </div>
-          )}
-          {data.dateOfDeathSecondPerson && (
-            <div className="text-sm pl-[15px]">
-              Дата смерти: {data.dateOfDeathSecondPerson}
-            </div>
-          )}
-        </div>
-      ) : (
-        ''
-      )}
+      <div>
+        {data.firstName ? (
+          <>
+            <div>Данные для надписи</div>
+            {data.firstName && (
+              <div className="text-sm pl-[15px]">Имя: {data.firstName}</div>
+            )}
+            {data.middleName && (
+              <div className="text-sm pl-[15px]">
+                Отчество: {data.middleName}
+              </div>
+            )}
+            {data.lastName && (
+              <div className="text-sm pl-[15px]">Фамилия: {data.lastName}</div>
+            )}
+          </>
+        ) : (
+          ''
+        )}
+        {renderDates()}
+      </div>
+      <div>
+        {data.firstNameSecondPerson ? (
+          <>
+            <div>Данные для надписи второго человека</div>
+            {data.firstNameSecondPerson && (
+              <div className="text-sm pl-[15px]">
+                Имя: {data.firstNameSecondPerson}
+              </div>
+            )}
+            {data.middleNameSecondPerson && (
+              <div className="text-sm pl-[15px]">
+                Отчество: {data.middleNameSecondPerson}
+              </div>
+            )}
+            {data.lastNameSecondPerson && (
+              <div className="text-sm pl-[15px]">
+                Фамилия: {data.lastNameSecondPerson}
+              </div>
+            )}
+          </>
+        ) : (
+          ''
+        )}
+        {renderSecondDates()}
+      </div>
+
       {data.retouchNeeded && (
         <p>
           <b> Нужна ретушь!</b>

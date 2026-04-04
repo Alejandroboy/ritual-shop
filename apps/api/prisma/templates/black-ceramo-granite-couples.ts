@@ -132,6 +132,7 @@ export const blackCoupleTemplates: TemplateConfig[] = [
     ],
     inscribed: index !== 0,
     skuCodesFinish: SKU_CODES,
+    requiresAsset: true,
   })),
   ...blackCoupleBases.map<TemplateConfig>((base, index) => ({
     code: `${base}_arch`,
@@ -162,6 +163,7 @@ export const blackCoupleTemplates: TemplateConfig[] = [
     ],
     inscribed: index !== 0,
     skuCodesFinish: SKU_CODES_ARCH,
+    requiresAsset: true,
   })),
   ...blackCoupleBases.map<TemplateConfig>((base, index) => ({
     code: `${base}_oval`,
@@ -192,5 +194,6 @@ export const blackCoupleTemplates: TemplateConfig[] = [
     inscribed: index !== 0,
     finishes: [Finish.MATTE, Finish.GLOSS],
     skuCodesFinish: SKU_CODES_OVAL,
+    requiresAsset: true,
   })),
 ];

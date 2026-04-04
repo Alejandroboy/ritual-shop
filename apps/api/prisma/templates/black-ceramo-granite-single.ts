@@ -1,6 +1,5 @@
 // ---------- Чёрный керамогранит (стр. 50–53) ----------
 
-// Одинарные: КЧ1 / КЧ2 (прямой), арка, овал
 import {
   ColorMode,
   Coverage,
@@ -131,6 +130,7 @@ export const blackSingleTemplates: TemplateConfig[] = [
       HolePattern.NONE,
     ],
     inscribed: index !== 0,
+    requiresAsset: true,
     skuCodesFinish: SKU_CODES,
   })),
   ...blackSingleBases.map<TemplateConfig>((base, index) => ({
@@ -158,6 +158,7 @@ export const blackSingleTemplates: TemplateConfig[] = [
       HolePattern.NONE,
     ],
     inscribed: index !== 0,
+    requiresAsset: true,
     skuCodesFinish: SKU_CODES_ARCH,
   })),
   ...blackSingleBases.map<TemplateConfig>((base, index) => ({
@@ -186,6 +187,7 @@ export const blackSingleTemplates: TemplateConfig[] = [
       HolePattern.NONE,
     ],
     inscribed: index !== 0,
+    requiresAsset: true,
     skuCodesFinish: SKU_CODES_OVAL,
   })),
 ];

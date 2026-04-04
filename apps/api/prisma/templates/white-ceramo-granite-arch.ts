@@ -70,6 +70,7 @@ export const whiteArchTemplates: TemplateConfig[] = [
         HolePattern.NONE,
       ],
       inscribed: index !== 0,
+      requiresAsset: true,
       skuCodesFinish: SKU_CODES,
     };
     const color: TemplateConfig = {
@@ -118,6 +119,7 @@ export const whiteArchTemplates: TemplateConfig[] = [
         HolePattern.NONE,
       ],
       inscribed: index !== 0,
+      requiresAsset: true,
       skuCodesFinish: SKU_CODES,
     };
     const color: TemplateConfig = {

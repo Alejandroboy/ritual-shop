@@ -169,6 +169,7 @@ model Template {
   coverage     Coverage     @default(NORMAL)
   perHolePrice Int          @default(0)
   inscribed    Boolean?
+  requiresAsset Boolean?
 
   supportsFrame      Boolean @default(false)
   requiresBackground Boolean @default(false)

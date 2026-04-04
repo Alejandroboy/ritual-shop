@@ -67,6 +67,7 @@ export const blackTextTemplates: TemplateConfig[] = blackTextBases.map(
     backgroundCodes: [300],
     inscribed: true,
     singlePerson: base !== 'KCh6',
+    requiresAsset: base === 'KCh7',
     holePatterns: [
       HolePattern.TWO_HORIZONTAL,
       HolePattern.TWO_VERTICAL,

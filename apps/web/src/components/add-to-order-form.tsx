@@ -22,7 +22,7 @@ export default function AddToOrderForm({ tpl }: Props) {
   const queue = useAppStore((s) => s.queue);
   const me = useAppStore((s) => s.me);
   const fetchMe = useAppStore((s) => s.fetchMe);
-  const assetUploaded = queue.filter(
+  const uploadedAssets = queue.filter(
     (item) => item.state === 'uploaded' || item.state === 'done',
   );
   const assetError = queue.filter((item) => item.state === 'error');
@@ -134,6 +134,10 @@ export default function AddToOrderForm({ tpl }: Props) {
       );
       return;
     }
+    if (tpl.requiresAsset && !uploadedAssets.length) {
+      alert('Пожалуйста прикрепите фото к заказу');
+      return;
+    }
     const orderId = await ensureOrder();
     const payload = {
       userId: me ? me.id : '',
@@ -184,7 +188,7 @@ export default function AddToOrderForm({ tpl }: Props) {
   }
 
   const renderCheckboxes = () => {
-    if (!assetUploaded.length) {
+    if (!uploadedAssets.length) {
       return (
         <div className="mb-[15px] ">
           <div className="p-[15px] border rounded-xl block w-fit">
@@ -205,7 +209,7 @@ export default function AddToOrderForm({ tpl }: Props) {
         </div>
       );
     }
-    if (assetUploaded.length) {
+    if (uploadedAssets.length) {
       return (
         <div className="mb-[15px] flex">
           <div className="mr-[15px] cursor-pointer p-[15px] border rounded-xl block w-fit">
@@ -273,7 +277,7 @@ export default function AddToOrderForm({ tpl }: Props) {
 
   const renderButtons = () => {
     if (
-      (assetUploaded.length && !assetLoading.length && !assetError.length) ||
+      (uploadedAssets.length && !assetLoading.length && !assetError.length) ||
       (!assetLoading.length && !assetError.length)
     ) {
       return (

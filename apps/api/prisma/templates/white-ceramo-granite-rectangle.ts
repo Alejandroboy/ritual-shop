@@ -78,6 +78,7 @@ export const whiteRectTemplates: TemplateConfig[] = [
       ],
       skuCodesFinish: SKU_CODES,
       inscribed: index !== 0,
+      requiresAsset: true,
     };
     const color: TemplateConfig = {
       ...bw,
@@ -126,6 +127,7 @@ export const whiteRectTemplates: TemplateConfig[] = [
       ],
       inscribed: index !== 0,
       skuCodesFinish: SKU_CODES,
+      requiresAsset: true,
     };
     const color: TemplateConfig = {
       ...bw,
@@ -176,6 +178,7 @@ export const whiteExtra: TemplateConfig[] = [
       ],
       finishes: [Finish.MATTE, Finish.GLOSS],
       skuCodesFinish: SKU_CODES,
+      requiresAsset: true,
     };
     const color: TemplateConfig = {
       ...bw,
@@ -224,6 +227,7 @@ export const whiteExtra: TemplateConfig[] = [
       HolePattern.NONE,
     ],
     skuCodesFinish: SKU_CODES,
+    requiresAsset: false,
   },
   {
     code: 'K10',
@@ -258,6 +262,7 @@ export const whiteExtra: TemplateConfig[] = [
       HolePattern.NONE,
     ],
     skuCodesFinish: SKU_CODES,
+    requiresAsset: false,
   },
   ...['K11', 'K12', 'K13', 'K14'].map<TemplateConfig>((base) => ({
     code: base,
@@ -287,5 +292,6 @@ export const whiteExtra: TemplateConfig[] = [
       HolePattern.NONE,
     ],
     skuCodesFinish: SKU_CODES,
+    requiresAsset: true,
   })),
 ];

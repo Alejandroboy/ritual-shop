@@ -46,6 +46,7 @@ export const heartTemplates: TemplateConfig[] = [
         300, 400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11, 100, 200,
       ],
       inscribed: index !== 0 && index !== 2,
+      requiresAsset: true,
       skuCodes: SKU_CODES_BW,
     };
     const color: TemplateConfig = {

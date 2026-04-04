@@ -80,6 +80,7 @@ export type TemplateConfig = {
   supportsHoles?: boolean;
   fullTitle?: string;
   inscribed?: boolean;
+  requiresAsset?: boolean;
   singlePerson?: boolean;
 
   sizeLabels: string[];

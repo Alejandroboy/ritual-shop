@@ -100,6 +100,7 @@ export const growthHorizontal: TemplateConfig[] = [
       ],
       inscribed: index !== 0,
       skuCodes: SKU_CODES,
+      requiresAsset: true,
     };
     const color: TemplateConfig = {
       ...bw,
@@ -146,6 +147,7 @@ export const growthHorizontal: TemplateConfig[] = [
       ],
       inscribed: index !== 0,
       skuCodes: SKU_CODES_ARCH,
+      requiresAsset: true,
     };
     const color: TemplateConfig = {
       ...bw,
@@ -193,6 +195,7 @@ export const growthHorizontal: TemplateConfig[] = [
       ],
       inscribed: index !== 0,
       skuCodes: SKU_CODES_OVAL,
+      requiresAsset: true,
     };
     const color: TemplateConfig = {
       ...bw,
@@ -239,6 +242,7 @@ export const growthHorizontal: TemplateConfig[] = [
       HolePattern.NONE,
     ],
     inscribed: true,
+    requiresAsset: true,
     skuCodes: SKU_CODES_FIG,
   },
 ];
@@ -272,6 +276,7 @@ export const growthVertical: TemplateConfig[] = [
         HolePattern.NONE,
       ],
       inscribed: index !== 0,
+      requiresAsset: true,
       skuCodes: SKU_CODES,
     };
     const color: TemplateConfig = {
@@ -318,6 +323,7 @@ export const growthVertical: TemplateConfig[] = [
         HolePattern.NONE,
       ],
       inscribed: index !== 0,
+      requiresAsset: true,
       skuCodes: SKU_CODES_ARCH,
     };
     const color: TemplateConfig = {
@@ -364,6 +370,7 @@ export const growthVertical: TemplateConfig[] = [
         HolePattern.NONE,
       ],
       inscribed: index !== 0,
+      requiresAsset: true,
       skuCodes: SKU_CODES_OVAL,
     };
     const color: TemplateConfig = {

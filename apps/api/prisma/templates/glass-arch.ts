@@ -60,6 +60,7 @@ export const glassArchTemplates: TemplateConfig[] = [
       ],
       inscribed: index !== 0 && index !== 2,
       skuCodes: SKU_CODES,
+      requiresAsset: true,
     };
     const color: TemplateConfig = {
       ...bw,
@@ -106,6 +107,7 @@ export const glassArchTemplates: TemplateConfig[] = [
       ],
       inscribed: index !== 0 && index !== 2,
       skuCodes: SKU_CODES,
+      requiresAsset: true,
     };
     const color: TemplateConfig = {
       ...bw,

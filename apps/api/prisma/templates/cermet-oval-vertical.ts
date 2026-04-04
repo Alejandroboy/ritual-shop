@@ -85,6 +85,7 @@ export const metalOvalVertTemplates: TemplateConfig[] = [
       ],
       sizeHolePatterns: SIZE_HOLES,
       inscribed: index !== 0,
+      requiresAsset: index === 0 || index === 1 || index === 2,
       skuCodes: SKU_CODES_BW,
     };
 

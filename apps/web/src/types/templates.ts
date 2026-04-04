@@ -92,6 +92,7 @@ export type TemplateDetails = TemplateListItem & {
     finishes: FinishOption[];
   }[];
   inscribed: boolean | null;
+  requiresAsset: boolean | null;
   singlePerson: boolean;
   finishPricesBySizeId: Partial<
     Record<number, Partial<Record<string, number>>>

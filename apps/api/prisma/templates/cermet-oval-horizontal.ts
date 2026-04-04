@@ -88,6 +88,7 @@ export const metalOvalHorTemplates: TemplateConfig[] = [
       finishes: [],
       inscribed: index !== 0,
       skuCodes: SKU_CODES_BW,
+      requiresAsset: index === 0 || index === 1 || index === 2,
     };
     const color: TemplateConfig = {
       ...bw,

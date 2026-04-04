@@ -1,5 +1,4 @@
 // ---------- Металлокерамика: «полная затяжка» (стр. 20–22) ----------
-// TODO: при необходимости точно сопоставить коды с макетом каталога
 import {
   sizeArchMetal,
   sizeHeart,
@@ -140,6 +139,7 @@ export const metalFullTemplates: TemplateConfig[] = [
       ],
       backgroundCodes: [400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11],
       inscribed: index !== 0,
+      requiresAsset: true,
       skuCodes: OVAL_SKU_CODES_BW,
     };
     const color: TemplateConfig = {
@@ -183,6 +183,7 @@ export const metalFullTemplates: TemplateConfig[] = [
       ],
       backgroundCodes: [400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11],
       inscribed: index !== 0,
+      requiresAsset: true,
       skuCodes: OVAL_SKU_CODES_BW,
     };
     const color: TemplateConfig = {
@@ -223,6 +224,7 @@ export const metalFullTemplates: TemplateConfig[] = [
       holePatterns: [HolePattern.NONE, HolePattern.TWO_VERTICAL],
       backgroundCodes: [400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11],
       inscribed: index !== 0,
+      requiresAsset: true,
       skuCodes: RECT_SKU_CODES_BW,
     };
     const color: TemplateConfig = {
@@ -263,6 +265,7 @@ export const metalFullTemplates: TemplateConfig[] = [
       holePatterns: [HolePattern.NONE, HolePattern.TWO_HORIZONTAL],
       backgroundCodes: [400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11],
       inscribed: index !== 0,
+      requiresAsset: true,
       skuCodes: RECT_SKU_CODES_BW,
     };
     const color: TemplateConfig = {
@@ -301,6 +304,7 @@ export const metalFullTemplates: TemplateConfig[] = [
       holePatterns: [HolePattern.NONE, HolePattern.TWO_HORIZONTAL],
       backgroundCodes: [400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11],
       inscribed: index !== 0,
+      requiresAsset: true,
       skuCodes: ARCH_SKU_CODES_BW,
     };
     const color: TemplateConfig = {
@@ -339,6 +343,7 @@ export const metalFullTemplates: TemplateConfig[] = [
       holePatterns: [HolePattern.NONE, HolePattern.TWO_VERTICAL],
       backgroundCodes: [400, 500, 1, 18, 12, 19, 20, 21, 22, 13, 10, 23, 9, 11],
       inscribed: index !== 0,
+      requiresAsset: true,
       skuCodes: HEART_SKU_CODES_BW,
     };
     const color: TemplateConfig = {

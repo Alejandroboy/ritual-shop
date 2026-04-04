@@ -140,6 +140,7 @@ export class CatalogService {
         perHolePrice: true,
         finishPrices: true,
         goldTypes: true,
+        requiresAsset: true,
         allowedSizes: {
           select: {
             price: true,

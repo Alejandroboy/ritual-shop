@@ -297,6 +297,7 @@ async function createTemplate(cfg: TemplateConfig) {
       fullTitle: cfg.fullTitle ?? null,
       perHolePrice: cfg.perHolePrice ?? 0,
       inscribed: cfg.inscribed ?? null,
+      requiresAsset: cfg.requiresAsset ?? null,
     },
     create: {
       code: cfg.code,
@@ -314,6 +315,7 @@ async function createTemplate(cfg: TemplateConfig) {
       fullTitle: cfg.fullTitle ?? null,
       perHolePrice: cfg.perHolePrice ?? 0,
       inscribed: cfg.inscribed ?? null,
+      requiresAsset: cfg.requiresAsset ?? null,
     },
   });
 
