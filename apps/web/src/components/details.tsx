@@ -120,6 +120,9 @@ export function OrderItemsDetails({
           Отверстия: {holePatternLabel(data.holePattern)}
         </div>
       )}
+      {data.comment && (
+        <div className="text-sm">Комментарий: {data.comment}</div>
+      )}
       <div>
         {data.firstName ? (
           <>
