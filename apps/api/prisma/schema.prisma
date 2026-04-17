@@ -470,6 +470,7 @@ model OrderItemAsset {
 
   bucket      String?
   key         String?
+  thumbKey    String?
   contentType String?
   size        Int?
   etag        String?

@@ -9,7 +9,8 @@
     "schema": "./prisma/schema.prisma",
     "seed": "tsx prisma/seed.ts",
     "seed-group": "tsx prisma/seed.group.ts",
-    "seed-admin": "tsx prisma/seed-admin.ts"
+    "seed-admin": "tsx prisma/seed-admin.ts",
+    "backfill": "tsx prisma/backfill-thumbs.ts"
   },
   "scripts": {
     "build": "nest build",
@@ -30,7 +31,8 @@
     "prisma:seed-group": "node prisma/seed.group.ts",
     "prisma:seed-admin": "node prisma/seed-admin.ts",
     "prisma:deploy": "prisma migrate deploy",
-    "prisma:seed-once": "node prisma/seed-once.js"
+    "prisma:seed-once": "node prisma/seed-once.js",
+    "prisma:backfill": "node prisma/backfill-thumbs.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.911.0",
@@ -65,6 +67,7 @@
     "pg": "^8.18.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
+    "sharp": "^0.34.5",
     "swr": "^2.3.6",
     "uuid": "^13.0.0"
   },
@@ -85,6 +88,7 @@
     "@types/nodemailer": "^7.0.11",
     "@types/passport-jwt": "^4.0.1",
     "@types/pg": "^8.16.0",
+    "@types/sharp": "^0.32.0",
     "@types/supertest": "^6.0.2",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",

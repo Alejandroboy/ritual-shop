@@ -30,6 +30,7 @@ export type AssetDto = {
   viewUrl: string;
   downloadUrl: string;
   expiresIn: number;
+  thumbUrl?: string | null;
 };
 
 function resolveContentType(
@@ -116,12 +117,19 @@ export class AssetsService {
       { downloadName, contentType },
     );
 
+    const thumb = a.thumbKey
+      ? await this.s3.signGet(
+          { bucket: a.bucket, key: a.thumbKey },
+          { contentType: 'image/jpeg' },
+        )
+      : null;
+
     return {
       id: a.id,
       kind: a.kind,
-      stage: a.stage, // NEW
-      primary: a.primary, // NEW
-      derivedFromId: a.derivedFromId, // NEW
+      stage: a.stage,
+      primary: a.primary,
+      derivedFromId: a.derivedFromId,
       originalName: a.originalName,
       fileName: a.fileName,
       contentType,
@@ -129,6 +137,7 @@ export class AssetsService {
       viewUrl: view.url,
       downloadUrl: dl.url,
       expiresIn: view.expiresIn,
+      thumbUrl: thumb?.url ?? null,
     };
   }
 
@@ -141,7 +150,9 @@ export class AssetsService {
     if (dto.storage !== 's3')
       throw new BadRequestException('Only S3 storage is supported');
 
-    return this.prisma.orderItemAsset.create({
+    const isImage = dto.contentType?.startsWith('image/') ?? false;
+
+    const asset = await this.prisma.orderItemAsset.create({
       data: {
         orderItemId: itemId,
         storage: 's3',
@@ -156,6 +167,24 @@ export class AssetsService {
         primary: false,
       },
     });
+
+    if (isImage && dto.key) {
+      this.s3
+        .generateThumb(dto.key)
+        .then((thumbKey) =>
+          this.prisma.orderItemAsset.update({
+            where: { id: asset.id },
+            data: { thumbKey },
+          }),
+        )
+        .catch((err) =>
+          console.warn(
+            `Thumbnail failed for asset ${asset.id}: ${err.message}`,
+          ),
+        );
+    }
+
+    return asset;
   }
 
   async createRetouchFromS3(
@@ -207,7 +236,9 @@ export class AssetsService {
 
     const filename = `${orderNumber}-retouch.${ext}`;
 
-    return this.prisma.orderItemAsset.create({
+    const isImage = dto.contentType?.startsWith('image/') ?? false;
+
+    const asset = await this.prisma.orderItemAsset.create({
       data: {
         orderItemId: src.orderItemId,
         stage: 'RETOUCHED',
@@ -224,6 +255,24 @@ export class AssetsService {
         fileName: filename,
       },
     });
+
+    if (isImage && dto.key) {
+      this.s3
+        .generateThumb(dto.key)
+        .then((thumbKey) =>
+          this.prisma.orderItemAsset.update({
+            where: { id: asset.id },
+            data: { thumbKey },
+          }),
+        )
+        .catch((err) =>
+          console.warn(
+            `Thumbnail failed for retouch asset ${asset.id}: ${err.message}`,
+          ),
+        );
+    }
+
+    return asset;
   }
 
   async list(orderId: string, itemId: string, query?: ListAssetsQuery) {
@@ -234,6 +283,7 @@ export class AssetsService {
         where: { orderItemId: itemId },
         orderBy: { createdAt: 'asc' },
       });
+      console.log('assets }}}}}}}}}}}}}}}}', assets);
 
       const originals = assets.filter((a) => a.stage === 'ORIGINAL');
       const retouched = assets.filter((a) => a.stage === 'RETOUCHED');

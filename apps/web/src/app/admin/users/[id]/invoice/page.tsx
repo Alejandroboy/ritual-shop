@@ -168,7 +168,6 @@ export default function InvoicePage() {
 
   const toggleOrder = (order: CustomerOrder, checked: boolean) => {
     const orderId = order.id;
-    console.log('order', order);
 
     const sku = order.items.skuCode as string | undefined;
 

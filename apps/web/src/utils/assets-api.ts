@@ -8,8 +8,11 @@ export type AssetView = {
   contentType?: string | null;
   size?: number | null;
   viewUrl: string;
+  thumbUrl?: string;
   downloadUrl: string;
   expiresIn: number;
+  key?: string;
+  thumbKey?: string;
 };
 
 export async function fetchAssets(
@@ -106,5 +109,7 @@ export async function fetchAssetPairs(orderId: string, itemId: string) {
     { cache: 'no-store' },
   );
   if (!res.ok) throw new Error('Failed to load asset pairs');
-  return (await res.json()) as AssetPair[];
+  const ddd = await res.json();
+  console.log('ddd', ddd);
+  return ddd as AssetPair[];
 }

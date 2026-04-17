@@ -5,6 +5,8 @@ import {
   GetObjectCommand,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { Readable } from 'stream';
+import sharp from 'sharp';
 
 function pad2(n: number) {
   return String(n).padStart(2, '0');
@@ -108,5 +110,53 @@ export class S3Service {
       expiresIn: opts?.expiresIn ?? this.expires,
     });
     return { url };
+  }
+
+  async getObject(key: string): Promise<Buffer> {
+    const cmd = new GetObjectCommand({ Bucket: this.bucket, Key: key });
+    const res = await this.s3.send(cmd);
+    const stream = res.Body as Readable;
+    return new Promise((resolve, reject) => {
+      const chunks: Buffer[] = [];
+      stream.on('data', (chunk) => chunks.push(Buffer.from(chunk)));
+      stream.on('end', () => resolve(Buffer.concat(chunks)));
+      stream.on('error', reject);
+    });
+  }
+
+  async putObject(key: string, body: Buffer, contentType: string) {
+    const cmd = new PutObjectCommand({
+      Bucket: this.bucket,
+      Key: key,
+      Body: body,
+      ContentType: contentType,
+    });
+    await this.s3.send(cmd);
+    return key;
+  }
+
+  thumbKey(originalKey: string): string {
+    const dot = originalKey.lastIndexOf('.');
+    if (dot === -1) return originalKey + '_thumb';
+    return originalKey.slice(0, dot) + '_thumb' + originalKey.slice(dot);
+  }
+
+  async generateThumb(
+    originalKey: string,
+    opts: { width?: number; height?: number; quality?: number } = {},
+  ): Promise<string> {
+    const { width = 500, height = 500, quality = 50 } = opts;
+
+    const original = await this.getObject(originalKey);
+
+    const thumb = await sharp(original)
+      .resize(width, height, { fit: 'inside', withoutEnlargement: true })
+      .jpeg({ quality })
+      .toBuffer();
+
+    const thumbKey = this.thumbKey(originalKey);
+    await this.putObject(thumbKey, thumb, 'image/jpeg');
+
+    return thumbKey;
   }
 }

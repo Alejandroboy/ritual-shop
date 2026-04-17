@@ -176,6 +176,7 @@ export function Orders() {
       </div>
       <ul className="space-y-2">
         {items.map((o: Order) => {
+          console.log('o', o);
           const created = o.createdAt
             ? new Date(o.createdAt as unknown as string)
             : null;
@@ -225,6 +226,8 @@ export function Orders() {
                         id: o.items.assets[0].id,
                         originalName: o.items.assets[0].originalName,
                         contentType: o.items.assets[0].contentType,
+                        thumbKey: o.items.assets[0].thumbKey,
+                        s3Key: o.items.assets[0].key,
                       }}
                       size={180}
                       primary={o.items.assets[0].primary}

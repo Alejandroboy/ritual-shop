@@ -8,26 +8,39 @@ type AssetThumbProps = {
     id: string;
     originalName?: string | null;
     contentType?: string | null;
+    thumbKey?: string | null;
+    s3Key?: string | null;
+    thumbUrl?: string | null;
+    viewUrl?: string | null;
   };
-  size: number;
+  size: number | string;
   primary?: boolean;
+  hideDownload?: boolean;
 };
 
-export function AssetThumb({ asset, size = 160 }: AssetThumbProps) {
-  const [url, setUrl] = React.useState<string | null>(null);
+export function AssetThumb({ asset, size, hideDownload }: AssetThumbProps) {
+  const [url, setUrl] = React.useState<string | null>(
+    asset.thumbUrl ?? asset.viewUrl ?? null,
+  );
   const [downloadUrl, setDownloadUrl] = React.useState<string>();
 
   React.useEffect(() => {
+    if (asset.thumbUrl ?? asset.viewUrl) return;
+
     let live = true;
-    getAssetUrl(asset.id)
+    const keyToSign = asset.thumbKey ?? asset.s3Key ?? null;
+    getAssetUrl(asset.id, false, keyToSign)
       .then(({ url }) => {
         if (live) setUrl(url);
       })
       .catch(() => {});
-    getAssetUrl(asset.id, true).then(({ url }) => setDownloadUrl(url));
     return () => {
       live = false;
     };
+  }, [asset.id, asset.thumbKey, asset.s3Key, asset.thumbUrl, asset.viewUrl]);
+
+  React.useEffect(() => {
+    getAssetUrl(asset.id, true).then(({ url }) => setDownloadUrl(url));
   }, [asset.id]);
 
   if (!url) {
@@ -50,10 +63,11 @@ export function AssetThumb({ asset, size = 160 }: AssetThumbProps) {
         style={{ width: size, height: 'auto' }}
         unoptimized
       />
-
-      <a href={downloadUrl} target="_blank" className="underline text-sm">
-        Скачать файл
-      </a>
+      {!hideDownload && (
+        <a href={downloadUrl} target="_blank" className="underline text-sm">
+          Скачать файл
+        </a>
+      )}
     </>
   );
 }

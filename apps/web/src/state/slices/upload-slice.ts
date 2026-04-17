@@ -284,7 +284,6 @@ export const createUploadsSlice: UploadsCreator = (
               size: current.file.size,
               etag: current.etag,
               originalName: current.file.name,
-              filename: current.file.name,
               userId: current.userId,
             }
           : {
@@ -295,7 +294,6 @@ export const createUploadsSlice: UploadsCreator = (
               size: current.file.size,
               etag: current.etag,
               originalName: current.file.name,
-              filename: current.file.name,
             };
 
         await api(url, {

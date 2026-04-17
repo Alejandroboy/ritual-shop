@@ -1,8 +1,7 @@
 'use client';
 import { AssetThumb } from './asset-thumb';
 import { approvalStageLabels, labelOf } from '@utils';
-import React, { SyntheticEvent, useEffect, useState } from 'react';
-import { ApprovalStage, OrderItemAsset, OrderItemDetails } from '@types';
+import React, { useState } from 'react';
 import { AssetPair, AssetView, fetchAssetPairs } from '../utils/assets-api';
 import { useAppStore } from '@state';
 
@@ -279,16 +278,19 @@ export const OrderItem = ({
     return (
       <>
         <div className="font-medium">Ретушь</div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-2 mb-[15px]">
+        <div className="mt-2 mb-[15px]">
           <AssetThumb
             key={retouch.id}
             asset={{
               id: retouch.id,
               originalName: retouch.originalName,
               contentType: retouch.contentType,
+              thumbUrl: retouch.thumbUrl,
+              viewUrl: retouch.viewUrl,
             }}
-            size={140}
+            size="100%"
             primary={retouch.primary}
+            hideDownload
           />
         </div>
       </>
@@ -379,9 +381,12 @@ export const OrderItem = ({
               id: original.id,
               originalName: original.originalName,
               contentType: original.contentType,
+              thumbUrl: original.thumbUrl,
+              viewUrl: original.viewUrl,
             }}
             size={180}
             primary={original.primary}
+            hideDownload
           />
           {renderRetouch(retouch)}
         </div>

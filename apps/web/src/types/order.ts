@@ -37,6 +37,8 @@ export type OrderItemAsset = {
   stage: string;
   contentType: string;
   primary: boolean;
+  thumbKey?: string;
+  key?: string;
 };
 
 export type Order = {

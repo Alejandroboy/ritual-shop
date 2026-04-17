@@ -44,4 +44,22 @@ export class S3Controller {
     const dl = download === '1' || download === 'true';
     return this.s3.presignGet(key, { filename, download: dl, contentType });
   }
+
+  @Post('make-thumbnail')
+  async makeThumbnail(
+    @Body()
+    b: {
+      key: string;
+      width?: number;
+      height?: number;
+      quality?: number;
+    },
+  ) {
+    const thumbKey = await this.s3.generateThumb(b.key, {
+      width: b.width,
+      height: b.height,
+      quality: b.quality,
+    });
+    return { thumbKey };
+  }
 }
