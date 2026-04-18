@@ -28,7 +28,7 @@ export class S3Service {
   });
 
   private bucket = process.env.S3_BUCKET!;
-  private expires = Number(process.env.PRESIGN_EXPIRES || 60 * 5);
+  private expires = Number(process.env.PRESIGN_EXPIRES || 60 * 60 * 5);
 
   makeKey(params: {
     orderNumber: string;

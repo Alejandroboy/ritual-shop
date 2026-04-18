@@ -25,7 +25,7 @@ export class S3Controller {
     });
 
     const key = this.s3.makeKey({
-      orderNumber: order.orderNumber!, // раз ты генеришь на createOrder
+      orderNumber: order.orderNumber!,
       createdAt: order.createdAt,
       filename: b.filename,
       itemId: b.itemId,

@@ -12,6 +12,7 @@ import {
 import { AssetThumb } from './asset-thumb';
 import { UploadAsset } from './upload-assets';
 import { AssetPair, fetchAssetPairs } from '../utils/assets-api';
+import { useAppStore } from '@state';
 
 const approvalStageLabel = labelOf<string>(approvalStageLabels);
 const finishLabel = labelOf<string>(finishLabels);
@@ -25,11 +26,11 @@ export function OrderItemsDetails({
   userId?: string;
 }) {
   const { id } = useParams<{ itemId: string; id: string }>();
-  const { data, mutate, isLoading } = useSWR(
+  const queue = useAppStore((s) => s.queue);
+  const { data, isLoading } = useSWR(
     `/api/admin/orders/${id}/items/${itemId}`,
     (u) => adminApiFetch(u).then((r) => r.json()),
   );
-
   const [pairs, setPairs] = React.useState<AssetPair[]>([]);
 
   const reload = React.useCallback(async () => {
@@ -39,8 +40,13 @@ export function OrderItemsDetails({
   }, [id, itemId]);
 
   React.useEffect(() => {
-    reload();
-  }, [reload]);
+    const relevantJobs = queue.filter(
+      (j) => j.orderId === id && j.itemId === itemId,
+    );
+    const allDone =
+      relevantJobs.length > 0 && relevantJobs.every((j) => j.state === 'done');
+    if (allDone) reload();
+  }, [queue]);
 
   if (isLoading) {
     return <div>Загрузка.....</div>;
@@ -185,7 +191,7 @@ export function OrderItemsDetails({
       )}
       {data.retouchNeeded === false && data.approveNeeded === false ? (
         <>
-          {pairs.map(({ original, retouch }) => (
+          {pairs.map(({ original }) => (
             <div key={original.id} className="rounded-2xl shadow p-4">
               <AssetThumb
                 asset={{

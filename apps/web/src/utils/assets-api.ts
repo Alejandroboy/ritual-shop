@@ -109,7 +109,6 @@ export async function fetchAssetPairs(orderId: string, itemId: string) {
     { cache: 'no-store' },
   );
   if (!res.ok) throw new Error('Failed to load asset pairs');
-  const ddd = await res.json();
-  console.log('ddd', ddd);
-  return ddd as AssetPair[];
+  const pairs = await res.json();
+  return pairs as AssetPair[];
 }

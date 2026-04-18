@@ -70,9 +70,9 @@ export class AssetsService {
       return {
         id: a.id,
         kind: a.kind,
-        stage: a.stage, // NEW
-        primary: a.primary, // NEW
-        derivedFromId: a.derivedFromId, // NEW
+        stage: a.stage,
+        primary: a.primary,
+        derivedFromId: a.derivedFromId,
         originalName: a.originalName,
         fileName: a.fileName,
         contentType: a.contentType,
@@ -214,15 +214,19 @@ export class AssetsService {
     await this.prisma.orderItemAsset.deleteMany({
       where: { derivedFromId: src.id },
     });
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+    });
 
-    await this.ordersItemsService.changeApprovalStage(
-      orderId,
-      itemId,
-      ApprovalStage.IN_PROGRESS,
-      dto.userId,
-    );
-
-    await this.ordersItemsService.changeUserActionNeeded(orderId, itemId);
+    if (order && order.approveNeeded) {
+      await this.ordersItemsService.changeApprovalStage(
+        orderId,
+        itemId,
+        ApprovalStage.IN_PROGRESS,
+        dto.userId,
+      );
+      await this.ordersItemsService.changeUserActionNeeded(orderId, itemId);
+    }
 
     const item = await this.prisma.orderItem.findUnique({
       where: { id: itemId },
@@ -283,7 +287,6 @@ export class AssetsService {
         where: { orderItemId: itemId },
         orderBy: { createdAt: 'asc' },
       });
-      console.log('assets }}}}}}}}}}}}}}}}', assets);
 
       const originals = assets.filter((a) => a.stage === 'ORIGINAL');
       const retouched = assets.filter((a) => a.stage === 'RETOUCHED');

@@ -161,37 +161,6 @@ export class OrdersService {
     return { id: order.id, items };
   }
 
-  async getOrdersForUser(userId: string): Promise<OrderDto[]> {
-    const orders = await this.prisma.order.findMany({
-      where: { customerId: userId },
-      orderBy: { createdAt: 'desc' },
-      include: {
-        items: {
-          include: { size: true, assets: { orderBy: { createdAt: 'asc' } } },
-        },
-      },
-    });
-
-    return Promise.all(
-      orders.map(async (o) => ({
-        id: o.id,
-        items: o.items
-          ? [
-              {
-                id: o.items.id,
-                templateLabel: o.items.templateLabel,
-                size: o.items.size ? { label: o.items.size.label } : null,
-                comment: o.items.comment ?? null,
-                assets: await Promise.all(
-                  o.items.assets.map((a) => this.assets.toDtoWithUrls(a)),
-                ),
-              },
-            ]
-          : [],
-      })),
-    );
-  }
-
   async addItem(orderId: string, dto: AddOrderItemDto) {
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },
@@ -639,15 +608,6 @@ export class OrdersService {
   }
 
   async changeOrderStatus(id: string, dto: ChangeOrderStatusDto) {
-    const order = await this.prisma.order.findUnique({
-      where: { id },
-      select: {
-        orderStatus: true,
-      },
-    });
-
-    // if (order?.orderStatus === dto.status) return;
-
     return this.prisma.order.update({
       where: { id },
       data: { orderStatus: dto.status },
