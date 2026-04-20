@@ -132,6 +132,22 @@ export function Orders() {
     return null;
   };
 
+  const styleForBg = (orderStatus: string) => {
+    if (orderStatus === OrderStatusEnum.IN_PROGRESS) {
+      return 'bg-gray-50';
+    }
+    if (orderStatus === OrderStatusEnum.READY) {
+      return 'bg-blue-50';
+    }
+    if (orderStatus === OrderStatusEnum.COMPLETED) {
+      return 'bg-green-50';
+    }
+    if (orderStatus === OrderStatusEnum.APPROVAL) {
+      return 'bg-yellow-50';
+    }
+    return '';
+  };
+
   const pages = useMemo(() => {
     const result: number[] = [];
 
@@ -176,7 +192,7 @@ export function Orders() {
       </div>
       <ul className="space-y-2">
         {items.map((o: Order) => {
-          console.log('o', o);
+          const orderStatus = o.orderStatus;
           const created = o.createdAt
             ? new Date(o.createdAt as unknown as string)
             : null;
@@ -188,7 +204,9 @@ export function Orders() {
               key={o.id}
               className={`p-3 rounded-xl border-2 ${
                 isDelayed ? 'border-red-500' : 'border-gray-200'
-              }`}
+              }
+              ${styleForBg(orderStatus)}
+              `}
             >
               <div className="flex items-center gap-2 justify-between">
                 <div>

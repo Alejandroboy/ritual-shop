@@ -51,6 +51,7 @@ export default function AddToOrderForm({ tpl }: Props) {
   const [approveNeeded, setApproveNeeded] = useState<boolean>(false);
   const [retouchNeeded, setRetouchNeeded] = useState<boolean>(false);
   const [readAgreement, setReadAgreement] = useState<boolean>(false);
+  const [approveAgreement, setApproveAgreement] = useState<boolean>(false);
 
   const [sizeId, setSizeId] = useState<number>(tpl.defaults.sizeId ?? 0);
   const price = () => {
@@ -187,11 +188,15 @@ export default function AddToOrderForm({ tpl }: Props) {
     setReadAgreement((prevState) => !prevState);
   }
 
+  function handleApproveAgreementClick() {
+    setApproveAgreement((prevState) => !prevState);
+  }
+
   const renderCheckboxes = () => {
     if (!uploadedAssets.length) {
       return (
         <div className="mb-[15px] ">
-          <div className="p-[15px] border rounded-xl block w-fit">
+          <div className="p-[15px] border rounded-md block w-fit">
             <label
               className="cursor-pointer flex items-center"
               htmlFor="checkbox-approve"
@@ -212,7 +217,7 @@ export default function AddToOrderForm({ tpl }: Props) {
     if (uploadedAssets.length) {
       return (
         <div className="mb-[15px] flex">
-          <div className="mr-[15px] cursor-pointer p-[15px] border rounded-xl block w-fit">
+          <div className="mr-[15px] cursor-pointer p-[15px] border rounded-md block w-fit">
             <label
               className="cursor-pointer flex items-center"
               htmlFor="checkbox-approve"
@@ -227,7 +232,7 @@ export default function AddToOrderForm({ tpl }: Props) {
               <div>&nbsp;Нужно согласование</div>
             </label>
           </div>
-          <div className="cursor-pointer p-[15px] border rounded-xl block w-fit">
+          <div className="cursor-pointer p-[15px] border rounded-md block w-fit">
             <label
               className="cursor-pointer flex items-center"
               htmlFor="checkbox-retouch"
@@ -250,14 +255,31 @@ export default function AddToOrderForm({ tpl }: Props) {
   const renderRequiredCheckboxes = () => {
     return (
       <div>
-        <div className="mr-[15px] p-[15px] flex items-center">
+        <div className="flex items-center pt-[10px] pl-[15px]">
+          <label className="cursor-pointer" htmlFor="checkbox-read">
+            <input
+              type="checkbox"
+              className="mt-2 h-6 w-6 accent-black cursor-pointer"
+              id="checkbox-read"
+              checked={readAgreement}
+              onChange={handleReadClick}
+            />
+          </label>
+          <div className="ml-[15px]">
+            Я ознакомлен и согласен с&nbsp;
+            <Link href="/rules" className="underline" target="_blank">
+              правилами оформления заказа
+            </Link>
+          </div>
+        </div>
+        <div className="pl-[15px] pb-[15px] flex items-center">
           <label className="cursor-pointer" htmlFor="checkbox-agreement">
             <input
               type="checkbox"
               className="mt-2 h-6 w-6 accent-black cursor-pointer"
               id="checkbox-agreement"
-              checked={readAgreement}
-              onChange={handleReadClick}
+              checked={approveAgreement}
+              onChange={handleApproveAgreementClick}
             />
           </label>
           <div className="ml-[15px]">
@@ -281,8 +303,15 @@ export default function AddToOrderForm({ tpl }: Props) {
       (!assetLoading.length && !assetError.length)
     ) {
       return (
-        <div>
+        <div className="mt-[20px]">
           {renderCheckboxes()}
+          <div className="flex justify-between">
+            <div className="text-lg font-bold">
+              Итоговая цена: {Number.isFinite(price()) ? price() / 100 : 0}
+              &nbsp;руб
+            </div>
+          </div>
+          {renderRequiredCheckboxes()}
           <div className="flex gap-2">
             <button
               onClick={submit}
@@ -291,7 +320,6 @@ export default function AddToOrderForm({ tpl }: Props) {
               Добавить в заказ
             </button>
           </div>
-          {renderRequiredCheckboxes()}
         </div>
       );
     }
@@ -322,230 +350,25 @@ export default function AddToOrderForm({ tpl }: Props) {
   const renderSecondPersonFields = () => {
     return (
       <>
-        <div>Данные второго человека</div>
-        <div className="grid sm:grid-cols-2 gap-3">
-          <label className="text-sm">
-            <span className="block mb-1 text-neutral-600">Дата Рождения</span>
-            <input
-              type="date"
-              className="border rounded-md px-2 py-1 bg-white"
-              value={dateOfBirthSecondPerson}
-              onChange={(e) => setDateOfBirthSecondPerson(e.target.value)}
-            />
-          </label>
-          <label className="text-sm">
-            <span className="block mb-1 text-neutral-600">Дата смерти</span>
-            <input
-              type="date"
-              className="border rounded-md px-2 py-1 bg-white"
-              value={dateOfDeathSecondPerson}
-              onChange={(e) => setDateOfDeathSecondPerson(e.target.value)}
-            />
-          </label>
+        <div className="text-sm text-neutral-600 pb-[10px]">
+          Данные второго человека
+        </div>
+        <div className="border rounded-md p-[15px] bg-[#f1f1f1]">
           <label className="text-sm">
             <span className="block mb-1 text-neutral-600">Фамилия</span>
             <input
-              className="border rounded-md px-2 py-1 bg-white min-w-64"
+              className="border rounded-md px-2 py-1 bg-white w-full mb-[10px]"
               value={lastNameSecondPerson}
               onChange={(e) => setLastNameSecondPerson(e.target.value)}
             />
           </label>
-          <label className="text-sm">
-            <span className="block mb-1 text-neutral-600">Имя</span>
-            <input
-              className="border rounded-md px-2 py-1 bg-white min-w-64"
-              value={firstNameSecondPerson}
-              onChange={(e) => setFirstNameSecondPerson(e.target.value)}
-            />
-          </label>
-          <label className="text-sm">
-            <span className="block mb-1 text-neutral-600">
-              Отчество (если есть)
-            </span>
-            <input
-              className="border rounded-md px-2 py-1 bg-white min-w-64"
-              value={middleNameSecondPerson}
-              onChange={(e) => setMiddleNameSecondPerson(e.target.value)}
-            />
-          </label>
-        </div>
-      </>
-    );
-  };
-
-  return (
-    <div className="border rounded-xl p-4 bg-white space-y-3">
-      <div className="grid sm:grid-cols-2 gap-3">
-        {tpl.goldTypes?.length ? (
-          <label className="text-sm">
-            <div className="mb-1 text-neutral-600">Вид</div>
-            {tpl.goldTypes.length > 1 ? (
-              <>
-                <select
-                  className="border rounded-md px-2 py-1 bg-white w-full"
-                  value={goldType}
-                  onChange={(e) => setGoldType(e.target.value || '')}
-                >
-                  {tpl.goldTypes.map((f) => {
-                    return (
-                      <option key={f.goldType} value={f.goldType}>
-                        {f.goldType}
-                      </option>
-                    );
-                  })}
-                </select>
-              </>
-            ) : (
-              <span>{tpl.goldTypes[0].goldType}</span>
-            )}
-          </label>
-        ) : (
-          ''
-        )}
-        {needFinish && (
-          <label className="text-sm">
-            <div className="mb-1 text-neutral-600">Финиш</div>
-            {finishOptions.length > 1 ? (
-              <>
-                <select
-                  className="border rounded-md px-2 py-1 bg-white w-full"
-                  value={finish}
-                  onChange={(e) => setFinish(e.target.value || '')}
-                >
-                  {finishOptions.map((f) => {
-                    return (
-                      <option key={f} value={f}>
-                        {finishLabel(f)}
-                      </option>
-                    );
-                  })}
-                </select>
-                *Выбор финиша обязателен*
-              </>
-            ) : (
-              <span>{finishLabel(finishOptions[0])}</span>
-            )}
-          </label>
-        )}
-        {tpl.supportsFrame && (
-          <label className="text-sm">
-            <div className="mb-1 text-neutral-600">Рамка</div>
-            <select
-              className="border rounded-md px-2 py-1 bg-white w-full"
-              value={frameId}
-              onChange={(e) =>
-                setFrameId(e.target.value ? Number(e.target.value) : '')
-              }
-            >
-              {tpl.frames.map((f) => (
-                <option key={f.id} value={f.id}>
-                  {f.name}
-                </option>
-              ))}
-            </select>
-          </label>
-        )}
-        {tpl.requiresBackground && (
-          <label className="text-sm">
-            <div className="mb-1 text-neutral-600">Фон</div>
-            {tpl.backgrounds.length > 1 ? (
-              <select
-                className="border rounded-md px-2 py-1 bg-white w-full"
-                value={backgroundId}
-                onChange={(e) =>
-                  setBackgroundId(e.target.value ? Number(e.target.value) : '')
-                }
-              >
-                {tpl.backgrounds.map((b) => (
-                  <option key={b.id} value={b.id}>
-                    {b.name}
-                  </option>
-                ))}
-              </select>
-            ) : (
-              <span>{tpl.backgrounds[0].name}</span>
-            )}
-          </label>
-        )}
-        <label className="text-sm">
-          <div className="mb-1 text-neutral-600">Отверстия</div>
-          {tpl.holes.length > 1 ? (
-            <>
-              <select
-                className="border rounded-md px-2 py-1 bg-white w-full"
-                value={holePattern}
-                onChange={(e) => setHolePattern(e.target.value || '')}
-              >
-                {tpl.holes.map((h) => (
-                  <option key={h} value={h}>
-                    {holePatternLabel(h)}
-                  </option>
-                ))}
-              </select>
-              *при выборе отверстий проверьте размер*
-            </>
-          ) : (
-            <span>{holePatternLabel(tpl.holes[0])}</span>
-          )}
-        </label>
-        <label className="text-sm">
-          <div className="mb-1 text-neutral-600">Размер</div>
-          {availableSizes.length > 1 ? (
-            <select
-              className="border rounded-md px-2 py-1 bg-white w-full"
-              value={sizeId}
-              onChange={(e) =>
-                setSizeId(e.target.value ? Number(e.target.value) : 0)
-              }
-            >
-              {availableSizes.map((s) => (
-                <option key={s.size.id} value={s.size.id}>
-                  {s.size.label}
-                </option>
-              ))}
-            </select>
-          ) : (
-            <span>{availableSizes[0].size.label}</span>
-          )}
-        </label>
-      </div>
-      {tpl.inscribed && (
-        <>
-          <div>Надпись на изделии</div>
-          {!tpl.singlePerson && <div>Данные первого человека</div>}
-          <div className="grid sm:grid-cols-2 gap-3">
-            <label className="text-sm">
-              <span className="block mb-1 text-neutral-600">Дата Рождения</span>
-              <input
-                type="date"
-                className="border rounded-md px-2 py-1 bg-white"
-                value={dateOfBirth}
-                onChange={(e) => setDateOfBirth(e.target.value)}
-              />
-            </label>
-            <label className="text-sm">
-              <span className="block mb-1 text-neutral-600">Дата смерти</span>
-              <input
-                type="date"
-                className="border rounded-md px-2 py-1 bg-white"
-                value={dateOfDeath}
-                onChange={(e) => setDateOfDeath(e.target.value)}
-              />
-            </label>
-            <label className="text-sm">
-              <span className="block mb-1 text-neutral-600">Фамилия</span>
-              <input
-                className="border rounded-md px-2 py-1 bg-white min-w-64"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-              />
-            </label>
-            <label className="text-sm">
+          <div className="grid sm:grid-cols-2 gap-3 mb-[10px]">
+            <label className="text-sm w-full">
               <span className="block mb-1 text-neutral-600">Имя</span>
               <input
-                className="border rounded-md px-2 py-1 bg-white min-w-64"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
+                className="border rounded-md px-2 py-1 bg-white w-full"
+                value={firstNameSecondPerson}
+                onChange={(e) => setFirstNameSecondPerson(e.target.value)}
               />
             </label>
             <label className="text-sm">
@@ -553,18 +376,258 @@ export default function AddToOrderForm({ tpl }: Props) {
                 Отчество (если есть)
               </span>
               <input
-                className="border rounded-md px-2 py-1 bg-white min-w-64"
-                value={middleName}
-                onChange={(e) => setMiddleName(e.target.value)}
+                className="border rounded-md px-2 py-1 bg-white w-full"
+                value={middleNameSecondPerson}
+                onChange={(e) => setMiddleNameSecondPerson(e.target.value)}
               />
             </label>
           </div>
-          {!tpl.singlePerson && renderSecondPersonFields()}
-        </>
-      )}
+          <div className="grid sm:grid-cols-2 gap-3">
+            <label className="text-sm">
+              <span className="block mb-1 text-neutral-600">Дата Рождения</span>
+              <input
+                type="date"
+                className="border rounded-md px-2 py-1 bg-white"
+                value={dateOfBirthSecondPerson}
+                onChange={(e) => setDateOfBirthSecondPerson(e.target.value)}
+              />
+            </label>
+            <label className="text-sm">
+              <span className="block mb-1 text-neutral-600">Дата смерти</span>
+              <input
+                type="date"
+                className="border rounded-md px-2 py-1 bg-white"
+                value={dateOfDeathSecondPerson}
+                onChange={(e) => setDateOfDeathSecondPerson(e.target.value)}
+              />
+            </label>
+          </div>
+        </div>
+      </>
+    );
+  };
+
+  const renderInscribes = () => {
+    return (
+      <>
+        <div className="text-base font-bold mb-1">Надпись на изделии</div>
+        <div
+          className={`${!tpl.singlePerson ? 'grid sm:grid-cols-2 gap-3' : ''}`}
+        >
+          <div>
+            {!tpl.singlePerson && (
+              <div className="text-sm text-neutral-600 pb-[10px]">
+                Данные первого человека
+              </div>
+            )}
+            <div className="border rounded-md p-[15px] bg-[#f1f1f1]">
+              <label className="text-sm w-full">
+                <span className="block mb-1 text-neutral-600">Фамилия</span>
+                <input
+                  className="border rounded-md px-2 py-1 bg-white w-full mb-[10px]"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                />
+              </label>
+              <div className="grid sm:grid-cols-2 gap-3 mb-[10px]">
+                <label className="text-sm">
+                  <span className="block mb-1 text-neutral-600">Имя</span>
+                  <input
+                    className="border rounded-md px-2 py-1 bg-white w-full"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                  />
+                </label>
+                <label className="text-sm">
+                  <span className="block mb-1 text-neutral-600">
+                    Отчество (если есть)
+                  </span>
+                  <input
+                    className="border rounded-md px-2 py-1 bg-white w-full"
+                    value={middleName}
+                    onChange={(e) => setMiddleName(e.target.value)}
+                  />
+                </label>
+              </div>
+              <div className="grid sm:grid-cols-2 gap-3">
+                <label className="text-sm">
+                  <span className="block mb-1 text-neutral-600">
+                    Дата Рождения
+                  </span>
+                  <input
+                    type="date"
+                    className="border rounded-md px-2 py-1 bg-white"
+                    value={dateOfBirth}
+                    onChange={(e) => setDateOfBirth(e.target.value)}
+                  />
+                </label>
+                <label className="text-sm">
+                  <span className="block mb-1 text-neutral-600">
+                    Дата смерти
+                  </span>
+                  <input
+                    type="date"
+                    className="border rounded-md px-2 py-1 bg-white"
+                    value={dateOfDeath}
+                    onChange={(e) => setDateOfDeath(e.target.value)}
+                  />
+                </label>
+              </div>
+            </div>
+          </div>
+          {!tpl.singlePerson && <div>{renderSecondPersonFields()}</div>}
+        </div>
+      </>
+    );
+  };
+
+  return (
+    <div className="border rounded-md p-[15px] bg-white space-y-3">
+      <div className="grid sm:grid-cols-2 gap-3" data-qa="fff">
+        <div className="bg-gray-50 w-full min-h-[300px] h-[500px]"></div>
+        <div>
+          {tpl.goldTypes?.length ? (
+            <label className="text-sm block mb-[20px]">
+              <div className="mb-1 text-base font-bold">Вид</div>
+              {tpl.goldTypes.length > 1 ? (
+                <>
+                  <select
+                    className="border rounded-md px-2 py-1 bg-white w-full"
+                    value={goldType}
+                    onChange={(e) => setGoldType(e.target.value || '')}
+                  >
+                    {tpl.goldTypes.map((f) => {
+                      return (
+                        <option key={f.goldType} value={f.goldType}>
+                          {f.goldType}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </>
+              ) : (
+                <span>{tpl.goldTypes[0].goldType}</span>
+              )}
+            </label>
+          ) : (
+            ''
+          )}
+          {needFinish && (
+            <label className="text-sm block mb-[20px]">
+              <div className="mb-1 text-base font-bold">Финиш</div>
+              {finishOptions.length > 1 ? (
+                <>
+                  <select
+                    className="border rounded-md px-2 py-1 bg-white w-full"
+                    value={finish}
+                    onChange={(e) => setFinish(e.target.value || '')}
+                  >
+                    {finishOptions.map((f) => {
+                      return (
+                        <option key={f} value={f}>
+                          {finishLabel(f)}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </>
+              ) : (
+                <span>{finishLabel(finishOptions[0])}</span>
+              )}
+            </label>
+          )}
+          {tpl.supportsFrame && (
+            <label className="text-sm block mb-[20px]">
+              <div className="mb-1 text-base font-bold">Рамка</div>
+              <select
+                className="border rounded-md px-2 py-1 bg-white w-full"
+                value={frameId}
+                onChange={(e) =>
+                  setFrameId(e.target.value ? Number(e.target.value) : '')
+                }
+              >
+                {tpl.frames.map((f) => (
+                  <option key={f.id} value={f.id}>
+                    {f.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+          {tpl.requiresBackground && (
+            <label className="text-sm block mb-[20px]">
+              <div className="mb-1 text-base font-bold">Фон</div>
+              {tpl.backgrounds.length > 1 ? (
+                <select
+                  className="border rounded-md px-2 py-1 bg-white w-full"
+                  value={backgroundId}
+                  onChange={(e) =>
+                    setBackgroundId(
+                      e.target.value ? Number(e.target.value) : '',
+                    )
+                  }
+                >
+                  {tpl.backgrounds.map((b) => (
+                    <option key={b.id} value={b.id}>
+                      {b.name}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <span>{tpl.backgrounds[0].name}</span>
+              )}
+            </label>
+          )}
+          <label className="text-sm block mb-[20px]">
+            <div className="mb-1 text-base font-bold">Отверстия</div>
+            {tpl.holes.length > 1 ? (
+              <>
+                <select
+                  className="border rounded-md px-2 py-1 bg-white w-full"
+                  value={holePattern}
+                  onChange={(e) => setHolePattern(e.target.value || '')}
+                >
+                  {tpl.holes.map((h) => (
+                    <option key={h} value={h}>
+                      {holePatternLabel(h)}
+                    </option>
+                  ))}
+                </select>
+                <span className="text-[#cd0101]">
+                  *при выборе отверстий проверьте размер*
+                </span>
+              </>
+            ) : (
+              <span>{holePatternLabel(tpl.holes[0])}</span>
+            )}
+          </label>
+          <label className="text-sm block mb-[20px]">
+            <div className="mb-1 text-base font-bold">Размер</div>
+            {availableSizes.length > 1 ? (
+              <select
+                className="border rounded-md px-2 py-1 bg-white w-full"
+                value={sizeId}
+                onChange={(e) =>
+                  setSizeId(e.target.value ? Number(e.target.value) : 0)
+                }
+              >
+                {availableSizes.map((s) => (
+                  <option key={s.size.id} value={s.size.id}>
+                    {s.size.label}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <span>{availableSizes[0].size.label}</span>
+            )}
+          </label>
+          {tpl.inscribed && tpl.singlePerson && renderInscribes()}
+        </div>
+      </div>
+      {tpl.inscribed && !tpl.singlePerson && renderInscribes()}
 
       <label className="text-sm block">
-        <div className="mb-1 text-neutral-600">Комментарий</div>
+        <div className="mb-1 text-base font-bold">Комментарий</div>
         <textarea
           className="border rounded-md px-2 py-1 bg-white w-full"
           rows={3}
@@ -575,19 +638,6 @@ export default function AddToOrderForm({ tpl }: Props) {
 
       <div className="pt-2">
         <UploadAsset orderId={draftOrderId} itemId={itemId} mode="original" />
-      </div>
-
-      <div className="flex justify-between">
-        <div>
-          Итоговая цена: {Number.isFinite(price()) ? price() / 100 : 0}
-          &nbsp;руб
-        </div>
-      </div>
-      <div>
-        Ознакомьтесь с&nbsp;
-        <Link href="/rules" className="underline" target="_blank">
-          правилами оформления заказа
-        </Link>
       </div>
       {renderButtons()}
     </div>

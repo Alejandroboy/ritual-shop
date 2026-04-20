@@ -13,13 +13,13 @@ import {
 } from '@types';
 
 export const orderStatusLabels = {
+  [OrderStatusEnum.CANCELLED]: 'Отменен',
+  [OrderStatusEnum.DRAFT]: 'Черновик',
   [OrderStatusEnum.ACCEPTED]: 'Принят',
   [OrderStatusEnum.IN_PROGRESS]: 'В работе',
-  [OrderStatusEnum.DRAFT]: 'Черновик',
-  [OrderStatusEnum.READY]: 'Готов',
-  [OrderStatusEnum.COMPLETED]: 'Выполнен',
   [OrderStatusEnum.APPROVAL]: 'Согласование',
-  [OrderStatusEnum.CANCELLED]: 'Отменен',
+  [OrderStatusEnum.READY]: 'Готов',
+  [OrderStatusEnum.COMPLETED]: 'Отправлен',
 } satisfies Record<OrderStatusEnum, string>;
 
 export const invoiceStatusLabel = {

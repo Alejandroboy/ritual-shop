@@ -44,7 +44,9 @@ export default function RootLayout({
             </nav>
           </div>
         </header>
-        <main className="mx-auto max-w-6xl px-4 py-6">{children}</main>
+        <main className="bg-neutral-50">
+          <div className="mx-auto max-w-[1120px] px-4 py-6">{children}</div>
+        </main>
         <CookieBanner />
       </body>
     </html>
