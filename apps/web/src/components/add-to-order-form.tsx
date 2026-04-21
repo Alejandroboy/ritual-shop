@@ -307,7 +307,10 @@ export default function AddToOrderForm({ tpl }: Props) {
           {renderCheckboxes()}
           <div className="flex justify-between">
             <div className="text-lg font-bold">
-              Итоговая цена: {Number.isFinite(price()) ? price() / 100 : 0}
+              Итоговая цена:&nbsp;
+              {Number.isFinite(price())
+                ? (price() / 100).toLocaleString('ru-RU')
+                : 0}
               &nbsp;руб
             </div>
           </div>
