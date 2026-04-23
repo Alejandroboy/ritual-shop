@@ -9,6 +9,7 @@ import { useHydrated } from '../../utils/use-hydrated';
 import { labelOf, orderStatusLabels } from '@utils';
 import { SubscribeTelegramButton } from '../../components/subscribe-telegram-button';
 import { OrderItem } from '../../components/order-item';
+import Link from 'next/link';
 
 const orderLabel = labelOf<string>(orderStatusLabels);
 
@@ -147,7 +148,10 @@ function Account() {
       <section className="rounded-2xl border p-6 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-lg font-medium">Мои заказы</h2>
-
+          <SubscribeTelegramButton
+            userId={me.id}
+            telegramChatId={me.telegramChatId}
+          />
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-600">На странице:</span>
             <select
@@ -192,6 +196,12 @@ function Account() {
                 </div>
 
                 <OrderItem userId={me.id} orderId={order.id} {...order.items} />
+                <Link
+                  href={`/account/${order.id}/items/${order.items.id}`}
+                  className="rounded-xl px-4 py-2 bg-black text-white"
+                >
+                  Открыть
+                </Link>
               </div>
             );
           })
@@ -257,11 +267,6 @@ function Account() {
             Вперёд
           </button>
         </div>
-
-        <SubscribeTelegramButton
-          userId={me.id}
-          telegramChatId={me.telegramChatId}
-        />
       </section>
     </main>
   );

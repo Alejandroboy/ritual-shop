@@ -20,6 +20,8 @@ export type OrderItemDetails = {
   assets: OrderItemAsset[];
   retouchNeeded: boolean;
   approveNeeded: boolean;
+  userActionNeeded: boolean;
+  managerActionNeeded: boolean;
   approvalStage: ApprovalStage;
   background: {
     name: string;

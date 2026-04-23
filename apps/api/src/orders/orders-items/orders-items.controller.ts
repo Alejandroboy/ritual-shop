@@ -1,7 +1,7 @@
-import { Body, Controller, Get, Param, Patch } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import { OrdersItemsService } from './orders-items.service';
 import { UpdateCommentDto } from '../dto/update-comment.dto';
-import { ApproveDto } from '../dto/approve.dto';
+import { AddCommentDto } from '../dto/add-comment.dto';
 
 @Controller('admin/orders/:id/items')
 export class OrdersItemsAdminController {
@@ -13,12 +13,8 @@ export class OrdersItemsAdminController {
   }
 
   @Get(':itemId/approve')
-  approve(
-    @Param('itemId') itemId: string,
-    @Param('id') id: string,
-    dto: ApproveDto,
-  ) {
-    return this.ordersItemsService.updateApproval(id, itemId, dto);
+  approve(@Param('itemId') itemId: string, @Param('id') id: string) {
+    return this.ordersItemsService.updateApproval(id, itemId);
   }
 }
 
@@ -32,12 +28,8 @@ export class OrdersItemsController {
   }
 
   @Patch(':itemId/approve')
-  approve(
-    @Param('itemId') itemId: string,
-    @Param('id') id: string,
-    @Body() dto: ApproveDto,
-  ) {
-    return this.ordersItemsService.updateApproval(id, itemId, dto);
+  approve(@Param('itemId') itemId: string, @Param('id') id: string) {
+    return this.ordersItemsService.updateApproval(id, itemId);
   }
 
   @Patch(':itemId/discus')
@@ -47,5 +39,20 @@ export class OrdersItemsController {
     @Body() dto: UpdateCommentDto,
   ) {
     return this.ordersItemsService.updateComment(id, itemId, dto.text);
+  }
+
+  @Post(':itemId/discus/add')
+  addComments(
+    @Param('itemId') itemId: string,
+    @Param('id') id: string,
+    @Body() dto: AddCommentDto,
+  ) {
+    return this.ordersItemsService.addComment(
+      id,
+      itemId,
+      dto.text,
+      dto.userName,
+      dto.userRole,
+    );
   }
 }

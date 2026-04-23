@@ -21,6 +21,7 @@ export default function CreateUserForm() {
     address: '',
     inn: '',
     phone: '',
+    delivery: '',
     role: 'CUSTOMER' as Role,
   });
   const [pending, setPending] = useState(false);
@@ -58,6 +59,7 @@ export default function CreateUserForm() {
           legalName: form.legalName.trim() || null,
           address: form.address.trim() || null,
           inn: form.inn.trim() || null,
+          delivery: form.delivery || null,
           role: form.role,
         }),
       });
@@ -79,6 +81,7 @@ export default function CreateUserForm() {
         legalName: '',
         address: '',
         inn: '',
+        delivery: '',
         role: 'CUSTOMER',
       });
     } catch (err: unknown) {
@@ -176,8 +179,7 @@ export default function CreateUserForm() {
             placeholder="8457..."
           />
         </label>
-
-        {me && me.role !== 'ADMIN' ? (
+        {me && me.role !== 'ADMIN' && me.role !== 'ADMIN_GOD' ? (
           ' '
         ) : (
           <label className="block">
@@ -195,6 +197,16 @@ export default function CreateUserForm() {
             </select>
           </label>
         )}
+        <label className="block">
+          <span className="text-sm font-medium">Доставка</span>
+          <textarea
+            className="mt-1 w-full rounded-xl border p-3 outline-none"
+            rows={3}
+            value={form.delivery}
+            onChange={(e) => setForm({ ...form, delivery: e.target.value })}
+            placeholder="Самовывоз//Курьер//Транспортная Компания"
+          />
+        </label>
       </div>
 
       {error && <p className="text-sm text-red-600">{error}</p>}

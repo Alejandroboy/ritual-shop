@@ -185,6 +185,12 @@ export default function UserDetails() {
               <div className="w-1/2">Изменен</div>
               <div className="w-1/2">{updatedAt.toLocaleString('ru-RU')}</div>
             </div>
+            <Link
+              href={`/admin/users/${id}/update`}
+              className="bg-[#f1f1f1] border rounded-md p-[10px] cursor-pointer inline-block"
+            >
+              Изменить
+            </Link>
           </div>
           {renderKontragent()}
         </div>

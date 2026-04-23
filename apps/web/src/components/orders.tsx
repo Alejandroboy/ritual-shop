@@ -214,8 +214,21 @@ export function Orders() {
                   {renderRetouch(o.items)}
                   {renderApproval(o.items)}
                   <div className="text-sm text-gray-600">
-                    {orderLabel(o.orderStatus as OrderStatusEnum)}
+                    Статус: {orderLabel(o.orderStatus as OrderStatusEnum)}
                   </div>
+                  {o.items?.userActionNeeded &&
+                    !o.items.managerActionNeeded && (
+                      <span className="text-sm  text-red-500">
+                        Ожидание пользователя
+                      </span>
+                    )}
+
+                  {!o.items?.userActionNeeded &&
+                    o.items?.managerActionNeeded && (
+                      <span className="text-sm text-red-500">
+                        Ожидание ответа от менеджера
+                      </span>
+                    )}
                   <div className="text-sm text-gray-500">
                     {created ? created.toLocaleString() : '—'}
                     {' • '}

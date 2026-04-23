@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ApprovalStage, OrderStatus } from '@prisma/client';
 import { AdminOrdersService } from '../../admin/admin-orders/admin-orders.service';
-import { ApproveDto } from '../dto/approve.dto';
 
 @Injectable()
 export class OrdersItemsService {
@@ -19,7 +18,7 @@ export class OrdersItemsService {
         assets: true,
         background: true,
         discussComments: {
-          select: { id: true, text: true, date: true },
+          select: { id: true, text: true, date: true, userName: true },
           orderBy: { date: 'desc' },
         },
       },
@@ -30,7 +29,6 @@ export class OrdersItemsService {
     orderId: string,
     itemId: string,
     stage: ApprovalStage,
-    userId: string | undefined,
   ) {
     if (stage === ApprovalStage.IN_PROGRESS) {
       await this.adminOrdersService.updateStatus(orderId, {
@@ -55,7 +53,7 @@ export class OrdersItemsService {
     });
   }
 
-  async updateApproval(orderId: string, itemId: string, dto: ApproveDto) {
+  async updateApproval(orderId: string, itemId: string) {
     return this.prismaService.orderItem.update({
       where: { id: itemId, orderId },
       data: {
@@ -67,7 +65,7 @@ export class OrdersItemsService {
     });
   }
 
-  async updateComment(orderId: string, itemId: string, text) {
+  async updateComment(orderId: string, itemId: string, text: string) {
     return this.prismaService.orderItem.update({
       where: { id: itemId, orderId },
       data: {
@@ -79,6 +77,41 @@ export class OrdersItemsService {
             text,
           },
         },
+      },
+    });
+  }
+
+  async addComment(
+    orderId: string,
+    itemId: string,
+    text: string,
+    userName: string,
+    userRole: string,
+  ) {
+    let managerActionNeeded = false;
+    let userActionNeeded = false;
+    if (userRole === 'CUSTOMER') {
+      managerActionNeeded = true;
+    }
+    if (
+      userRole === 'ADMIN_GOD' ||
+      userRole === 'ADMIN' ||
+      userRole === 'Manager'
+    ) {
+      userActionNeeded = true;
+    }
+    return this.prismaService.orderItem.update({
+      where: { id: itemId, orderId },
+      data: {
+        discussComments: {
+          create: {
+            text,
+            userName,
+          },
+        },
+        managerActionNeeded,
+        approvalStage: ApprovalStage.IN_PROGRESS,
+        userActionNeeded,
       },
     });
   }

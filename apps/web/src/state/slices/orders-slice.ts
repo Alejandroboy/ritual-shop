@@ -1,7 +1,7 @@
 import { api } from '@utils';
 import { StateCreator } from 'zustand/vanilla';
 import { AppState } from '../app-store';
-import { CustomerOrder, User } from '@types';
+import { CustomerOrder } from '@types';
 
 export type MyAsset = {
   id: string;
@@ -43,6 +43,7 @@ export type OrdersSlice = {
   ordersPage: number;
   ordersPageSize: number;
   loadMyOrders: (page?: number, pageSize?: number) => Promise<MyOrder[]>;
+  loadMyOrder: (orderId: string) => Promise<MyOrder>;
   clearOrders: () => void;
 };
 
@@ -103,6 +104,20 @@ export const createOrdersSlice: OrdersCreator = (
       });
 
       return orders;
+    } finally {
+      set({ isLoadingOrders: false });
+    }
+  },
+
+  loadMyOrder: async (orderId: string) => {
+    set({ isLoadingOrders: true });
+
+    try {
+      return await api<MyOrder>(`/users/me/order/${orderId}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
     } finally {
       set({ isLoadingOrders: false });
     }

@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { EmailService } from '../../email/email.service';
 import { TelegramService } from '../../notifications/telegram/telegram.service';
@@ -13,7 +13,6 @@ function endOfDayIso(d: Date) {
 }
 @Injectable()
 export class AdminOrdersService {
-  private readonly logger = new Logger(AdminOrdersService.name);
   constructor(
     private prisma: PrismaService,
     private email: EmailService,
@@ -147,7 +146,7 @@ export class AdminOrdersService {
           include: {
             background: true,
             discussComments: {
-              select: { id: true, text: true, date: true },
+              select: { id: true, text: true, date: true, userName: true },
               orderBy: { date: 'desc' },
             },
             assets: true,

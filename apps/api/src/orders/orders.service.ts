@@ -285,9 +285,12 @@ export class OrdersService {
         backgroundId: dto.backgroundId,
         finish: dto.finish,
         comment: dto.comment ?? null,
+        discussComments: dto.comment
+          ? { create: { text: dto.comment, userName: user.name } }
+          : undefined,
         approveNeeded: dto.approveNeeded,
-        userActionNeeded: dto.approveNeeded,
-        approvalStage: dto.approveNeeded ? 'IN_PROGRESS' : 'NOT_STARTED',
+        managerActionNeeded: dto.approveNeeded,
+        approvalStage: 'NOT_STARTED',
         retouchNeeded: dto.retouchNeeded,
       },
       include: {

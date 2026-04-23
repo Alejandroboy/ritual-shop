@@ -30,6 +30,14 @@ export type OrderSlice = {
     itemId?: string;
   }) => Promise<OrderDetails>;
 
+  addComment: (args: {
+    orderId: string;
+    text: string;
+    itemId?: string;
+    userName?: string;
+    userRole?: string;
+  }) => Promise<OrderDetails>;
+
   addItem: (payload: {
     userId: string;
     dateOfBirth: string;
@@ -130,6 +138,25 @@ export const createOrderSlice: OrderCreator = (set, get, _api): OrderSlice => ({
       },
     );
 
+    set((s) => {
+      const order = s.myOrders?.find((o) => o.id === orderId);
+      if (!order) return;
+      order.items = { ...order.items, ...updatedItem };
+    });
+
+    return updatedItem;
+  },
+
+  addComment: async ({ orderId, itemId, text, userName, userRole }) => {
+    const updatedItem = await api<OrderDetails>(
+      `/orders/${orderId}/items/${itemId}/discus/add`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ text, userName, userRole }),
+      },
+    );
     set((s) => {
       const order = s.myOrders?.find((o) => o.id === orderId);
       if (!order) return;

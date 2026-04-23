@@ -53,6 +53,12 @@ export class UsersController {
     return this.users.getMyOrders(me!.userId, dto);
   }
 
+  @UseGuards(AuthGuard('jwt'))
+  @Get('me/order/:id')
+  async myOrder(@Param('id') id: string) {
+    return this.users.getMyOrder(id);
+  }
+
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('ADMIN', 'MANAGER')
   @Get('list')

@@ -13,6 +13,7 @@ import { AssetThumb } from './asset-thumb';
 import { UploadAsset } from './upload-assets';
 import { AssetPair, fetchAssetPairs } from '../utils/assets-api';
 import { useAppStore } from '@state';
+import { Board } from './board';
 
 const approvalStageLabel = labelOf<string>(approvalStageLabels);
 const finishLabel = labelOf<string>(finishLabels);
@@ -23,11 +24,11 @@ export function OrderItemsDetails({
   userId,
 }: {
   itemId: string;
-  userId?: string;
+  userId: string;
 }) {
   const { id } = useParams<{ itemId: string; id: string }>();
   const queue = useAppStore((s) => s.queue);
-  const { data, isLoading } = useSWR(
+  const { data, isLoading, mutate } = useSWR(
     `/api/admin/orders/${id}/items/${itemId}`,
     (u) => adminApiFetch(u).then((r) => r.json()),
   );
@@ -35,9 +36,14 @@ export function OrderItemsDetails({
 
   const reload = React.useCallback(async () => {
     if (!id || !itemId) return;
-    const data = await fetchAssetPairs(id, itemId);
-    setPairs(data);
-  }, [id, itemId]);
+    const freshPairs = await fetchAssetPairs(id, itemId);
+    setPairs(freshPairs);
+    await mutate();
+  }, [id, itemId, mutate]);
+
+  React.useEffect(() => {
+    reload();
+  }, [reload]);
 
   React.useEffect(() => {
     const relevantJobs = queue.filter(
@@ -111,101 +117,96 @@ export function OrderItemsDetails({
   };
 
   return (
-    <div className="p-3 my-2">
-      <div className="text-sm">
-        {data.templateFullTitle ? data.templateFullTitle : data.templateLabel}
-      </div>
-      <div className="text-sm">Вид фона: {data.background?.name}</div>
-      <div className="text-sm">Размер: {data.size?.label}</div>
-      {data.frameId && <div className="text-sm">Вид рамки: {data.frameId}</div>}
-      {data.finish && (
-        <div className="text-sm">Финиш: {finishLabel(data.finish)}</div>
-      )}
-      {data.holePattern && (
+    <div className="p-3 my-2 flex justify-between">
+      <div className="mr-[20px]">
         <div className="text-sm">
-          Отверстия: {holePatternLabel(data.holePattern)}
+          {data.templateFullTitle ? data.templateFullTitle : data.templateLabel}
         </div>
-      )}
-      {data.comment && (
-        <div className="text-sm">Комментарий: {data.comment}</div>
-      )}
-      <div>
-        {data.firstName ? (
-          <>
-            <div>Данные для надписи</div>
-            {data.firstName && (
-              <div className="text-sm pl-[15px]">Имя: {data.firstName}</div>
-            )}
-            {data.middleName && (
-              <div className="text-sm pl-[15px]">
-                Отчество: {data.middleName}
-              </div>
-            )}
-            {data.lastName && (
-              <div className="text-sm pl-[15px]">Фамилия: {data.lastName}</div>
-            )}
-          </>
-        ) : (
-          ''
+        <div className="text-sm">Вид фона: {data.background?.name}</div>
+        <div className="text-sm">Размер: {data.size?.label}</div>
+        {data.frameId && (
+          <div className="text-sm">Вид рамки: {data.frameId}</div>
         )}
-        {renderDates()}
-      </div>
-      <div>
-        {data.firstNameSecondPerson ? (
-          <>
-            <div>Данные для надписи второго человека</div>
-            {data.firstNameSecondPerson && (
-              <div className="text-sm pl-[15px]">
-                Имя: {data.firstNameSecondPerson}
-              </div>
-            )}
-            {data.middleNameSecondPerson && (
-              <div className="text-sm pl-[15px]">
-                Отчество: {data.middleNameSecondPerson}
-              </div>
-            )}
-            {data.lastNameSecondPerson && (
-              <div className="text-sm pl-[15px]">
-                Фамилия: {data.lastNameSecondPerson}
-              </div>
-            )}
-          </>
-        ) : (
-          ''
+        {data.finish && (
+          <div className="text-sm">Финиш: {finishLabel(data.finish)}</div>
         )}
-        {renderSecondDates()}
-      </div>
+        {data.holePattern && (
+          <div className="text-sm">
+            Отверстия: {holePatternLabel(data.holePattern)}
+          </div>
+        )}
+        {data.comment && (
+          <div className="text-sm">Комментарий: {data.comment}</div>
+        )}
+        <div>
+          {data.firstName ? (
+            <>
+              <div>Данные для надписи</div>
+              {data.firstName && (
+                <div className="text-sm pl-[15px]">Имя: {data.firstName}</div>
+              )}
+              {data.middleName && (
+                <div className="text-sm pl-[15px]">
+                  Отчество: {data.middleName}
+                </div>
+              )}
+              {data.lastName && (
+                <div className="text-sm pl-[15px]">
+                  Фамилия: {data.lastName}
+                </div>
+              )}
+            </>
+          ) : (
+            ''
+          )}
+          {renderDates()}
+        </div>
+        <div>
+          {data.firstNameSecondPerson ? (
+            <>
+              <div>Данные для надписи второго человека</div>
+              {data.firstNameSecondPerson && (
+                <div className="text-sm pl-[15px]">
+                  Имя: {data.firstNameSecondPerson}
+                </div>
+              )}
+              {data.middleNameSecondPerson && (
+                <div className="text-sm pl-[15px]">
+                  Отчество: {data.middleNameSecondPerson}
+                </div>
+              )}
+              {data.lastNameSecondPerson && (
+                <div className="text-sm pl-[15px]">
+                  Фамилия: {data.lastNameSecondPerson}
+                </div>
+              )}
+            </>
+          ) : (
+            ''
+          )}
+          {renderSecondDates()}
+        </div>
 
-      {data.retouchNeeded && (
-        <p>
-          <b> Нужна ретушь!</b>
-        </p>
-      )}
-      {data.approveNeeded && (
-        <p>
-          <b>Нужно согласование!</b>
-        </p>
-      )}
-      {data.userActionNeeded && !data.managerActionNeeded && (
-        <span>Ожидание пользователя</span>
-      )}
-      {data.retouchNeeded === false && data.approveNeeded === false ? (
-        <>
-          {pairs.map(({ original }) => (
-            <div key={original.id} className="rounded-2xl shadow p-4">
-              <AssetThumb
-                asset={{
-                  id: original.id,
-                  originalName: original.originalName,
-                  contentType: original.contentType,
-                }}
-                size={180}
-                primary={original.primary}
-              />
-            </div>
-          ))}
-        </>
-      ) : (
+        {data.retouchNeeded && (
+          <p>
+            <b> Нужна ретушь!</b>
+          </p>
+        )}
+        {data.approveNeeded && (
+          <p>
+            <b className={`${data.approved ? 'line-through' : ''}`}>
+              Нужно согласование!
+            </b>
+            {data.approved && 'Согласовано'}
+          </p>
+        )}
+        {data.userActionNeeded && !data.managerActionNeeded && (
+          <span className="text-red-500">Ожидание пользователя</span>
+        )}
+
+        {!data.userActionNeeded && data.managerActionNeeded && (
+          <span className="text-red-500">Ожидание ответа от менеджера</span>
+        )}
         <>
           {pairs.map(({ original, retouch }) => (
             <div key={original.id} className="rounded-2xl shadow p-4">
@@ -262,7 +263,10 @@ export function OrderItemsDetails({
             </div>
           ))}
         </>
-      )}
+      </div>
+      <div className="w-[400px]">
+        <Board itemId={itemId} orderId={id} userId={userId} />
+      </div>
     </div>
   );
 }

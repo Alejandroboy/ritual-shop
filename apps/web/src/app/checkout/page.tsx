@@ -204,7 +204,7 @@ export default function CheckoutPage() {
         <button
           onClick={handleSubmit}
           disabled={!draftOrderId || loading || items.length === 0}
-          className="px-4 py-2 rounded-md bg-neutral-900 text-white disabled:opacity-50"
+          className={`px-4 py-2 rounded-md bg-neutral-900 text-white disabled:opacity-50 ${loading ? 'cursor-progress' : 'cursor-pointer'}`}
         >
           {loading ? 'Оформляем…' : 'Оформить заказ'}
         </button>

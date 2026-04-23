@@ -130,9 +130,11 @@ export default function AddToOrderForm({ tpl }: Props) {
   }
   async function submit() {
     if (!readAgreement) {
-      alert(
-        'Прочитайте правила оформления заказа и согласитесь с обработкой персональных данных',
-      );
+      alert('Ознакомьтесь и согласитесь с правилами оформления заказа');
+      return;
+    }
+    if (!approveAgreement) {
+      alert('Дайте согласие на обработку персональных данных');
       return;
     }
     if (tpl.requiresAsset && !uploadedAssets.length) {
@@ -318,7 +320,7 @@ export default function AddToOrderForm({ tpl }: Props) {
           <div className="flex gap-2">
             <button
               onClick={submit}
-              className={`px-4 py-2 rounded-md bg-neutral-900 text-white ${readAgreement ? '' : 'opacity-25 cursor-not-allowed'}`}
+              className={`px-4 py-2 rounded-md bg-neutral-900 text-white ${readAgreement && approveAgreement ? 'cursor-pointer' : 'opacity-25 cursor-not-allowed'}`}
             >
               Добавить в заказ
             </button>

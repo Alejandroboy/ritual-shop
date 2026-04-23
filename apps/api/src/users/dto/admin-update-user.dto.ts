@@ -9,15 +9,13 @@ import {
 import { Role } from '@prisma/client';
 
 export class AdminUpdateUserDto {
-  @IsOptional()
   @IsEmail()
-  email?: string;
+  email!: string;
 
-  @IsOptional()
   @IsString()
   @MinLength(6)
   @MaxLength(128)
-  password?: string;
+  password!: string;
 
   @IsOptional()
   @IsString()
@@ -30,6 +28,22 @@ export class AdminUpdateUserDto {
   phone?: string | null;
 
   @IsOptional()
+  @IsString()
+  legalName?: string | null;
+
+  @IsOptional()
+  @IsString()
+  address?: string | null;
+
+  @IsOptional()
+  @IsString()
+  inn?: string | null;
+
+  @IsOptional()
   @IsEnum(Role)
   role?: Role;
+
+  @IsOptional()
+  @IsString()
+  delivery?: string | null;
 }

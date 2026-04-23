@@ -40,6 +40,10 @@ export class AdminCreateUserDto {
   inn?: string | null;
 
   @IsOptional()
+  @IsString()
+  delivery?: string | null;
+
+  @IsOptional()
   @IsEnum(Role)
   role?: Role;
 }

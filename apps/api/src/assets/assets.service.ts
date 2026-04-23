@@ -214,19 +214,12 @@ export class AssetsService {
     await this.prisma.orderItemAsset.deleteMany({
       where: { derivedFromId: src.id },
     });
-    const order = await this.prisma.order.findUnique({
-      where: { id: orderId },
-    });
-
-    if (order && order.approveNeeded) {
-      await this.ordersItemsService.changeApprovalStage(
-        orderId,
-        itemId,
-        ApprovalStage.IN_PROGRESS,
-        dto.userId,
-      );
-      await this.ordersItemsService.changeUserActionNeeded(orderId, itemId);
-    }
+    await this.ordersItemsService.changeApprovalStage(
+      orderId,
+      itemId,
+      ApprovalStage.IN_PROGRESS,
+    );
+    await this.ordersItemsService.changeUserActionNeeded(orderId, itemId);
 
     const item = await this.prisma.orderItem.findUnique({
       where: { id: itemId },

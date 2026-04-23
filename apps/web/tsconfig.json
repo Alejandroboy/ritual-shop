@@ -1,22 +1,38 @@
 {
   "compilerOptions": {
     "target": "es2022",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "strict": true,
     "resolveJsonModule": true,
     "noEmit": true,
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@repo/ui": ["../../packages/ui/src/index.ts"],
-      "@repo/types": ["../../packages/types/src/index.ts"],
-      "@repo/config": ["../../packages/config/src/index.ts"],
-      "@utils": ["./src/utils/index.ts"],
-      "@state": ["./src/state/index.ts"],
-      "@types": ["./src/types/index.ts"]
+      "@repo/ui": [
+        "../../packages/ui/src/index.ts"
+      ],
+      "@repo/types": [
+        "../../packages/types/src/index.ts"
+      ],
+      "@repo/config": [
+        "../../packages/config/src/index.ts"
+      ],
+      "@utils": [
+        "./src/utils/index.ts"
+      ],
+      "@state": [
+        "./src/state/index.ts"
+      ],
+      "@types": [
+        "./src/types/index.ts"
+      ]
     },
     "jsx": "react-jsx",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "incremental": true,
     "module": "esnext",
@@ -35,5 +51,7 @@
     "**/*.tsx",
     ".next/dev/types/**/*.ts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules"
+  ]
 }

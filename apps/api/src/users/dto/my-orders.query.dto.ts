@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsInt, IsOptional, Max, Min } from 'class-validator';
+import { IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 
 export class MyOrdersQueryDto {
   @IsOptional()
@@ -14,4 +14,8 @@ export class MyOrdersQueryDto {
   @Min(1)
   @Max(100)
   pageSize?: number = 10;
+
+  @IsOptional()
+  @IsString()
+  orderId?: string;
 }

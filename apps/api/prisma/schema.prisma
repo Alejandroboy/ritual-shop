@@ -411,6 +411,7 @@ model User {
   address      String?
   inn          String?
   kontragentId String?
+  delivery     String?
   role         Role    @default(CUSTOMER)
 
   createdAt DateTime @default(now())
@@ -497,6 +498,7 @@ model DiscussComment {
   date        DateTime   @default(now())
   OrderItem   OrderItem? @relation(fields: [orderItemId], references: [id])
   orderItemId String?
+  userName    String?
 }
 
 model PendingUpload {

@@ -1,10 +1,10 @@
 import {
-  Injectable,
   BadRequestException,
+  Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Prisma, Role, User } from '@prisma/client';
+import { Prisma, Role } from '@prisma/client';
 import * as argon2 from 'argon2';
 import { AdminCreateUserDto } from './dto/admin-create-user.dto';
 import { MyOrdersQueryDto } from './dto/my-orders.query.dto';
@@ -138,6 +138,23 @@ export class UsersService {
     };
   }
 
+  async getMyOrder(id: string) {
+    return this.prisma.order.findUnique({
+      where: {
+        id,
+      },
+      select: {
+        id: true,
+        orderStatus: true,
+        orderNumber: true,
+        createdAt: true,
+        items: {
+          include: { size: true, background: true },
+        },
+      },
+    });
+  }
+
   async list(params: { q?: string; skip?: number; take?: number }) {
     const { q, skip = 0, take = 20 } = params;
     const where: Prisma.UserWhereInput | undefined = q
@@ -178,7 +195,7 @@ export class UsersService {
     const passwordHash = await argon2.hash(dto.password, {
       type: argon2.argon2id,
     });
-    const user = await this.prisma.user.create({
+    return await this.prisma.user.create({
       data: {
         email: dto.email,
         passwordHash,
@@ -188,21 +205,20 @@ export class UsersService {
         address: dto.address ?? null,
         inn: dto.inn ?? null,
         role: dto.role ?? 'CUSTOMER',
+        delivery: dto.delivery ?? null,
       },
     });
-    return user;
   }
 
   async updateSelf(
     userId: string,
     dto: { name?: string | null; phone?: string | null },
   ) {
-    const user = await this.prisma.user.update({
+    return await this.prisma.user.update({
       where: { id: userId },
       data: { name: dto.name ?? undefined, phone: dto.phone ?? undefined },
       select: { id: true, email: true, name: true, phone: true, role: true },
     });
-    return user;
   }
 
   async adminUpdate(params: {
@@ -212,6 +228,7 @@ export class UsersService {
       email?: string;
       name?: string | null;
       phone?: string | null;
+      delivery?: string | null;
       role?: Role;
       password?: string;
     };
@@ -238,18 +255,18 @@ export class UsersService {
     }
 
     try {
-      const updated = await this.prisma.user.update({
+      return await this.prisma.user.update({
         where: { id: targetUserId },
         data: {
           email: dto.email ?? undefined,
           name: dto.name ?? undefined,
           phone: dto.phone ?? undefined,
           role: dto.role ?? undefined,
+          delivery: dto.delivery ?? undefined,
           passwordHash,
         },
         select: { id: true, email: true, name: true, phone: true, role: true },
       });
-      return updated;
     } catch (e: any) {
       if (e?.code === 'P2002') {
         throw new BadRequestException('Email already in use');
