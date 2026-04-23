@@ -82,7 +82,21 @@ export const OrderItem = ({
     if (!retouch) return;
     return (
       <>
-        <div className="font-medium">Ретушь</div>
+        <div className="font-medium flex items-center gap-2">
+          <span>Ретушь</span>
+          {retouch?.createdAt && (
+            <span className="text-sm font-normal text-gray-500">
+              Отправлен{' '}
+              {new Date(retouch.createdAt).toLocaleString('ru-RU', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: 'numeric',
+              })}
+            </span>
+          )}
+        </div>
         <div className="mt-2 mb-[15px]">
           <AssetThumb
             key={retouch.id}
