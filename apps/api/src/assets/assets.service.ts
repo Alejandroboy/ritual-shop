@@ -31,6 +31,7 @@ export type AssetDto = {
   downloadUrl: string;
   expiresIn: number;
   thumbUrl?: string | null;
+  createdAt: Date;
 };
 
 function resolveContentType(
@@ -80,6 +81,7 @@ export class AssetsService {
         viewUrl: path,
         downloadUrl: path,
         expiresIn: 24 * 3600,
+        createdAt: a.createdAt,
       };
     }
 
@@ -138,6 +140,7 @@ export class AssetsService {
       downloadUrl: dl.url,
       expiresIn: view.expiresIn,
       thumbUrl: thumb?.url ?? null,
+      createdAt: a.createdAt,
     };
   }
 

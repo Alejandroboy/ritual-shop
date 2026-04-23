@@ -18,7 +18,7 @@ type AssetThumbProps = {
   hideDownload?: boolean;
 };
 
-export function AssetThumb({ asset, size, hideDownload }: AssetThumbProps) {
+export function AssetThumb({ asset, size }: AssetThumbProps) {
   const [url, setUrl] = React.useState<string | null>(
     asset.thumbUrl ?? asset.viewUrl ?? null,
   );
@@ -63,11 +63,9 @@ export function AssetThumb({ asset, size, hideDownload }: AssetThumbProps) {
         style={{ width: size, height: 'auto' }}
         unoptimized
       />
-      {!hideDownload && (
-        <a href={downloadUrl} target="_blank" className="underline text-sm">
-          Скачать файл
-        </a>
-      )}
+      <a href={downloadUrl} target="_blank" className="underline text-sm">
+        Скачать файл
+      </a>
     </>
   );
 }

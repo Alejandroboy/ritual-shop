@@ -13,6 +13,7 @@ export type AssetView = {
   expiresIn: number;
   key?: string;
   thumbKey?: string;
+  createdAt?: string | null;
 };
 
 export async function fetchAssets(

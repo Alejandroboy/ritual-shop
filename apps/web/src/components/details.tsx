@@ -223,7 +223,21 @@ export function OrderItemsDetails({
               {data.approveNeeded && data.approvalStage && (
                 <p>{approvalStageLabel(data.approvalStage)}</p>
               )}
-              <div className="font-medium">Ретушь</div>
+              <div className="font-medium flex items-center gap-2">
+                <span>Ретушь</span>
+                {retouch?.createdAt && (
+                  <span className="text-sm font-normal text-gray-500">
+                    Отправлен{' '}
+                    {new Date(retouch.createdAt).toLocaleString('ru-RU', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                      hour: 'numeric',
+                      minute: 'numeric',
+                    })}
+                  </span>
+                )}
+              </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-2">
                 {retouch && (
                   <AssetThumb

@@ -145,7 +145,7 @@ export class S3Service {
     originalKey: string,
     opts: { width?: number; height?: number; quality?: number } = {},
   ): Promise<string> {
-    const { width = 500, height = 500, quality = 50 } = opts;
+    const { width = 300, height = 300, quality = 50 } = opts;
 
     const original = await this.getObject(originalKey);
 
