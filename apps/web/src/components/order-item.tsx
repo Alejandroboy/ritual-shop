@@ -86,7 +86,7 @@ export const OrderItem = ({
           <span>Ретушь</span>
           {retouch?.createdAt && (
             <span className="text-sm font-normal text-gray-500">
-              Отправлен{' '}
+              Отправлен&nbsp;
               {new Date(retouch.createdAt).toLocaleString('ru-RU', {
                 year: 'numeric',
                 month: 'long',

@@ -53,6 +53,7 @@ export class UsersService {
                 template: {
                   include: {
                     allowedSizes: true,
+                    finishPrices: true,
                   },
                 },
               },

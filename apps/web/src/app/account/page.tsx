@@ -197,7 +197,7 @@ function Account() {
 
                 <OrderItem userId={me.id} orderId={order.id} {...order.items} />
                 <Link
-                  href={`/account/${order.id}/items/${order.items.id}`}
+                  href={`/account/${order.id}/items/${order.items?.id}`}
                   className="rounded-xl px-4 py-2 bg-black text-white"
                 >
                   Открыть

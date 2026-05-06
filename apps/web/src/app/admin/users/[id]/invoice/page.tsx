@@ -394,10 +394,18 @@ export default function InvoicePage() {
 
       {orders.map((order: CustomerOrder) => {
         const createdAt = new Date(order.createdAt);
-
-        const price = order.items?.template?.allowedSizes?.find(
-          (x: any) => x.sizeId === order.items.sizeId,
-        )?.price;
+        let price: number;
+        if (order.items?.template?.requiresFinish) {
+          price =
+            order.items?.template?.finishPrices?.find(
+              (x: any) => x.sizeId === order.items.sizeId,
+            )?.price || 0;
+        } else {
+          price =
+            order.items?.template?.allowedSizes?.find(
+              (x: any) => x.sizeId === order.items.sizeId,
+            )?.price || 0;
+        }
 
         const title = order.items?.template?.fullTitle;
         const orderNumber = order.orderNumber;
@@ -418,7 +426,13 @@ export default function InvoicePage() {
             >
               <div className="min-w-0">
                 <div className="font-semibold">{title}</div>
-                <div>Цена: {price}</div>
+                <div>
+                  Цена:{' '}
+                  {Number.isFinite(price)
+                    ? (price / 100).toLocaleString('ru-RU')
+                    : 0}
+                  &nbsp;руб
+                </div>
                 <div>Номер №{orderNumber}</div>
                 <div>Создан: {createdAt.toLocaleString('ru-RU')}</div>
                 <div>
