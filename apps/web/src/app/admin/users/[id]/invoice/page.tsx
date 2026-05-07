@@ -398,7 +398,9 @@ export default function InvoicePage() {
         if (order.items?.template?.requiresFinish) {
           price =
             order.items?.template?.finishPrices?.find(
-              (x: any) => x.sizeId === order.items.sizeId,
+              (x: any) =>
+                x.sizeId === order.items.sizeId &&
+                x.finish === order.items.finish,
             )?.price || 0;
         } else {
           price =
