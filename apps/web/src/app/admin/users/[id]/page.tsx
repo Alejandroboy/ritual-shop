@@ -1,13 +1,23 @@
 'use client';
 
-import { useParams, useRouter, usePathname, useSearchParams } from 'next/navigation';
+import {
+  useParams,
+  useRouter,
+  usePathname,
+  useSearchParams,
+} from 'next/navigation';
 import useSWR from 'swr';
 import { adminApiFetch } from '@utils';
 import { CustomerOrder } from '@types';
 import Link from 'next/link';
 import { Suspense, useMemo, useState } from 'react';
 import { Loader } from '../../../../components/loader';
-import { labelOf, orderStatusLabels, holePatternLabels, roleLabels } from '@utils';
+import {
+  labelOf,
+  orderStatusLabels,
+  holePatternLabels,
+  roleLabels,
+} from '@utils';
 import { UserOrdersFilterBar } from '../../../../components/user-orders-filter-bar';
 
 const orderLabel = labelOf<string>(orderStatusLabels);
@@ -29,7 +39,14 @@ function UserDetailsInner() {
 
   const ordersKey = useMemo(() => {
     const params = new URLSearchParams();
-    ['status', 'q', 'dateFrom', 'dateTo', 'includedInInvoice', 'invoiceStatus'].forEach((k) => {
+    [
+      'status',
+      'q',
+      'dateFrom',
+      'dateTo',
+      'includedInInvoice',
+      'invoiceStatus',
+    ].forEach((k) => {
       const v = sp.get(k);
       if (v) params.set(k, v);
     });
@@ -152,7 +169,12 @@ function UserDetailsInner() {
 
               {pages[0] > 1 && (
                 <>
-                  <button className="rounded-lg border px-3 py-2" onClick={() => goToPage(1)}>1</button>
+                  <button
+                    className="rounded-lg border px-3 py-2"
+                    onClick={() => goToPage(1)}
+                  >
+                    1
+                  </button>
                   {pages[0] > 2 && <span className="px-1">…</span>}
                 </>
               )}
@@ -169,8 +191,15 @@ function UserDetailsInner() {
 
               {pages[pages.length - 1] < totalPages && (
                 <>
-                  {pages[pages.length - 1] < totalPages - 1 && <span className="px-1">…</span>}
-                  <button className="rounded-lg border px-3 py-2" onClick={() => goToPage(totalPages)}>{totalPages}</button>
+                  {pages[pages.length - 1] < totalPages - 1 && (
+                    <span className="px-1">…</span>
+                  )}
+                  <button
+                    className="rounded-lg border px-3 py-2"
+                    onClick={() => goToPage(totalPages)}
+                  >
+                    {totalPages}
+                  </button>
                 </>
               )}
 
@@ -188,20 +217,29 @@ function UserDetailsInner() {
         {ordersData?.items?.map((order: CustomerOrder) => {
           const createdAt = new Date(order.createdAt);
           return (
-            <div key={order.id} className="border rounded-xl mb-[20px] p-[10px]">
+            <div
+              key={order.id}
+              className="border rounded-xl mb-[20px] p-[10px]"
+            >
               <div className="flex w-96">
                 <div className="w-1/2 text-right">Статус:</div>
-                <div className="w-1/2 text-right">{orderLabel(order.orderStatus)}</div>
+                <div className="w-1/2 text-right">
+                  {orderLabel(order.orderStatus)}
+                </div>
               </div>
               <div className="flex w-96">
                 <div className="w-1/2 text-right">Добавлен в счет:</div>
                 <div className="w-1/2 text-right">
-                  {order.includedInInvoice ? `№${order.invoiceName}` : 'Не добавлен'}
+                  {order.includedInInvoice
+                    ? `№${order.invoiceName}`
+                    : 'Не добавлен'}
                 </div>
               </div>
               <div className="flex w-96">
                 <div className="w-1/2 text-right">Создан:</div>
-                <div className="w-1/2 text-right">{createdAt.toLocaleString('ru-RU')}</div>
+                <div className="w-1/2 text-right">
+                  {createdAt.toLocaleString('ru-RU')}
+                </div>
               </div>
               <div className="flex w-96">
                 <div className="w-1/2 text-right">Позиции:</div>
@@ -212,7 +250,10 @@ function UserDetailsInner() {
                       <p>Размер: {order.items.size.label}</p>
                       {order.items.frame && <p>{order.items.frame.name}</p>}
                       <p>{order.items.background.name}</p>
-                      <p>Отверстия:&nbsp;{holePatternLabel(order.items.holePattern)}</p>
+                      <p>
+                        Отверстия:&nbsp;
+                        {holePatternLabel(order.items.holePattern)}
+                      </p>
                     </div>
                   )}
                 </div>

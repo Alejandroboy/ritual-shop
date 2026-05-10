@@ -77,7 +77,9 @@ export class UsersService {
     }
     if (invoiceStatus === 'no') {
       and.push({
-        invoice: { status: { in: [InvoiceStatus.UNPAID, InvoiceStatus.PARTIAL] } },
+        invoice: {
+          status: { in: [InvoiceStatus.UNPAID, InvoiceStatus.PARTIAL] },
+        },
       });
     }
 

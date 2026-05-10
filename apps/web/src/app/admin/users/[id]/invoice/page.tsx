@@ -1,5 +1,10 @@
 'use client';
-import { useParams, useRouter, usePathname, useSearchParams } from 'next/navigation';
+import {
+  useParams,
+  useRouter,
+  usePathname,
+  useSearchParams,
+} from 'next/navigation';
 import useSWR from 'swr';
 import { adminApiFetch, api } from '@utils';
 import { CustomerOrder } from '@types';
@@ -32,7 +37,10 @@ function getAdditionalOptions(material?: Material | null): AdditionalOption[] {
   if (isKeramogranit) {
     return [
       ...common,
-      { name: 'Дополнительный человек на трафарете (керамогранит)', skuCode: '20175' },
+      {
+        name: 'Дополнительный человек на трафарете (керамогранит)',
+        skuCode: '20175',
+      },
       { name: 'Ретушь (керамогранит)', skuCode: '20181' },
       { name: 'Ретушь с другой фотографии (керамогранит)', skuCode: '20178' },
       { name: 'Сверление отверстий (керамогранит)', skuCode: '20169' },
@@ -41,7 +49,10 @@ function getAdditionalOptions(material?: Material | null): AdditionalOption[] {
   if (material === 'GLASS') {
     return [
       ...common,
-      { name: 'Дополнительный человек на трафарете (стекло)', skuCode: '20176' },
+      {
+        name: 'Дополнительный человек на трафарете (стекло)',
+        skuCode: '20176',
+      },
       { name: 'Ретушь (стекло)', skuCode: '20182' },
       { name: 'Ретушь с другой фотографии (стекло)', skuCode: '20179' },
       { name: 'Сверление отверстий (стекло)', skuCode: '20185' },
@@ -50,7 +61,10 @@ function getAdditionalOptions(material?: Material | null): AdditionalOption[] {
   if (material === 'ENGRAVING') {
     return [
       ...common,
-      { name: 'Дополнительный человек на трафарете (гравировка)', skuCode: '20177' },
+      {
+        name: 'Дополнительный человек на трафарете (гравировка)',
+        skuCode: '20177',
+      },
       { name: 'Ретушь (гравировка)', skuCode: '20183' },
       { name: 'Ретушь с другой фотографии (гравировка)', skuCode: '20180' },
       { name: 'Сверление отверстий (гравировка)', skuCode: '20186' },
@@ -59,16 +73,27 @@ function getAdditionalOptions(material?: Material | null): AdditionalOption[] {
   if (material === 'CERMET') {
     return [
       ...common,
-      { name: 'Дополнительный человек на трафарете (металлокерамика)', skuCode: '20173' },
+      {
+        name: 'Дополнительный человек на трафарете (металлокерамика)',
+        skuCode: '20173',
+      },
       { name: 'Ретушь (металлокерамика)', skuCode: '20184' },
-      { name: 'Ретушь с другой фотографии (металлокерамика)', skuCode: '20171' },
+      {
+        name: 'Ретушь с другой фотографии (металлокерамика)',
+        skuCode: '20171',
+      },
     ];
   }
   return common;
 }
 
-function getAdditionalLabel(material: Material | null | undefined, sku: string): string {
-  return getAdditionalOptions(material).find((x) => x.skuCode === sku)?.name ?? sku;
+function getAdditionalLabel(
+  material: Material | null | undefined,
+  sku: string,
+): string {
+  return (
+    getAdditionalOptions(material).find((x) => x.skuCode === sku)?.name ?? sku
+  );
 }
 
 function InvoicePageInner() {
@@ -86,7 +111,14 @@ function InvoicePageInner() {
 
   const ordersKey = useMemo(() => {
     const params = new URLSearchParams();
-    ['status', 'q', 'dateFrom', 'dateTo', 'includedInInvoice', 'invoiceStatus'].forEach((k) => {
+    [
+      'status',
+      'q',
+      'dateFrom',
+      'dateTo',
+      'includedInInvoice',
+      'invoiceStatus',
+    ].forEach((k) => {
       const v = sp.get(k);
       if (v) params.set(k, v);
     });
@@ -99,8 +131,12 @@ function InvoicePageInner() {
     adminApiFetch(u).then((r) => r.json()),
   );
 
-  const [extraByOrderId, setExtraByOrderId] = useState<Record<string, Record<AdditionalSku, number>>>({});
-  const [selectValueByOrderId, setSelectValueByOrderId] = useState<Record<string, AdditionalSku | ''>>({});
+  const [extraByOrderId, setExtraByOrderId] = useState<
+    Record<string, Record<AdditionalSku, number>>
+  >({});
+  const [selectValueByOrderId, setSelectValueByOrderId] = useState<
+    Record<string, AdditionalSku | ''>
+  >({});
   const [selected, setSelected] = useState<Record<string, boolean>>({});
   const [positions, setPositions] = useState<
     { orderId: string; orderNumber: string; sku: string; priceMinor: number }[]
@@ -110,7 +146,8 @@ function InvoicePageInner() {
 
   const user = data?.user;
   const orders: CustomerOrder[] = ordersData?.items ?? [];
-  const counterpartyId = user?.kontragentId ?? user?.moyskladCounterpartyId ?? null;
+  const counterpartyId =
+    user?.kontragentId ?? user?.moyskladCounterpartyId ?? null;
 
   function goToPage(page: number) {
     const params = new URLSearchParams(sp.toString());
@@ -134,7 +171,15 @@ function InvoicePageInner() {
     if (!sku || price == null) return;
     setSelected((s) => ({ ...s, [orderId]: checked }));
     if (checked) {
-      setPositions((prev) => [...prev, { orderId, orderNumber: order.orderNumber ?? orderId, sku, priceMinor: price }]);
+      setPositions((prev) => [
+        ...prev,
+        {
+          orderId,
+          orderNumber: order.orderNumber ?? orderId,
+          sku,
+          priceMinor: price,
+        },
+      ]);
       setOrdersIds((prev) => [...prev, orderId]);
     } else {
       setPositions((prev) => prev.filter((p) => p.orderId !== orderId));
@@ -176,7 +221,12 @@ function InvoicePageInner() {
     return ordersIds.flatMap((orderId) => {
       const extras = extraByOrderId[orderId] ?? {};
       const orderNumber = orderNumberById.get(orderId) ?? orderId;
-      return Object.entries(extras).map(([sku, qty]) => ({ sku, qty, orderId, orderNumber }));
+      return Object.entries(extras).map(([sku, qty]) => ({
+        sku,
+        qty,
+        orderId,
+        orderNumber,
+      }));
     });
   }, [ordersIds, extraByOrderId, orderNumberById]);
 
@@ -187,7 +237,10 @@ function InvoicePageInner() {
         `/moy-sklad/orders/${orderId}/invoice-publication-url?templateId=${templateId}`,
         { method: 'GET', cache: 'no-store' },
       );
-      if (!res?.url) { alert('Ссылка на счёт не получена'); return; }
+      if (!res?.url) {
+        alert('Ссылка на счёт не получена');
+        return;
+      }
       window.open(res.url, '_blank', 'noopener,noreferrer');
     } catch (e) {
       console.error(e);
@@ -197,13 +250,22 @@ function InvoicePageInner() {
 
   const createInvoice = async () => {
     if (!counterpartyId) {
-      alert('Нет kontragentId/moyskladCounterpartyId у пользователя. Сначала сделай sync по ИНН.');
+      alert(
+        'Нет kontragentId/moyskladCounterpartyId у пользователя. Сначала сделай sync по ИНН.',
+      );
       return;
     }
-    if (ordersIds.length === 0 || positions.length === 0) { alert('Ничего не выбрано'); return; }
+    if (ordersIds.length === 0 || positions.length === 0) {
+      alert('Ничего не выбрано');
+      return;
+    }
     setBusy(true);
-    const orderNumberMap = new Map(orders.map((o: any) => [o.id, o.orderNumber ?? o.id]));
-    const selectedOrderNumbers = ordersIds.map((oid) => orderNumberMap.get(oid) ?? oid).filter(Boolean);
+    const orderNumberMap = new Map(
+      orders.map((o: any) => [o.id, o.orderNumber ?? o.id]),
+    );
+    const selectedOrderNumbers = ordersIds
+      .map((oid) => orderNumberMap.get(oid) ?? oid)
+      .filter(Boolean);
     try {
       const res = await adminApiFetch('/api/moy-sklad/invoiceout', {
         method: 'POST',
@@ -213,18 +275,35 @@ function InvoicePageInner() {
           orderIds: ordersIds,
           invoiceDescription: `Заказы: ${selectedOrderNumbers.join(', ')}`,
           positions: [
-            ...positions.map((p) => ({ sku: p.sku, qty: 1, priceMinor: p.priceMinor, description: `Заказ ${p.orderNumber}`, label: `Заказ ${p.orderNumber}` })),
-            ...extraPositions.map((p) => ({ sku: p.sku, qty: p.qty, description: `Заказ ${p.orderNumber}`, label: `Заказ ${p.orderNumber}` })),
+            ...positions.map((p) => ({
+              sku: p.sku,
+              qty: 1,
+              priceMinor: p.priceMinor,
+              description: `Заказ ${p.orderNumber}`,
+              label: `Заказ ${p.orderNumber}`,
+            })),
+            ...extraPositions.map((p) => ({
+              sku: p.sku,
+              qty: p.qty,
+              description: `Заказ ${p.orderNumber}`,
+              label: `Заказ ${p.orderNumber}`,
+            })),
           ],
         }),
       });
       const text = await res.text();
       const json = text ? safeJson(text) : null;
       if (!res.ok) {
-        const msg = (json as any)?.message ?? (json as any)?.details?.message ?? text ?? 'invoiceout failed';
+        const msg =
+          (json as any)?.message ??
+          (json as any)?.details?.message ??
+          text ??
+          'invoiceout failed';
         throw new Error(Array.isArray(msg) ? msg.join(', ') : String(msg));
       }
-      alert(`Счёт создан: ${(json as any)?.name ?? (json as any)?.number ?? (json as any)?.id ?? ''}`);
+      alert(
+        `Счёт создан: ${(json as any)?.name ?? (json as any)?.number ?? (json as any)?.id ?? ''}`,
+      );
       await mutateOrders();
       setSelected({});
       setPositions([]);
@@ -284,7 +363,12 @@ function InvoicePageInner() {
 
             {pages[0] > 1 && (
               <>
-                <button className="rounded-lg border px-3 py-2" onClick={() => goToPage(1)}>1</button>
+                <button
+                  className="rounded-lg border px-3 py-2"
+                  onClick={() => goToPage(1)}
+                >
+                  1
+                </button>
                 {pages[0] > 2 && <span className="px-1">…</span>}
               </>
             )}
@@ -301,8 +385,15 @@ function InvoicePageInner() {
 
             {pages[pages.length - 1] < totalPages && (
               <>
-                {pages[pages.length - 1] < totalPages - 1 && <span className="px-1">…</span>}
-                <button className="rounded-lg border px-3 py-2" onClick={() => goToPage(totalPages)}>{totalPages}</button>
+                {pages[pages.length - 1] < totalPages - 1 && (
+                  <span className="px-1">…</span>
+                )}
+                <button
+                  className="rounded-lg border px-3 py-2"
+                  onClick={() => goToPage(totalPages)}
+                >
+                  {totalPages}
+                </button>
               </>
             )}
 
@@ -331,13 +422,17 @@ function InvoicePageInner() {
         const createdAt = new Date(order.createdAt);
         let price: number;
         if (order.items?.template?.requiresFinish) {
-          price = order.items?.template?.finishPrices?.find(
-            (x: any) => x.sizeId === order.items.sizeId && x.finish === order.items.finish,
-          )?.price || 0;
+          price =
+            order.items?.template?.finishPrices?.find(
+              (x: any) =>
+                x.sizeId === order.items.sizeId &&
+                x.finish === order.items.finish,
+            )?.price || 0;
         } else {
-          price = order.items?.template?.allowedSizes?.find(
-            (x: any) => x.sizeId === order.items.sizeId,
-          )?.price || 0;
+          price =
+            order.items?.template?.allowedSizes?.find(
+              (x: any) => x.sizeId === order.items.sizeId,
+            )?.price || 0;
         }
         const title = order.items?.template?.fullTitle;
         const orderNumber = order.orderNumber;
@@ -346,7 +441,9 @@ function InvoicePageInner() {
         const invoiceName = order.invoiceName;
         const selectedExtras = extraByOrderId[order.id] ?? {};
         const isChecked = !!selected[order.id] && !includedInInvoice;
-        const material = order.items?.template?.material as Material | undefined;
+        const material = order.items?.template?.material as
+          | Material
+          | undefined;
         const additionalOptions = getAdditionalOptions(material);
 
         return (
@@ -354,12 +451,24 @@ function InvoicePageInner() {
             <div className="border rounded-md px-4 py-3 mb-[10px] flex items-start justify-between gap-4">
               <div className="min-w-0">
                 <div className="font-semibold">{title}</div>
-                <div>Цена: {Number.isFinite(price) ? (price / 100).toLocaleString('ru-RU') : 0}&nbsp;руб</div>
+                <div>
+                  Цена:{' '}
+                  {Number.isFinite(price)
+                    ? (price / 100).toLocaleString('ru-RU')
+                    : 0}
+                  &nbsp;руб
+                </div>
                 <div>Номер №{orderNumber}</div>
                 <div>Создан: {createdAt.toLocaleString('ru-RU')}</div>
-                <div>Согласование {order.items?.approveNeeded ? 'Нужно' : 'Не нужно'}</div>
+                <div>
+                  Согласование{' '}
+                  {order.items?.approveNeeded ? 'Нужно' : 'Не нужно'}
+                </div>
                 {order.items?.approveNeeded && (
-                  <div>Согласование получено: {order.items?.approved ? 'Да' : 'Нет'}</div>
+                  <div>
+                    Согласование получено:{' '}
+                    {order.items?.approved ? 'Да' : 'Нет'}
+                  </div>
                 )}
               </div>
               <div className="flex flex-col items-end">
@@ -385,19 +494,26 @@ function InvoicePageInner() {
             </div>
             {!includedInInvoice && (
               <div className="mt-2 mb-4 flex flex-col items-end gap-2">
-                <div className="text-sm opacity-80">Доп. услуги для этого заказа:</div>
+                <div className="text-sm opacity-80">
+                  Доп. услуги для этого заказа:
+                </div>
                 <div className="flex items-center gap-2">
                   <select
                     className="border rounded-md p-2 bg-white disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
                     disabled={!isChecked}
                     value={selectValueByOrderId[order.id] ?? ''}
                     onChange={(e) =>
-                      setSelectValueByOrderId((prev) => ({ ...prev, [order.id]: e.target.value as AdditionalSku | '' }))
+                      setSelectValueByOrderId((prev) => ({
+                        ...prev,
+                        [order.id]: e.target.value as AdditionalSku | '',
+                      }))
                     }
                   >
                     <option value="">— выбрать —</option>
                     {additionalOptions.map((s) => (
-                      <option key={s.skuCode} value={s.skuCode}>{s.name}</option>
+                      <option key={s.skuCode} value={s.skuCode}>
+                        {s.name}
+                      </option>
                     ))}
                   </select>
                   <button
@@ -414,14 +530,39 @@ function InvoicePageInner() {
                     {Object.entries(selectedExtras).map(([sku, qty]) => {
                       const label = getAdditionalLabel(material, sku);
                       return (
-                        <div key={sku} className="flex items-center gap-2 border rounded-full px-3 py-1 bg-white">
-                          <span className="text-sm">{label} × {qty}</span>
-                          <button type="button" onClick={() => removeExtra(order.id, sku as AdditionalSku)} className="text-sm opacity-70 hover:opacity-100 cursor-pointer">−</button>
+                        <div
+                          key={sku}
+                          className="flex items-center gap-2 border rounded-full px-3 py-1 bg-white"
+                        >
+                          <span className="text-sm">
+                            {label} × {qty}
+                          </span>
                           <button
                             type="button"
-                            onClick={() => setExtraByOrderId((prev) => ({ ...prev, [order.id]: { ...(prev[order.id] ?? {}), [sku]: (prev[order.id]?.[sku as AdditionalSku] ?? 0) + 1 } }))}
+                            onClick={() =>
+                              removeExtra(order.id, sku as AdditionalSku)
+                            }
                             className="text-sm opacity-70 hover:opacity-100 cursor-pointer"
-                          >+</button>
+                          >
+                            −
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setExtraByOrderId((prev) => ({
+                                ...prev,
+                                [order.id]: {
+                                  ...(prev[order.id] ?? {}),
+                                  [sku]:
+                                    (prev[order.id]?.[sku as AdditionalSku] ??
+                                      0) + 1,
+                                },
+                              }))
+                            }
+                            className="text-sm opacity-70 hover:opacity-100 cursor-pointer"
+                          >
+                            +
+                          </button>
                         </div>
                       );
                     })}
@@ -445,5 +586,9 @@ export default function InvoicePage() {
 }
 
 function safeJson(text: string) {
-  try { return JSON.parse(text); } catch { return text; }
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
 }
