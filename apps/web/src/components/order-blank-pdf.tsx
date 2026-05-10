@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  checkMark: { fontSize: 11, lineHeight: 1 },
+  checkMark: { fontSize: 10, fontWeight: 'bold', lineHeight: 1 },
 
   infoLine: { marginBottom: 3, fontSize: 11 },
   infoLabel: { fontWeight: 'bold' },
@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
 
 const Checkbox = ({ checked }: { checked: boolean }) => (
   <View style={styles.checkbox}>
-    {checked && <Text style={styles.checkMark}>✓</Text>}
+    {checked && <Text style={styles.checkMark}>X</Text>}
   </View>
 );
 

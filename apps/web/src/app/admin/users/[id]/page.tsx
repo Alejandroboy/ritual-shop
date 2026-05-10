@@ -1,40 +1,71 @@
 'use client';
 
-import { useParams } from 'next/navigation';
+import { useParams, useRouter, usePathname, useSearchParams } from 'next/navigation';
 import useSWR from 'swr';
 import { adminApiFetch } from '@utils';
 import { CustomerOrder } from '@types';
 import Link from 'next/link';
-import { useState } from 'react';
+import { Suspense, useMemo, useState } from 'react';
 import { Loader } from '../../../../components/loader';
-import {
-  labelOf,
-  orderStatusLabels,
-  holePatternLabels,
-  roleLabels,
-} from '@utils';
+import { labelOf, orderStatusLabels, holePatternLabels, roleLabels } from '@utils';
+import { UserOrdersFilterBar } from '../../../../components/user-orders-filter-bar';
 
 const orderLabel = labelOf<string>(orderStatusLabels);
 const holePatternLabel = labelOf<string>(holePatternLabels);
 const roleLabel = labelOf<string>(roleLabels);
 
-export default function UserDetails() {
+function UserDetailsInner() {
   const { id } = useParams<{ id: string }>();
+  const sp = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const ordersPage = Math.max(1, Number(sp.get('page') || '1'));
+  const ordersPageSize = Math.max(1, Number(sp.get('pageSize') || '10'));
+
   const { data, mutate } = useSWR(`/api/admin/users/${id}`, (u) =>
     adminApiFetch(u).then((r) => r.json()),
   );
+
+  const ordersKey = useMemo(() => {
+    const params = new URLSearchParams();
+    ['status', 'q', 'dateFrom', 'dateTo', 'includedInInvoice', 'invoiceStatus'].forEach((k) => {
+      const v = sp.get(k);
+      if (v) params.set(k, v);
+    });
+    params.set('page', String(ordersPage));
+    params.set('pageSize', String(ordersPageSize));
+    return `/api/admin/users/${id}/orders?${params.toString()}`;
+  }, [id, sp, ordersPage, ordersPageSize]);
+
+  const { data: ordersData } = useSWR(ordersKey, (u) =>
+    adminApiFetch(u).then((r) => r.json()),
+  );
+
   const [loading, setLoading] = useState(false);
-  if (loading) {
-    return <Loader />;
+
+  function goToPage(page: number) {
+    const params = new URLSearchParams(sp.toString());
+    params.set('page', String(page));
+    router.push(`${pathname}?${params.toString()}`);
   }
 
+  function changePageSize(size: number) {
+    const params = new URLSearchParams(sp.toString());
+    params.set('pageSize', String(size));
+    params.set('page', '1');
+    router.push(`${pathname}?${params.toString()}`);
+  }
+
+  if (loading) return <Loader />;
+
   const renderKontragent = () => {
-    if (data?.user.kontragentId) {
+    if (data?.user?.kontragentId) {
       return (
         <div className="flex flex-col items-end">
           <div>Можно выставлять счета </div>
           <div className="mt-[10px]">
-            {data?.user?.customerOrders.length > 0 && (
+            {data?.user?._count?.customerOrders > 0 && (
               <Link
                 href={`/admin/users/${id}/invoice`}
                 className="bg-[#f1f1f1] border rounded-md p-[10px] cursor-pointer inline-block"
@@ -58,13 +89,13 @@ export default function UserDetails() {
       </div>
     );
   };
+
   async function syncContrAgent() {
     setLoading(true);
     const res = await adminApiFetch(`/api/sync/${data.user.inn}/${id}`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
     });
-
     if (res.ok) {
       setLoading(false);
       await mutate(
@@ -75,61 +106,122 @@ export default function UserDetails() {
   }
 
   const renderOrders = () => {
-    if (data?.user?.customerOrders.length > 0) {
-      return (
-        <div>
-          <div className="mb-[10px]">Заказы:</div>
-          {data?.user?.customerOrders.map((order: CustomerOrder) => {
-            const createdAt = new Date(order.createdAt);
-            return (
-              <div
-                key={order.id}
-                className="border rounded-xl mb-[20px] p-[10px]"
+    if (!data?.user?._count?.customerOrders) return null;
+
+    const total: number = ordersData?.total ?? 0;
+    const pageSize: number = ordersData?.pageSize ?? ordersPageSize;
+    const totalPages = Math.max(1, Math.ceil(total / pageSize));
+    const start = Math.max(1, ordersPage - 2);
+    const end = Math.min(totalPages, ordersPage + 2);
+    const pages = Array.from({ length: end - start + 1 }, (_, i) => start + i);
+
+    return (
+      <div>
+        <div className="mb-[10px] font-medium">Заказы:</div>
+
+        <UserOrdersFilterBar />
+
+        <div className="mb-4">
+          <div className="flex items-center justify-between mb-2">
+            <div className="text-sm text-gray-600">
+              Всего заказов: {total}. Страница {ordersPage} из {totalPages}
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600">На странице:</span>
+              <select
+                className="border rounded-lg px-3 py-2"
+                value={ordersPageSize}
+                onChange={(e) => changePageSize(Number(e.target.value))}
               >
-                <div className="flex w-96">
-                  <div className="w-1/2 text-right">Статус:</div>
-                  <div className="w-1/2 text-right">
-                    {orderLabel(order.orderStatus)}
-                  </div>
-                </div>
-                <div className="flex w-96">
-                  <div className="w-1/2 text-right">Добавлен в счет:</div>
-                  <div className="w-1/2 text-right">
-                    {order.includedInInvoice
-                      ? `№${order.invoiceName}`
-                      : 'Не добавлен'}
-                  </div>
-                </div>
-                <div className="flex w-96">
-                  <div className="w-1/2 text-right">Создан:</div>
-                  <div className="w-1/2 text-right">
-                    {createdAt.toLocaleString('ru-RU')}
-                  </div>
-                </div>
-                <div className="flex w-96">
-                  <div className="w-1/2 text-right">Позиции:</div>
-                  <div className="w-1/2 text-right">
-                    {order?.items && (
-                      <div key={order?.items.id}>
-                        <p>{order?.items.templateLabel}</p>
-                        <p>Размер: {order?.items.size.label}</p>
-                        {order?.items.frame && <p>{order?.items.frame.name}</p>}
-                        <p>{order?.items.background.name}</p>
-                        <p>
-                          Отверстия:&nbsp;
-                          {holePatternLabel(order?.items.holePattern)}
-                        </p>
-                      </div>
-                    )}
-                  </div>
+                <option value={10}>10</option>
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+              </select>
+            </div>
+          </div>
+
+          {totalPages > 1 && (
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                className="rounded-lg border px-3 py-2 disabled:opacity-50"
+                disabled={ordersPage <= 1}
+                onClick={() => goToPage(ordersPage - 1)}
+              >
+                Назад
+              </button>
+
+              {pages[0] > 1 && (
+                <>
+                  <button className="rounded-lg border px-3 py-2" onClick={() => goToPage(1)}>1</button>
+                  {pages[0] > 2 && <span className="px-1">…</span>}
+                </>
+              )}
+
+              {pages.map((p) => (
+                <button
+                  key={p}
+                  className={`rounded-lg border px-3 py-2 ${p === ordersPage ? 'bg-black text-white' : ''}`}
+                  onClick={() => goToPage(p)}
+                >
+                  {p}
+                </button>
+              ))}
+
+              {pages[pages.length - 1] < totalPages && (
+                <>
+                  {pages[pages.length - 1] < totalPages - 1 && <span className="px-1">…</span>}
+                  <button className="rounded-lg border px-3 py-2" onClick={() => goToPage(totalPages)}>{totalPages}</button>
+                </>
+              )}
+
+              <button
+                className="rounded-lg border px-3 py-2 disabled:opacity-50"
+                disabled={ordersPage >= totalPages}
+                onClick={() => goToPage(ordersPage + 1)}
+              >
+                Вперёд
+              </button>
+            </div>
+          )}
+        </div>
+
+        {ordersData?.items?.map((order: CustomerOrder) => {
+          const createdAt = new Date(order.createdAt);
+          return (
+            <div key={order.id} className="border rounded-xl mb-[20px] p-[10px]">
+              <div className="flex w-96">
+                <div className="w-1/2 text-right">Статус:</div>
+                <div className="w-1/2 text-right">{orderLabel(order.orderStatus)}</div>
+              </div>
+              <div className="flex w-96">
+                <div className="w-1/2 text-right">Добавлен в счет:</div>
+                <div className="w-1/2 text-right">
+                  {order.includedInInvoice ? `№${order.invoiceName}` : 'Не добавлен'}
                 </div>
               </div>
-            );
-          })}
-        </div>
-      );
-    }
-    return null;
+              <div className="flex w-96">
+                <div className="w-1/2 text-right">Создан:</div>
+                <div className="w-1/2 text-right">{createdAt.toLocaleString('ru-RU')}</div>
+              </div>
+              <div className="flex w-96">
+                <div className="w-1/2 text-right">Позиции:</div>
+                <div className="w-1/2 text-right">
+                  {order?.items && (
+                    <div key={order.items.id}>
+                      <p>{order.items.templateLabel}</p>
+                      <p>Размер: {order.items.size.label}</p>
+                      {order.items.frame && <p>{order.items.frame.name}</p>}
+                      <p>{order.items.background.name}</p>
+                      <p>Отверстия:&nbsp;{holePatternLabel(order.items.holePattern)}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
   };
 
   if (data && data.user) {
@@ -199,4 +291,12 @@ export default function UserDetails() {
     );
   }
   return <div>...загрузка</div>;
+}
+
+export default function UserDetails() {
+  return (
+    <Suspense fallback={<div>...загрузка</div>}>
+      <UserDetailsInner />
+    </Suspense>
+  );
 }

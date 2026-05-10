@@ -16,6 +16,7 @@ import {
 import { UsersService } from '../../users/users.service';
 import { AdminCreateUserDto } from '../../users/dto/admin-create-user.dto';
 import { AdminUpdateUserDto } from '../../users/dto/admin-update-user.dto';
+import { UserOrdersQueryDto } from '../../users/dto/user-orders.query.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../../auth/guards/roles.guard';
 import { Roles } from '../../auth/decorators/roles.decorator';
@@ -42,12 +43,22 @@ export class AdminUsersController {
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('ADMIN_GOD', 'ADMIN', 'MANAGER')
+  @Get(':id/orders')
+  async getUserOrders(
+    @Param('id') id: string,
+    @Query() dto: UserOrdersQueryDto,
+  ) {
+    return this.usersService.getUserOrders(id, dto);
+  }
+
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('ADMIN_GOD', 'ADMIN', 'MANAGER')
   @Get(':id')
   async byId(@Param('id') id: string) {
     try {
-      if (!id) throw new BadRequestException('id required');
+      if (!id) return 'id required';
       const user = await this.usersService.findByIdAdmin(id);
-      if (!user) throw new NotFoundException('User not found');
+      if (!user) return 'User not found';
       return { user };
     } catch (e) {
       console.log('User error', e);

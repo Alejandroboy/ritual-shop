@@ -4,10 +4,11 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Prisma, Role } from '@prisma/client';
+import { InvoiceStatus, Prisma, Role } from '@prisma/client';
 import * as argon2 from 'argon2';
 import { AdminCreateUserDto } from './dto/admin-create-user.dto';
 import { MyOrdersQueryDto } from './dto/my-orders.query.dto';
+import { UserOrdersQueryDto } from './dto/user-orders.query.dto';
 
 @Injectable()
 export class UsersService {
@@ -35,39 +36,98 @@ export class UsersService {
             managedOrders: true,
           },
         },
-        customerOrders: {
-          select: {
-            id: true,
-            orderStatus: true,
-            orderNumber: true,
-            createdAt: true,
-            includedInInvoice: true,
-            invoiceId: true,
-            invoiceName: true,
-            items: {
-              include: {
-                size: true,
-                frame: true,
-                background: true,
-                assets: true,
-                template: {
-                  include: {
-                    allowedSizes: true,
-                    finishPrices: true,
-                  },
-                },
-              },
-            },
-          },
-          take: 10,
-          orderBy: { createdAt: 'desc' },
-        },
       },
     });
     if (!user) {
       throw new NotFoundException(`User ${id} not found`);
     }
     return user;
+  }
+
+  async getUserOrders(userId: string, dto: UserOrdersQueryDto) {
+    const {
+      page = 1,
+      pageSize = 10,
+      status,
+      q,
+      includedInInvoice,
+      invoiceStatus,
+      dateFrom,
+      dateTo,
+    } = dto;
+
+    const and: Prisma.OrderWhereInput[] = [{ customerId: userId }];
+
+    if (status) and.push({ orderStatus: status });
+
+    if (dateFrom || dateTo) {
+      and.push({
+        createdAt: {
+          ...(dateFrom ? { gte: new Date(dateFrom) } : {}),
+          ...(dateTo ? { lte: new Date(dateTo) } : {}),
+        },
+      });
+    }
+
+    if (includedInInvoice === 'yes') and.push({ includedInInvoice: true });
+    if (includedInInvoice === 'no') and.push({ includedInInvoice: false });
+
+    if (invoiceStatus === 'yes') {
+      and.push({ invoice: { status: InvoiceStatus.PAID } });
+    }
+    if (invoiceStatus === 'no') {
+      and.push({
+        invoice: { status: { in: [InvoiceStatus.UNPAID, InvoiceStatus.PARTIAL] } },
+      });
+    }
+
+    if (q) {
+      and.push({
+        OR: [
+          { number: { contains: q, mode: 'insensitive' } },
+          { orderNumber: { contains: q, mode: 'insensitive' } },
+        ],
+      });
+    }
+
+    const where: Prisma.OrderWhereInput = { AND: and };
+    const take = Math.max(1, Math.min(100, Number(pageSize)));
+    const skip = Math.max(0, (Number(page) - 1) * take);
+
+    const [items, total] = await Promise.all([
+      this.prisma.order.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        take,
+        skip,
+        select: {
+          id: true,
+          orderStatus: true,
+          orderNumber: true,
+          createdAt: true,
+          includedInInvoice: true,
+          invoiceId: true,
+          invoiceName: true,
+          items: {
+            include: {
+              size: true,
+              frame: true,
+              background: true,
+              assets: true,
+              template: {
+                include: {
+                  allowedSizes: true,
+                  finishPrices: true,
+                },
+              },
+            },
+          },
+        },
+      }),
+      this.prisma.order.count({ where }),
+    ]);
+
+    return { items, total, page: Number(page), pageSize: take };
   }
 
   async findById(id: string) {

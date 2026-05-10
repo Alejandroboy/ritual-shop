@@ -65,6 +65,7 @@ export function OrderBlankButton({ order }: { order: any }) {
         },
         assetUrl,
       };
+      console.log('data', data);
 
       const blob = await pdf(<OrderBlankPdf data={data} />).toBlob();
       const blobUrl = URL.createObjectURL(blob);
