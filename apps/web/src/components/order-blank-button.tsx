@@ -90,7 +90,7 @@ export function OrderBlankButton({ order }: { order: any }) {
       type="button"
       onClick={handleClick}
       disabled={loading}
-      className="inline-flex items-center rounded-md border px-4 py-2 text-sm font-medium"
+      className="inline-flex items-center rounded-md border px-4 py-2 text-sm font-medium cursor-pointer"
     >
       {loading ? 'Генерация...' : 'Скачать бланк заказа'}
     </button>

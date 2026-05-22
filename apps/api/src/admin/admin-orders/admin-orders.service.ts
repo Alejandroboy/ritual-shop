@@ -33,6 +33,7 @@ export class AdminOrdersService {
       userNameContains,
       includedInInvoice,
       invoiceStatus,
+      orderNumber,
     } = dto;
 
     const and: Prisma.OrderWhereInput[] = [];
@@ -99,6 +100,12 @@ export class AdminOrdersService {
             in: [InvoiceStatus.UNPAID, InvoiceStatus.PARTIAL],
           },
         },
+      });
+    }
+
+    if (orderNumber) {
+      and.push({
+        orderNumber: { contains: orderNumber, mode: 'insensitive' },
       });
     }
 

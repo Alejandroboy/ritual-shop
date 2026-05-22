@@ -99,7 +99,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={pending}
-            className="w-full rounded-xl p-3 shadow active:scale-[.99] disabled:opacity-60"
+            className="w-full rounded-xl p-3 shadow active:scale-[.99] disabled:opacity-60 cursor-pointer"
           >
             {pending ? 'Входим…' : 'Войти'}
           </button>

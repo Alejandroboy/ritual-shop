@@ -129,14 +129,14 @@ export function UserOrdersFilterBar() {
         <button
           type="button"
           onClick={apply}
-          className="rounded-md bg-neutral-900 px-3 py-1.5 text-white"
+          className="rounded-md bg-neutral-900 px-3 py-1.5 text-white cursor-pointer"
         >
           Фильтр
         </button>
         <button
           type="button"
           onClick={reset}
-          className="rounded-md border px-3 py-1.5"
+          className="rounded-md border px-3 py-1.5 cursor-pointer"
         >
           Сброс
         </button>

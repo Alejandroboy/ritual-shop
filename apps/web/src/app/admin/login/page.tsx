@@ -62,7 +62,7 @@ function AdminLoginPage() {
         </div>
 
         {err && <p className="text-red-600 text-sm">{err}</p>}
-        <button className="w-full rounded-xl py-2 bg-black text-white">
+        <button className="w-full rounded-xl py-2 bg-black text-white cursor-pointer">
           Войти
         </button>
       </form>

@@ -105,11 +105,14 @@ export default function FilterBar() {
       <div className="ml-auto flex gap-2">
         <button
           onClick={apply}
-          className="px-3 py-1.5 rounded-md bg-neutral-900 text-white"
+          className="px-3 py-1.5 rounded-md bg-neutral-900 text-white cursor-pointer"
         >
           Фильтр
         </button>
-        <button onClick={reset} className="px-3 py-1.5 rounded-md border">
+        <button
+          onClick={reset}
+          className="px-3 py-1.5 rounded-md border cursor-pointer"
+        >
           Сброс
         </button>
       </div>

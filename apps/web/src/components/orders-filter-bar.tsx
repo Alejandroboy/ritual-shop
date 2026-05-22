@@ -28,6 +28,9 @@ export function OrdersFilterBar() {
   const [invoiceStatus, setInvoiceStatus] = useState<string>(
     sp.get('invoiceStatus') || '',
   );
+  const [orderNumber, setOrderNumber] = useState<string>(
+    sp.get('orderNumber') || '',
+  );
 
   useEffect(() => {
     setStatus(sp.get('status') || '');
@@ -55,6 +58,10 @@ export function OrdersFilterBar() {
     if (invoiceStatus) {
       q.set('invoiceStatus', invoiceStatus);
     } else q.delete('invoiceStatus');
+
+    if (orderNumber) {
+      q.set('orderNumber', orderNumber);
+    } else q.delete('orderNumber');
 
     q.delete('userEmail');
     q.delete('userId');
@@ -87,6 +94,7 @@ export function OrdersFilterBar() {
     q.delete('page');
     q.delete('invoiceStatus');
     q.delete('includedInInvoice');
+    q.delete('orderNumber');
 
     router.push(`${pathname}${q.toString() ? `?${q.toString()}` : ''}`);
   };
@@ -118,7 +126,7 @@ export function OrdersFilterBar() {
       <label className="text-sm">
         <span className="mb-1 block text-neutral-600">Имя пользователя</span>
         <input
-          className="min-w-64 rounded-md border bg-white px-2 py-1"
+          className="min-w-40 rounded-md border bg-white px-2 py-1"
           value={userNameContains}
           onChange={(e) => setUserNameContains(e.target.value)}
           placeholder="Имя"
@@ -126,9 +134,19 @@ export function OrdersFilterBar() {
       </label>
 
       <label className="text-sm">
+        <span className="mb-1 block text-neutral-600">Номер заказа</span>
+        <input
+          className="min-w-40 rounded-md border bg-white px-2 py-1"
+          value={orderNumber}
+          onChange={(e) => setOrderNumber(e.target.value)}
+          placeholder="Номер заказа"
+        />
+      </label>
+
+      <label className="text-sm">
         <span className="mb-1 block text-neutral-600">Пользователь</span>
         <input
-          className="min-w-64 rounded-md border bg-white px-2 py-1"
+          className="min-w-40 rounded-md border bg-white px-2 py-1"
           value={user}
           onChange={(e) => setUser(e.target.value)}
           placeholder="email или userId"
@@ -185,14 +203,14 @@ export function OrdersFilterBar() {
         <button
           type="button"
           onClick={apply}
-          className="rounded-md bg-neutral-900 px-3 py-1.5 text-white"
+          className="rounded-md bg-neutral-900 px-3 py-1.5 text-white cursor-pointer"
         >
           Фильтр
         </button>
         <button
           type="button"
           onClick={reset}
-          className="rounded-md border px-3 py-1.5"
+          className="rounded-md border px-3 py-1.5 cursor-pointer"
         >
           Сброс
         </button>

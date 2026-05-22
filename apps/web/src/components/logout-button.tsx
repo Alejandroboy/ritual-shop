@@ -22,7 +22,7 @@ export function LogoutButton() {
     <button
       onClick={onLogout}
       disabled={pending}
-      className="rounded-xl border px-4 py-2 text-sm shadow disabled:opacity-60"
+      className="rounded-xl border px-4 py-2 text-sm shadow disabled:opacity-60 cursor-pointer"
       aria-busy={pending}
     >
       {pending ? 'Выходим…' : 'Выйти'}

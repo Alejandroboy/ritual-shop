@@ -8,6 +8,7 @@ export class AdminOrdersQueryDto {
   @IsOptional() @IsString() userId?: string;
   @IsOptional() @IsString() userEmail?: string;
   @IsOptional() @IsString() userNameContains?: string;
+  @IsOptional() @IsString() orderNumber?: string;
   @IsOptional() @IsString() includedInInvoice?: string;
   @IsOptional() @IsString() invoiceStatus?: string;
 
