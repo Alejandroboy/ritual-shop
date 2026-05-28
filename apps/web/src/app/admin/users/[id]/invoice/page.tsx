@@ -421,7 +421,10 @@ function InvoicePageInner() {
       {orders.map((order: CustomerOrder) => {
         const createdAt = new Date(order.createdAt);
         let price: number;
-        if (order.items?.template?.requiresFinish) {
+        if (
+          order.items?.template?.requiresFinish &&
+          order.items?.template?.finishPrices.length
+        ) {
           price =
             order.items?.template?.finishPrices?.find(
               (x: any) =>
