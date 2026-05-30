@@ -2,7 +2,7 @@
 
 import useSWR from 'swr';
 import Link from 'next/link';
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { adminApiFetch } from '@utils';
 import {
@@ -43,6 +43,7 @@ function shouldHighlightOrder(order: Order) {
 }
 
 export function Orders() {
+  const [view, setView] = useState<'list' | 'table'>('table');
   const sp = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -164,12 +165,102 @@ export function Orders() {
   return (
     <div>
       <OrdersFilterBar />
-      <Link
-        href={`/admin/orders/bulk-status${qs ? `?${qs}` : ''}`}
-        className="rounded-lg border px-3 py-2 w-fit block"
-      >
-        Массовая смена статуса
-      </Link>
+      <div className="flex items-center gap-3 mb-3">
+        <Link
+          href={`/admin/orders/bulk-status${qs ? `?${qs}` : ''}`}
+          className="rounded-lg border px-3 py-2 w-fit block"
+        >
+          Массовая смена статуса
+        </Link>
+        <div className="flex border rounded-lg overflow-hidden">
+          <button
+            className={`px-3 py-2 flex items-center gap-1.5 text-sm ${view === 'list' ? 'bg-black text-white' : 'bg-white text-gray-600'}`}
+            onClick={() => setView('list')}
+            title="Карточки"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <rect
+                x="1"
+                y="2"
+                width="14"
+                height="3"
+                rx="1"
+                fill="currentColor"
+              />
+              <rect
+                x="1"
+                y="6.5"
+                width="14"
+                height="3"
+                rx="1"
+                fill="currentColor"
+              />
+              <rect
+                x="1"
+                y="11"
+                width="14"
+                height="3"
+                rx="1"
+                fill="currentColor"
+              />
+            </svg>
+            Карточки
+          </button>
+          <button
+            className={`px-3 py-2 flex items-center gap-1.5 text-sm border-l ${view === 'table' ? 'bg-black text-white' : 'bg-white text-gray-600'}`}
+            onClick={() => setView('table')}
+            title="Таблица"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <rect
+                x="1"
+                y="1"
+                width="6"
+                height="6"
+                rx="1"
+                fill="currentColor"
+              />
+              <rect
+                x="9"
+                y="1"
+                width="6"
+                height="6"
+                rx="1"
+                fill="currentColor"
+              />
+              <rect
+                x="1"
+                y="9"
+                width="6"
+                height="6"
+                rx="1"
+                fill="currentColor"
+              />
+              <rect
+                x="9"
+                y="9"
+                width="6"
+                height="6"
+                rx="1"
+                fill="currentColor"
+              />
+            </svg>
+            Таблица
+          </button>
+        </div>
+      </div>
       <div className="mb-4 flex items-center justify-between gap-4">
         <div className="text-sm text-gray-600">
           {isLoading
@@ -190,88 +281,196 @@ export function Orders() {
           </select>
         </div>
       </div>
-      <ul className="space-y-2">
-        {items.map((o: Order) => {
-          const orderStatus = o.orderStatus;
-          const created = o.createdAt
-            ? new Date(o.createdAt as unknown as string)
-            : null;
 
-          const isDelayed = shouldHighlightOrder(o);
+      {view === 'table' ? (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr className="border-b bg-gray-50 text-left text-gray-600">
+                <th className="px-3 py-2 font-medium">Номер</th>
+                <th className="px-3 py-2 font-medium">Статус</th>
+                <th className="px-3 py-2 font-medium">Клиент</th>
+                <th className="px-3 py-2 font-medium">Дата</th>
+                <th className="px-3 py-2 font-medium">Счёт</th>
+                <th className="px-3 py-2 font-medium">Флаги</th>
+                <th className="px-3 py-2 font-medium"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((o: Order) => {
+                const created = o.createdAt
+                  ? new Date(o.createdAt as unknown as string)
+                  : null;
+                const isDelayed = shouldHighlightOrder(o);
 
-          return (
-            <li
-              key={o.id}
-              className={`p-3 rounded-xl border-2 ${
-                isDelayed ? 'border-red-500' : 'border-gray-200'
-              }
+                return (
+                  <tr
+                    key={o.id}
+                    className={`border-b ${isDelayed ? 'bg-red-50' : styleForBg(o.orderStatus)} hover:brightness-95`}
+                  >
+                    <td className="px-3 py-2 font-mono whitespace-nowrap">
+                      {isDelayed && (
+                        <span className="inline-block w-2 h-2 rounded-full bg-red-500 mr-1.5 align-middle" />
+                      )}
+                      {o.number}
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap">
+                      {orderLabel(o.orderStatus as OrderStatusEnum)}
+                    </td>
+                    <td className="px-3 py-2">
+                      <div>{o.customerName ?? '—'}</div>
+                      <div className="text-gray-500">
+                        {o.customerEmail ?? '—'}
+                      </div>
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap text-gray-500">
+                      {created ? created.toLocaleString() : '—'}
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap">
+                      {o.includedInInvoice ? (
+                        <span>
+                          {o.invoiceName}&nbsp;
+                          {o?.invoice && (
+                            <span className={chooseClass(o.invoice.status)}>
+                              {invoiceLabel(
+                                o.invoice.status as InvoiceStatusEnum,
+                              )}
+                            </span>
+                          )}
+                        </span>
+                      ) : (
+                        '—'
+                      )}
+                    </td>
+                    <td className="px-3 py-2">
+                      <div className="flex flex-col gap-0.5">
+                        {o.items?.userActionNeeded &&
+                          !o.items.managerActionNeeded && (
+                            <span className="text-red-500 text-xs">
+                              Ожидание пользователя
+                            </span>
+                          )}
+                        {!o.items?.userActionNeeded &&
+                          o.items?.managerActionNeeded && (
+                            <span className="text-red-500 text-xs">
+                              Ожидание менеджера
+                            </span>
+                          )}
+                        {o.items?.approveNeeded && !o.items?.approved && (
+                          <span className="text-red-500 text-xs">
+                            Согласование
+                          </span>
+                        )}
+                        {o.items?.retouchNeeded &&
+                          (
+                            o.items?.assets?.filter(
+                              (a) => a.stage === 'RETOUCHED',
+                            ) ?? []
+                          ).length === 0 && (
+                            <span className="text-red-500 text-xs">Ретушь</span>
+                          )}
+                      </div>
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap">
+                      <Link
+                        className="underline"
+                        href={`/admin/orders/${o.id}`}
+                      >
+                        Открыть
+                      </Link>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <ul className="space-y-2">
+          {items.map((o: Order) => {
+            const orderStatus = o.orderStatus;
+            const created = o.createdAt
+              ? new Date(o.createdAt as unknown as string)
+              : null;
+
+            const isDelayed = shouldHighlightOrder(o);
+
+            return (
+              <li
+                key={o.id}
+                className={`p-3 rounded-xl border-2 ${
+                  isDelayed ? 'border-red-500' : 'border-gray-200'
+                }
               ${styleForBg(orderStatus)}
               `}
-            >
-              <div className="flex items-center gap-2 justify-between">
-                <div>
-                  <div className="font-mono">{o.number}</div>
-                  {renderRetouch(o.items)}
-                  {renderApproval(o.items)}
-                  <div className="text-sm text-gray-600">
-                    Статус: {orderLabel(o.orderStatus as OrderStatusEnum)}
-                  </div>
-                  {o.items?.userActionNeeded &&
-                    !o.items.managerActionNeeded && (
-                      <span className="text-sm  text-red-500">
-                        Ожидание пользователя
-                      </span>
-                    )}
-
-                  {!o.items?.userActionNeeded &&
-                    o.items?.managerActionNeeded && (
-                      <span className="text-sm text-red-500">
-                        Ожидание ответа от менеджера
-                      </span>
-                    )}
-                  <div className="text-sm text-gray-500">
-                    {created ? created.toLocaleString() : '—'}
-                    {' • '}
-                    {o.customerEmail ?? 'без пользователя'}
-                    {' • '}
-                    {o.customerName ?? 'без имени'}
-                  </div>
-                  {o.includedInInvoice && (
-                    <div className="text-sm">
-                      Включен в счет {o.invoiceName}&nbsp;
-                      {o?.invoice ? (
-                        <span className={chooseClass(o.invoice.status)}>
-                          {invoiceLabel(o.invoice.status as InvoiceStatusEnum)}
-                        </span>
-                      ) : null}
+              >
+                <div className="flex items-center gap-2 justify-between">
+                  <div>
+                    <div className="font-mono">{o.number}</div>
+                    {renderRetouch(o.items)}
+                    {renderApproval(o.items)}
+                    <div className="text-sm text-gray-600">
+                      Статус: {orderLabel(o.orderStatus as OrderStatusEnum)}
                     </div>
-                  )}
-                  <Link className="underline" href={`/admin/orders/${o.id}`}>
-                    Открыть
-                  </Link>
+                    {o.items?.userActionNeeded &&
+                      !o.items.managerActionNeeded && (
+                        <span className="text-sm  text-red-500">
+                          Ожидание пользователя
+                        </span>
+                      )}
+
+                    {!o.items?.userActionNeeded &&
+                      o.items?.managerActionNeeded && (
+                        <span className="text-sm text-red-500">
+                          Ожидание ответа от менеджера
+                        </span>
+                      )}
+                    <div className="text-sm text-gray-500">
+                      {created ? created.toLocaleString() : '—'}
+                      {' • '}
+                      {o.customerEmail ?? 'без пользователя'}
+                      {' • '}
+                      {o.customerName ?? 'без имени'}
+                    </div>
+                    {o.includedInInvoice && (
+                      <div className="text-sm">
+                        Включен в счет {o.invoiceName}&nbsp;
+                        {o?.invoice ? (
+                          <span className={chooseClass(o.invoice.status)}>
+                            {invoiceLabel(
+                              o.invoice.status as InvoiceStatusEnum,
+                            )}
+                          </span>
+                        ) : null}
+                      </div>
+                    )}
+                    <Link className="underline" href={`/admin/orders/${o.id}`}>
+                      Открыть
+                    </Link>
+                  </div>
+                  <div>
+                    {o.items?.assets.length ? (
+                      <AssetThumb
+                        asset={{
+                          id: o.items.assets[0].id,
+                          originalName: o.items.assets[0].originalName,
+                          contentType: o.items.assets[0].contentType,
+                          thumbKey: o.items.assets[0].thumbKey,
+                          s3Key: o.items.assets[0].key,
+                        }}
+                        size={180}
+                        primary={o.items.assets[0].primary}
+                      />
+                    ) : (
+                      ''
+                    )}
+                  </div>
                 </div>
-                <div>
-                  {o.items?.assets.length ? (
-                    <AssetThumb
-                      asset={{
-                        id: o.items.assets[0].id,
-                        originalName: o.items.assets[0].originalName,
-                        contentType: o.items.assets[0].contentType,
-                        thumbKey: o.items.assets[0].thumbKey,
-                        s3Key: o.items.assets[0].key,
-                      }}
-                      size={180}
-                      primary={o.items.assets[0].primary}
-                    />
-                  ) : (
-                    ''
-                  )}
-                </div>
-              </div>
-            </li>
-          );
-        })}
-      </ul>
+              </li>
+            );
+          })}
+        </ul>
+      )}
       <div className="mt-6 flex flex-wrap items-center gap-2">
         <button
           className="rounded-lg border px-3 py-2 disabled:opacity-50"

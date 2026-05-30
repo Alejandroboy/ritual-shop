@@ -49,6 +49,7 @@ export function BulkStatusOrders() {
   const currentPageSize = Number(data?.pageSize ?? pageSize);
   const totalPages = Math.max(1, Math.ceil(total / currentPageSize));
 
+  const [view, setView] = useState<'list' | 'table'>('table');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [nextStatus, setNextStatus] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -218,13 +219,101 @@ export function BulkStatusOrders() {
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between gap-3">
+      <div className="mb-4 flex items-center gap-3">
         <Link
           href={`/admin/orders${qs ? `?${qs}` : ''}`}
           className="rounded-lg border px-3 py-2"
         >
           ← Назад к списку
         </Link>
+        <div className="flex border rounded-lg overflow-hidden">
+          <button
+            className={`px-3 py-2 flex items-center gap-1.5 text-sm ${view === 'list' ? 'bg-black text-white' : 'bg-white text-gray-600'}`}
+            onClick={() => setView('list')}
+            title="Карточки"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <rect
+                x="1"
+                y="2"
+                width="14"
+                height="3"
+                rx="1"
+                fill="currentColor"
+              />
+              <rect
+                x="1"
+                y="6.5"
+                width="14"
+                height="3"
+                rx="1"
+                fill="currentColor"
+              />
+              <rect
+                x="1"
+                y="11"
+                width="14"
+                height="3"
+                rx="1"
+                fill="currentColor"
+              />
+            </svg>
+            Карточки
+          </button>
+          <button
+            className={`px-3 py-2 flex items-center gap-1.5 text-sm border-l ${view === 'table' ? 'bg-black text-white' : 'bg-white text-gray-600'}`}
+            onClick={() => setView('table')}
+            title="Таблица"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <rect
+                x="1"
+                y="1"
+                width="6"
+                height="6"
+                rx="1"
+                fill="currentColor"
+              />
+              <rect
+                x="9"
+                y="1"
+                width="6"
+                height="6"
+                rx="1"
+                fill="currentColor"
+              />
+              <rect
+                x="1"
+                y="9"
+                width="6"
+                height="6"
+                rx="1"
+                fill="currentColor"
+              />
+              <rect
+                x="9"
+                y="9"
+                width="6"
+                height="6"
+                rx="1"
+                fill="currentColor"
+              />
+            </svg>
+            Таблица
+          </button>
+        </div>
       </div>
 
       <OrdersFilterBar />
@@ -330,81 +419,201 @@ export function BulkStatusOrders() {
         )}
       </div>
 
-      <ul className="space-y-2">
-        {items.map((o: Order) => {
-          const created = o.createdAt
-            ? new Date(o.createdAt as unknown as string)
-            : null;
+      {view === 'table' ? (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr className="border-b bg-gray-50 text-left text-gray-600">
+                <th className="px-3 py-2">
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4"
+                    checked={allOnPageSelected}
+                    ref={(node) => {
+                      if (node) node.indeterminate = someOnPageSelected;
+                    }}
+                    onChange={toggleAllOnPage}
+                    disabled={isSubmitting}
+                  />
+                </th>
+                <th className="px-3 py-2 font-medium">Номер</th>
+                <th className="px-3 py-2 font-medium">Статус</th>
+                <th className="px-3 py-2 font-medium">Клиент</th>
+                <th className="px-3 py-2 font-medium">Дата</th>
+                <th className="px-3 py-2 font-medium">Счёт</th>
+                <th className="px-3 py-2 font-medium">Флаги</th>
+                <th className="px-3 py-2 font-medium"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((o: Order) => {
+                const created = o.createdAt
+                  ? new Date(o.createdAt as unknown as string)
+                  : null;
+                const checked = selectedIds.includes(o.id);
 
-          const checked = selectedIds.includes(o.id);
-
-          return (
-            <li key={o.id} className="rounded-xl border p-3">
-              <div className="flex items-start gap-3">
-                <input
-                  type="checkbox"
-                  className="mt-1 h-4 w-4"
-                  checked={checked}
-                  onChange={() => toggleOne(o.id)}
-                  disabled={isSubmitting}
-                />
-
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
-                    <div className="font-mono">{o.number}</div>
-                    <div className="text-sm text-gray-500">
-                      ID: <span className="font-mono">{o.id}</span>
-                    </div>
-                  </div>
-
-                  {Array.isArray(o.items) ? (
-                    o.items.map((item) => (
-                      <div key={item.id}>
-                        {renderRetouch(item)}
-                        {renderApproval(item)}
+                return (
+                  <tr
+                    key={o.id}
+                    className={`border-b hover:bg-gray-50 ${checked ? 'bg-blue-50' : ''}`}
+                  >
+                    <td className="px-3 py-2">
+                      <input
+                        type="checkbox"
+                        className="h-4 w-4"
+                        checked={checked}
+                        onChange={() => toggleOne(o.id)}
+                        disabled={isSubmitting}
+                      />
+                    </td>
+                    <td className="px-3 py-2 font-mono whitespace-nowrap">
+                      {o.number}
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap">
+                      {orderLabel(o.orderStatus as OrderStatusEnum)}
+                    </td>
+                    <td className="px-3 py-2">
+                      <div>{o.customerName ?? '—'}</div>
+                      <div className="text-gray-500">
+                        {o.customerEmail ?? '—'}
                       </div>
-                    ))
-                  ) : (
-                    <>
-                      {renderRetouch(o.items)}
-                      {renderApproval(o.items)}
-                    </>
-                  )}
-
-                  <div className="text-sm text-gray-600">
-                    {orderLabel(o.orderStatus as OrderStatusEnum)}
-                  </div>
-
-                  <div className="text-sm text-gray-500">
-                    {created ? created.toLocaleString() : '—'}
-                    {' • '}
-                    {o.customerEmail ?? 'без пользователя'}
-                    {' • '}
-                    {o.customerName ?? 'без имени'}
-                  </div>
-
-                  {o.includedInInvoice && (
-                    <div className="text-sm">
-                      Включен в счет {o.invoiceName}{' '}
-                      {o.invoice ? (
-                        <span className={chooseInvoiceClass(o.invoice.status)}>
-                          {invoiceLabel(o.invoice.status as InvoiceStatusEnum)}
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap text-gray-500">
+                      {created ? created.toLocaleString() : '—'}
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap">
+                      {o.includedInInvoice ? (
+                        <span>
+                          {o.invoiceName}{' '}
+                          {o.invoice && (
+                            <span
+                              className={chooseInvoiceClass(o.invoice.status)}
+                            >
+                              {invoiceLabel(
+                                o.invoice.status as InvoiceStatusEnum,
+                              )}
+                            </span>
+                          )}
                         </span>
-                      ) : null}
-                    </div>
-                  )}
+                      ) : (
+                        '—'
+                      )}
+                    </td>
+                    <td className="px-3 py-2">
+                      <div className="flex flex-col gap-0.5">
+                        {Array.isArray(o.items) ? (
+                          o.items.map((item) => (
+                            <div key={item.id}>
+                              {renderRetouch(item)}
+                              {renderApproval(item)}
+                            </div>
+                          ))
+                        ) : (
+                          <>
+                            {renderRetouch(o.items)}
+                            {renderApproval(o.items)}
+                          </>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap">
+                      <Link
+                        className="underline"
+                        href={`/admin/orders/${o.id}`}
+                      >
+                        Открыть
+                      </Link>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <ul className="space-y-2">
+          {items.map((o: Order) => {
+            const created = o.createdAt
+              ? new Date(o.createdAt as unknown as string)
+              : null;
 
-                  <div className="mt-2 flex gap-3">
-                    <Link className="underline" href={`/admin/orders/${o.id}`}>
-                      Открыть
-                    </Link>
+            const checked = selectedIds.includes(o.id);
+
+            return (
+              <li key={o.id} className="rounded-xl border p-3">
+                <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    className="mt-1 h-4 w-4"
+                    checked={checked}
+                    onChange={() => toggleOne(o.id)}
+                    disabled={isSubmitting}
+                  />
+
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+                      <div className="font-mono">{o.number}</div>
+                      <div className="text-sm text-gray-500">
+                        ID: <span className="font-mono">{o.id}</span>
+                      </div>
+                    </div>
+
+                    {Array.isArray(o.items) ? (
+                      o.items.map((item) => (
+                        <div key={item.id}>
+                          {renderRetouch(item)}
+                          {renderApproval(item)}
+                        </div>
+                      ))
+                    ) : (
+                      <>
+                        {renderRetouch(o.items)}
+                        {renderApproval(o.items)}
+                      </>
+                    )}
+
+                    <div className="text-sm text-gray-600">
+                      {orderLabel(o.orderStatus as OrderStatusEnum)}
+                    </div>
+
+                    <div className="text-sm text-gray-500">
+                      {created ? created.toLocaleString() : '—'}
+                      {' • '}
+                      {o.customerEmail ?? 'без пользователя'}
+                      {' • '}
+                      {o.customerName ?? 'без имени'}
+                    </div>
+
+                    {o.includedInInvoice && (
+                      <div className="text-sm">
+                        Включен в счет {o.invoiceName}{' '}
+                        {o.invoice ? (
+                          <span
+                            className={chooseInvoiceClass(o.invoice.status)}
+                          >
+                            {invoiceLabel(
+                              o.invoice.status as InvoiceStatusEnum,
+                            )}
+                          </span>
+                        ) : null}
+                      </div>
+                    )}
+
+                    <div className="mt-2 flex gap-3">
+                      <Link
+                        className="underline"
+                        href={`/admin/orders/${o.id}`}
+                      >
+                        Открыть
+                      </Link>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </li>
-          );
-        })}
-      </ul>
+              </li>
+            );
+          })}
+        </ul>
+      )}
 
       <div className="mt-6 flex flex-wrap items-center gap-2">
         <button
