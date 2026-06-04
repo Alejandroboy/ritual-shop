@@ -46,7 +46,7 @@ export function OrderBlankButton({ order }: { order: any }) {
         size: sizeLabel,
         finish: order.items?.finish,
         background: order.items?.background?.name,
-        frame: order.items?.frame?.name ?? order.items?.frameId,
+        frame: order.items?.frame?.code ?? order.items?.frameId,
         holePattern: order.items?.holePattern,
         hasHoles:
           order.items?.holePattern &&

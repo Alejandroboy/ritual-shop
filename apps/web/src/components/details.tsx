@@ -124,8 +124,8 @@ export function OrderItemsDetails({
         </div>
         <div className="text-sm">Вид фона: {data.background?.name}</div>
         <div className="text-sm">Размер: {data.size?.label}</div>
-        {data.frameId && (
-          <div className="text-sm">Вид рамки: {data.frameId}</div>
+        {data.frame && (
+          <div className="text-sm">Вид рамки: {data.frame?.code}</div>
         )}
         {data.finish && (
           <div className="text-sm">Финиш: {finishLabel(data.finish)}</div>

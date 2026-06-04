@@ -186,7 +186,7 @@ export class UsersService {
           orderNumber: true,
           createdAt: true,
           items: {
-            include: { size: true, background: true },
+            include: { size: true, background: true, frame: true },
           },
         },
       }),
@@ -212,7 +212,7 @@ export class UsersService {
         orderNumber: true,
         createdAt: true,
         items: {
-          include: { size: true, background: true },
+          include: { size: true, background: true, frame: true },
         },
       },
     });

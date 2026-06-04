@@ -33,6 +33,9 @@ interface OrderItemProps {
   size?: {
     label: string;
   };
+  frame?: {
+    code: string;
+  };
   background?: {
     name: string;
   };
@@ -43,7 +46,7 @@ export const OrderItem = ({
   orderId,
   id,
   dateOfBirth,
-  frameId,
+  frame,
   dateOfBirthSecondPerson,
   dateOfDeath,
   dateOfDeathSecondPerson,
@@ -130,8 +133,8 @@ export const OrderItem = ({
       ) : (
         ''
       )}
-      {frameId ? (
-        <div className="text-sm text-gray-600">Рамка: {frameId}</div>
+      {frame ? (
+        <div className="text-sm text-gray-600">Рамка: {frame?.code}</div>
       ) : (
         ''
       )}

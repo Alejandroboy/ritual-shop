@@ -17,6 +17,7 @@ export class OrdersItemsService {
         size: true,
         assets: true,
         background: true,
+        frame: true,
         discussComments: {
           select: { id: true, text: true, date: true, userName: true },
           orderBy: { date: 'desc' },

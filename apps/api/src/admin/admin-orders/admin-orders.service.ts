@@ -152,6 +152,7 @@ export class AdminOrdersService {
         items: {
           include: {
             background: true,
+            frame: true,
             discussComments: {
               select: { id: true, text: true, date: true, userName: true },
               orderBy: { date: 'desc' },
