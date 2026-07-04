@@ -16,9 +16,10 @@ type AssetThumbProps = {
   size: number | string;
   primary?: boolean;
   hideDownload?: boolean;
+  onDelete?: () => void;
 };
 
-export function AssetThumb({ asset, size }: AssetThumbProps) {
+export function AssetThumb({ asset, size, onDelete }: AssetThumbProps) {
   const [url, setUrl] = React.useState<string | null>(
     asset.thumbUrl ?? asset.viewUrl ?? null,
   );
@@ -63,9 +64,19 @@ export function AssetThumb({ asset, size }: AssetThumbProps) {
         style={{ width: size, height: 'auto' }}
         unoptimized
       />
-      <a href={downloadUrl} target="_blank" className="underline text-sm">
-        Скачать файл
-      </a>
+      <div className="flex items-center gap-2 mt-1">
+        <a href={downloadUrl} target="_blank" className="underline text-sm">
+          Скачать файл
+        </a>
+        {onDelete && (
+          <button
+            onClick={onDelete}
+            className="text-sm text-red-500 hover:text-red-700 underline cursor-pointer"
+          >
+            Удалить
+          </button>
+        )}
+      </div>
     </>
   );
 }

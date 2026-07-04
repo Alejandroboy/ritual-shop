@@ -11,7 +11,7 @@ import {
 } from '@utils';
 import { AssetThumb } from './asset-thumb';
 import { UploadAsset } from './upload-assets';
-import { AssetPair, fetchAssetPairs } from '../utils/assets-api';
+import { AssetPair, fetchAssetPairs, removeAsset } from '../utils/assets-api';
 import { useAppStore } from '@state';
 import { Board } from './board';
 
@@ -117,7 +117,7 @@ export function OrderItemsDetails({
   };
 
   return (
-    <div className="p-3 my-2 flex justify-between">
+    <div className="p-3 my-2 flex justify-between" data-qa="details">
       <div className="mr-[20px]">
         <div className="text-sm">
           {data.templateFullTitle ? data.templateFullTitle : data.templateLabel}
@@ -208,7 +208,7 @@ export function OrderItemsDetails({
           <span className="text-red-500">Ожидание ответа от менеджера</span>
         )}
         <>
-          {pairs.map(({ original, retouch }) => (
+          {pairs.map(({ original, retouches }) => (
             <div key={original.id} className="rounded-2xl shadow p-4">
               <div className="mb-2">Оригинал</div>
               <AssetThumb
@@ -223,35 +223,44 @@ export function OrderItemsDetails({
               {data.approveNeeded && data.approvalStage && (
                 <p>{approvalStageLabel(data.approvalStage)}</p>
               )}
-              <div className="font-medium flex items-center gap-2">
-                <span>Ретушь</span>
-                {retouch?.createdAt && (
-                  <span className="text-sm font-normal text-gray-500">
-                    Отправлен{' '}
-                    {new Date(retouch.createdAt).toLocaleString('ru-RU', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                      hour: 'numeric',
-                      minute: 'numeric',
-                    })}
-                  </span>
-                )}
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-2">
-                {retouch && (
-                  <AssetThumb
-                    key={retouch.id}
-                    asset={{
-                      id: retouch.id,
-                      originalName: retouch.originalName,
-                      contentType: retouch.contentType,
-                    }}
-                    size={140}
-                    primary={retouch.primary}
-                  />
-                )}
-              </div>
+              {retouches.length > 0 && (
+                <>
+                  <div className="font-medium mt-3">Ретушь</div>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-2">
+                    {retouches.map((retouch) => (
+                      <div key={retouch.id}>
+                        {retouch.createdAt && (
+                          <div className="text-xs text-gray-500 mb-1">
+                            {new Date(retouch.createdAt).toLocaleString(
+                              'ru-RU',
+                              {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric',
+                                hour: 'numeric',
+                                minute: 'numeric',
+                              },
+                            )}
+                          </div>
+                        )}
+                        <AssetThumb
+                          asset={{
+                            id: retouch.id,
+                            originalName: retouch.originalName,
+                            contentType: retouch.contentType,
+                          }}
+                          size={140}
+                          primary={retouch.primary}
+                          onDelete={async () => {
+                            await removeAsset(id, itemId, retouch.id);
+                            await reload();
+                          }}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
               {data.discussComment && !data.userActionNeeded && (
                 <div>
                   <div>Комментарий по ретуши:</div>
