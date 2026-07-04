@@ -120,6 +120,17 @@ export class EmailService {
     );
   }
 
+  async newDiscussComment(to: string, orderNumber: string, text: string) {
+    const link = this.webUrl
+      ? `<p>Личный кабинет: <a href="${this.webUrl}/account">${this.webUrl}/account</a></p>`
+      : '';
+    return this.send(
+      to,
+      `Новый комментарий по заказу №${orderNumber}`,
+      `<p>По заказу <b>№${orderNumber}</b> добавлен комментарий:</p><p>${text}</p>${link}`,
+    );
+  }
+
   async orderStatusApprovalReminder(to: string, orderNumber: string) {
     const link = this.webUrl
       ? `<p>Личный кабинет: ${this.webUrl}/account</p>`

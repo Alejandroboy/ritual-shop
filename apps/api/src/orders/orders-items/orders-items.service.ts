@@ -2,13 +2,35 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ApprovalStage, OrderStatus } from '@prisma/client';
 import { AdminOrdersService } from '../../admin/admin-orders/admin-orders.service';
+import { EmailService } from '../../email/email.service';
+import { TelegramService } from '../../notifications/telegram/telegram.service';
+
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? 'art-memory@yandex.ru';
 
 @Injectable()
 export class OrdersItemsService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly adminOrdersService: AdminOrdersService,
+    private readonly email: EmailService,
+    private readonly telegram: TelegramService,
   ) {}
+
+  private async getOrderContacts(orderId: string) {
+    const order = await this.prismaService.order.findUnique({
+      where: { id: orderId },
+      select: {
+        orderNumber: true,
+        customerEmail: true,
+        customer: { select: { email: true, telegramChatId: true } },
+      },
+    });
+    return {
+      orderNumber: order?.orderNumber ?? orderId,
+      customerEmail: order?.customerEmail ?? order?.customer?.email ?? null,
+      telegramChatId: order?.customer?.telegramChatId ?? null,
+    };
+  }
 
   async getById(id: string, itemId: string) {
     return this.prismaService.orderItem.findFirst({
@@ -67,19 +89,28 @@ export class OrdersItemsService {
   }
 
   async updateComment(orderId: string, itemId: string, text: string) {
-    return this.prismaService.orderItem.update({
+    const result = await this.prismaService.orderItem.update({
       where: { id: itemId, orderId },
       data: {
         managerActionNeeded: true,
         userActionNeeded: false,
         discussComment: text,
         discussComments: {
-          create: {
-            text,
-          },
+          create: { text },
         },
       },
     });
+    const { orderNumber, customerEmail, telegramChatId } =
+      await this.getOrderContacts(orderId);
+    if (customerEmail)
+      this.email
+        .newDiscussComment(customerEmail, orderNumber, text)
+        .catch(() => {});
+    if (telegramChatId)
+      this.telegram
+        .newDiscussComment(telegramChatId, orderNumber, text)
+        .catch(() => {});
+    return result;
   }
 
   async addComment(
@@ -101,19 +132,41 @@ export class OrdersItemsService {
     ) {
       userActionNeeded = true;
     }
-    return this.prismaService.orderItem.update({
+    const result = await this.prismaService.orderItem.update({
       where: { id: itemId, orderId },
       data: {
         discussComments: {
-          create: {
-            text,
-            userName,
-          },
+          create: { text, userName },
         },
         managerActionNeeded,
         approvalStage: ApprovalStage.IN_PROGRESS,
         userActionNeeded,
       },
     });
+
+    const { orderNumber, customerEmail, telegramChatId } =
+      await this.getOrderContacts(orderId);
+
+    const isAdmin =
+      userRole === 'ADMIN_GOD' ||
+      userRole === 'ADMIN' ||
+      userRole === 'Manager';
+
+    if (isAdmin) {
+      if (customerEmail)
+        this.email
+          .newDiscussComment(customerEmail, orderNumber, text)
+          .catch(() => {});
+      if (telegramChatId)
+        this.telegram
+          .newDiscussComment(telegramChatId, orderNumber, text)
+          .catch(() => {});
+    } else {
+      this.email
+        .newDiscussComment(ADMIN_EMAIL, orderNumber, text)
+        .catch(() => {});
+    }
+
+    return result;
   }
 }

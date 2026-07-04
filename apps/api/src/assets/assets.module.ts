@@ -12,6 +12,8 @@ import { ConfigurationModule } from '../config/configuration.module';
 import { ConfigurationService } from '../config/configuration.service';
 import { AdminAuthModule } from '../admin/admin-auth/admin-auth.module';
 import { OrdersItemsModule } from '../orders/orders-items/orders-items.module';
+import { EmailModule } from '../email/email.module';
+import { TelegramModule } from '../notifications/telegram/telegram.module';
 
 @Module({
   controllers: [AssetsController, OrderItemAssetsController],
@@ -20,6 +22,8 @@ import { OrdersItemsModule } from '../orders/orders-items/orders-items.module';
   imports: [
     AdminAuthModule,
     OrdersItemsModule,
+    EmailModule,
+    TelegramModule,
     S3Module,
     JwtModule.registerAsync({
       imports: [ConfigurationModule],

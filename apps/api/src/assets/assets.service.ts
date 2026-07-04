@@ -16,6 +16,8 @@ import {
 import * as mime from 'mime-types';
 import { ListAssetsQuery } from './dto/list-assets.query';
 import { OrdersItemsService } from '../orders/orders-items/orders-items.service';
+import { EmailService } from '../email/email.service';
+import { TelegramService } from '../notifications/telegram/telegram.service';
 
 export type AssetDto = {
   id: string;
@@ -53,6 +55,8 @@ export class AssetsService {
     private readonly prisma: PrismaService,
     private readonly s3: S3Service,
     private readonly ordersItemsService: OrdersItemsService,
+    private readonly email: EmailService,
+    private readonly telegram: TelegramService,
   ) {}
 
   private async assertItemBelongsToOrder(orderId: string, itemId: string) {
@@ -252,6 +256,34 @@ export class AssetsService {
         fileName: filename,
       },
     });
+
+    await this.prisma.discussComment.create({
+      data: {
+        orderItemId: itemId,
+        text: 'Добавлена ретушь',
+        userName: 'Администратор',
+      },
+    });
+
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      select: {
+        orderNumber: true,
+        customerEmail: true,
+        customer: { select: { email: true, telegramChatId: true } },
+      },
+    });
+    const customerEmail =
+      order?.customerEmail ?? order?.customer?.email ?? null;
+    const telegramChatId = order?.customer?.telegramChatId ?? null;
+    if (customerEmail)
+      this.email
+        .newDiscussComment(customerEmail, orderNumber, 'Добавлена ретушь')
+        .catch(() => {});
+    if (telegramChatId)
+      this.telegram
+        .newDiscussComment(telegramChatId, orderNumber, 'Добавлена ретушь')
+        .catch(() => {});
 
     if (isImage && dto.key) {
       this.s3

@@ -81,39 +81,39 @@ export const OrderItem = ({
   const birthDateSecondPerson = dateOfBirth ? new Date(dateOfBirth) : undefined;
   const deathDaySecondPerson = dateOfDeath ? new Date(dateOfDeath) : undefined;
 
-  const renderRetouch = (retouch: AssetView) => {
-    if (!retouch) return;
+  const renderRetouches = (retouches: AssetView[]) => {
+    if (!retouches.length) return null;
     return (
       <>
-        <div className="font-medium flex items-center gap-2">
-          <span>Ретушь</span>
-          {retouch?.createdAt && (
-            <span className="text-sm font-normal text-gray-500">
-              Отправлен&nbsp;
-              {new Date(retouch.createdAt).toLocaleString('ru-RU', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: 'numeric',
-                minute: 'numeric',
-              })}
-            </span>
-          )}
-        </div>
-        <div className="mt-2 mb-[15px]">
-          <AssetThumb
-            key={retouch.id}
-            asset={{
-              id: retouch.id,
-              originalName: retouch.originalName,
-              contentType: retouch.contentType,
-              thumbUrl: retouch.thumbUrl,
-              viewUrl: retouch.viewUrl,
-            }}
-            size="100%"
-            primary={retouch.primary}
-            hideDownload
-          />
+        <div className="font-medium mt-3">Ретушь</div>
+        <div className="grid grid-cols-2 gap-3 mt-2 mb-[15px]">
+          {retouches.map((retouch) => (
+            <div key={retouch.id}>
+              {retouch.createdAt && (
+                <div className="text-xs text-gray-500 mb-1">
+                  {new Date(retouch.createdAt).toLocaleString('ru-RU', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: 'numeric',
+                  })}
+                </div>
+              )}
+              <AssetThumb
+                asset={{
+                  id: retouch.id,
+                  originalName: retouch.originalName,
+                  contentType: retouch.contentType,
+                  thumbUrl: retouch.thumbUrl,
+                  viewUrl: retouch.viewUrl,
+                }}
+                size="100%"
+                primary={retouch.primary}
+                hideDownload
+              />
+            </div>
+          ))}
         </div>
       </>
     );
@@ -195,7 +195,7 @@ export const OrderItem = ({
       {comment && (
         <div className="text-sm text-gray-600">Комментарий:"{comment}"</div>
       )}
-      {pairs.map(({ original, retouch }) => (
+      {pairs.map(({ original, retouches }) => (
         <div key={original.id} className="rounded-2xl shadow p-4">
           <div className="mb-2">Оригинал</div>
           <AssetThumb
@@ -210,7 +210,7 @@ export const OrderItem = ({
             primary={original.primary}
             hideDownload
           />
-          {renderRetouch(retouch)}
+          {renderRetouches(retouches)}
         </div>
       ))}
       {approveNeeded && approvalStage && (

@@ -70,6 +70,20 @@ export class TelegramService {
     );
   }
 
+  async newDiscussComment(
+    chatId: string | null,
+    orderNumber: string,
+    text: string,
+  ) {
+    const link = this.webUrl
+      ? `\n\nЛичный кабинет: ${this.webUrl}/account`
+      : '';
+    return this.sendMessage(
+      chatId,
+      `Новый комментарий по заказу №${orderNumber}:\n${text}${link}`,
+    );
+  }
+
   async orderStatusApprovalReminder(
     telegramChatId: string,
     orderNumber: string,
