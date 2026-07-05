@@ -85,7 +85,7 @@ export const OrderItem = ({
     if (!retouches.length) return null;
     return (
       <>
-        <div className="font-medium mt-3">Ретушь</div>
+        <div className="font-medium mt-3">Макет</div>
         <div className="grid grid-cols-2 gap-3 mt-2 mb-[15px]">
           {retouches.map((retouch) => (
             <div key={retouch.id}>

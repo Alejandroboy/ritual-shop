@@ -225,7 +225,7 @@ export function OrderItemsDetails({
               )}
               {retouches.length > 0 && (
                 <>
-                  <div className="font-medium mt-3">Ретушь</div>
+                  <div className="font-medium mt-3">Макет</div>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-2">
                     {retouches.map((retouch) => (
                       <div key={retouch.id}>
@@ -263,7 +263,7 @@ export function OrderItemsDetails({
               )}
               {data.discussComment && !data.userActionNeeded && (
                 <div>
-                  <div>Комментарий по ретуши:</div>
+                  <div>Комментарий по макету:</div>
                   <div>{data.discussComment}</div>
                 </div>
               )}

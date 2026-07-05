@@ -264,7 +264,7 @@ export class AssetsService {
     await this.prisma.discussComment.create({
       data: {
         orderItemId: itemId,
-        text: 'Добавлена ретушь',
+        text: 'Добавлен макет',
         userName: 'Администратор',
       },
     });
@@ -282,11 +282,11 @@ export class AssetsService {
     const telegramChatId = order?.customer?.telegramChatId ?? null;
     if (customerEmail)
       this.email
-        .newDiscussComment(customerEmail, orderNumber, 'Добавлена ретушь')
+        .newDiscussComment(customerEmail, orderNumber, 'Добавлен макет')
         .catch(() => {});
     if (telegramChatId)
       this.telegram
-        .newDiscussComment(telegramChatId, orderNumber, 'Добавлена ретушь')
+        .newDiscussComment(telegramChatId, orderNumber, 'Добавлен макет')
         .catch(() => {});
 
     if (isImage && dto.key) {

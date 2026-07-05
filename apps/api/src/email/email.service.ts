@@ -111,7 +111,7 @@ export class EmailService {
       return this.send(
         to,
         `Статус заказа №${orderNumber}: ${humanNewStatus}`,
-        `<p>Статус заказа <b>№${orderNumber}</b> изменился:</p><p><b>${humanOldStatus}</b> → <b>${humanNewStatus}</b></p> <p><b>Пожалуйста зайдите в личный кабинет и согласуйте ретушь</b></p>`,
+        `<p>Статус заказа <b>№${orderNumber}</b> изменился:</p><p><b>${humanOldStatus}</b> → <b>${humanNewStatus}</b></p> <p><b>Пожалуйста зайдите в личный кабинет и согласуйте макет</b></p>`,
       );
     return this.send(
       to,
@@ -138,8 +138,8 @@ export class EmailService {
 
     return this.send(
       to,
-      `Напоминание: заказ №${orderNumber}: ждёт согласования ретуши`,
-      `<p>Напоминание: заказ <b>№${orderNumber} </b>ждёт согласования ретуши.</p><p><b>Пожалуйста, откройте личный кабинет и подтвердите.${link}</b></p>`,
+      `Напоминание: заказ №${orderNumber}: ждёт согласования макета`,
+      `<p>Напоминание: заказ <b>№${orderNumber} </b>ждёт согласования макета.</p><p><b>Пожалуйста, откройте личный кабинет и подтвердите.${link}</b></p>`,
     );
   }
 }
