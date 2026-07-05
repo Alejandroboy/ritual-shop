@@ -235,7 +235,11 @@ export class AssetsService {
       dto.contentType?.split('/').pop() ||
       'bin';
 
-    const filename = `${orderNumber}-retouch.${ext}`;
+    const retouchCount = await this.prisma.orderItemAsset.count({
+      where: { derivedFromId: src.id },
+    });
+    const retouchNumber = retouchCount + 1;
+    const filename = `${orderNumber}-retouch-${retouchNumber}.${ext}`;
 
     const isImage = dto.contentType?.startsWith('image/') ?? false;
 

@@ -42,7 +42,11 @@ export class S3Service {
       ? `orders/${ym}/${params.orderNumber}/items/${params.itemId}`
       : `orders/${ym}/${params.orderNumber}`;
 
-    return `${base}/${params.orderNumber}`;
+    const uid = Math.random().toString(36).slice(2, 10);
+    const ext = params.filename.includes('.')
+      ? params.filename.slice(params.filename.lastIndexOf('.'))
+      : '';
+    return `${base}/${uid}${ext}`;
   }
 
   async signGet(

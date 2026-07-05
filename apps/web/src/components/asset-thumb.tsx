@@ -64,7 +64,7 @@ export function AssetThumb({ asset, size, onDelete }: AssetThumbProps) {
         style={{ width: size, height: 'auto' }}
         unoptimized
       />
-      <div className="flex items-center gap-2 mt-1">
+      <div className="flex gap-2 mt-1 flex-col items-start">
         <a href={downloadUrl} target="_blank" className="underline text-sm">
           Скачать файл
         </a>
