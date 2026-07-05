@@ -3,6 +3,7 @@ import {
   S3Client,
   PutObjectCommand,
   GetObjectCommand,
+  DeleteObjectCommand,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Readable } from 'stream';
@@ -162,5 +163,14 @@ export class S3Service {
     await this.putObject(thumbKey, thumb, 'image/jpeg');
 
     return thumbKey;
+  }
+
+  async deleteObject(
+    bucket: string | null | undefined,
+    key: string | null | undefined,
+  ) {
+    if (!key) return;
+    const Bucket = bucket ?? this.bucket;
+    await this.s3.send(new DeleteObjectCommand({ Bucket, Key: key }));
   }
 }

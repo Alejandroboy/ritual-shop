@@ -397,11 +397,27 @@ export class AssetsService {
 
     const asset = await this.prisma.orderItemAsset.findFirst({
       where: { id: assetId, orderItemId: itemId },
-      select: { id: true },
+      select: { id: true, bucket: true, key: true, thumbKey: true },
     });
     if (!asset) throw new NotFoundException('Asset not found for this item');
 
     await this.prisma.orderItemAsset.delete({ where: { id: assetId } });
+
+    this.s3
+      .deleteObject(asset.bucket, asset.key)
+      .catch((err) =>
+        console.warn(`S3 delete failed for ${asset.key}: ${err.message}`),
+      );
+    if (asset.thumbKey) {
+      this.s3
+        .deleteObject(asset.bucket, asset.thumbKey)
+        .catch((err) =>
+          console.warn(
+            `S3 delete failed for ${asset.thumbKey}: ${err.message}`,
+          ),
+        );
+    }
+
     return { ok: true };
   }
 

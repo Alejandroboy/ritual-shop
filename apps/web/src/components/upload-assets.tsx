@@ -111,7 +111,16 @@ export function UploadAsset({
                 {j.state === 'uploaded' && (
                   <button
                     type="button"
-                    onClick={() => removeUploadJob(j.id)}
+                    onClick={async () => {
+                      if (j.key) {
+                        const qs = new URLSearchParams({ key: j.key });
+                        if (j.bucket) qs.set('bucket', j.bucket);
+                        await fetch(`/api/uploads/object?${qs}`, {
+                          method: 'DELETE',
+                        }).catch(() => {});
+                      }
+                      removeUploadJob(j.id);
+                    }}
                     className="border rounded-md px-3 py-1 text-sm cursor-pointer"
                   >
                     Удалить

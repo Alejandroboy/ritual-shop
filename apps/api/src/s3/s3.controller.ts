@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Post, Query } from '@nestjs/common';
 import { S3Service } from './s3.service';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -61,5 +61,14 @@ export class S3Controller {
       quality: b.quality,
     });
     return { thumbKey };
+  }
+
+  @Delete('object')
+  async deleteObject(
+    @Query('key') key: string,
+    @Query('bucket') bucket?: string,
+  ) {
+    await this.s3.deleteObject(bucket, key);
+    return { ok: true };
   }
 }
