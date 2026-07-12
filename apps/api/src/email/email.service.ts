@@ -131,6 +131,14 @@ export class EmailService {
     );
   }
 
+  async itemApproved(to: string, orderNumber: string) {
+    return this.send(
+      to,
+      `Макет по заказу №${orderNumber} согласован`,
+      `<p>Клиент согласовал макет по заказу <b>№${orderNumber}</b>.</p>`,
+    );
+  }
+
   async orderStatusApprovalReminder(to: string, orderNumber: string) {
     const link = this.webUrl
       ? `<p>Личный кабинет: ${this.webUrl}/account</p>`

@@ -77,7 +77,7 @@ export class OrdersItemsService {
   }
 
   async updateApproval(orderId: string, itemId: string) {
-    return this.prismaService.orderItem.update({
+    const result = await this.prismaService.orderItem.update({
       where: { id: itemId, orderId },
       data: {
         approved: true,
@@ -86,6 +86,11 @@ export class OrdersItemsService {
         managerActionNeeded: null,
       },
     });
+
+    const { orderNumber } = await this.getOrderContacts(orderId);
+    this.email.itemApproved(ADMIN_EMAIL, orderNumber).catch(() => {});
+
+    return result;
   }
 
   async updateComment(orderId: string, itemId: string, text: string) {
