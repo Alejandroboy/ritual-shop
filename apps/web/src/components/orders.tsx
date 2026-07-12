@@ -293,6 +293,7 @@ export function Orders() {
                 <th className="px-3 py-2 font-medium">Дата</th>
                 <th className="px-3 py-2 font-medium">Счёт</th>
                 <th className="px-3 py-2 font-medium">Флаги</th>
+                <th className="px-3 py-2 font-medium">Согласовано</th>
                 <th className="px-3 py-2 font-medium"></th>
               </tr>
             </thead>
@@ -324,7 +325,7 @@ export function Orders() {
                       </div>
                     </td>
                     <td className="px-3 py-2 whitespace-nowrap text-gray-500">
-                      {created ? created.toLocaleString() : '—'}
+                      {created ? created.toLocaleString('ru-RU') : '—'}
                     </td>
                     <td className="px-3 py-2 whitespace-nowrap">
                       {o.includedInInvoice ? (
@@ -370,6 +371,11 @@ export function Orders() {
                             <span className="text-red-500 text-xs">Ретушь</span>
                           )}
                       </div>
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap">
+                      {o.items?.approved && (
+                        <span className="text-green-600">Согласовано</span>
+                      )}
                     </td>
                     <td className="px-3 py-2 whitespace-nowrap">
                       <Link
