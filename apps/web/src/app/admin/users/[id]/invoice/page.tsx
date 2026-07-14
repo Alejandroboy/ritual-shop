@@ -96,6 +96,17 @@ function getAdditionalLabel(
   );
 }
 
+function getOrderPrice(order: CustomerOrder): number | undefined {
+  const items = order.items;
+  if (items?.template?.requiresFinish && items?.template?.finishPrices.length) {
+    return items.template.finishPrices.find(
+      (x) => x.sizeId === items.sizeId && x.finish === items.finish,
+    )?.price;
+  }
+  return items?.template?.allowedSizes?.find((x) => x.sizeId === items.sizeId)
+    ?.price;
+}
+
 function InvoicePageInner() {
   const { id } = useParams<{ id: string }>();
   const sp = useSearchParams();
@@ -165,10 +176,11 @@ function InvoicePageInner() {
   const toggleOrder = (order: CustomerOrder, checked: boolean) => {
     const orderId = order.id;
     const sku = order.items.skuCode as string | undefined;
-    const price = (order.items as any).template?.allowedSizes?.find(
-      (x: any) => x.sizeId === (order.items as any).sizeId,
-    )?.price as number | undefined;
-    if (!sku || price == null) return;
+    const price = getOrderPrice(order);
+    if (!sku || price == null) {
+      if (checked) alert('Не удалось определить цену заказа');
+      return;
+    }
     setSelected((s) => ({ ...s, [orderId]: checked }));
     if (checked) {
       setPositions((prev) => [
@@ -260,11 +272,11 @@ function InvoicePageInner() {
       return;
     }
     setBusy(true);
-    const orderNumberMap = new Map(
-      orders.map((o: any) => [o.id, o.orderNumber ?? o.id]),
+    const orderNumberByOrderId = new Map(
+      positions.map((p) => [p.orderId, p.orderNumber]),
     );
     const selectedOrderNumbers = ordersIds
-      .map((oid) => orderNumberMap.get(oid) ?? oid)
+      .map((oid) => orderNumberByOrderId.get(oid) ?? oid)
       .filter(Boolean);
     try {
       const res = await adminApiFetch('/api/moy-sklad/invoiceout', {
@@ -420,23 +432,7 @@ function InvoicePageInner() {
 
       {orders.map((order: CustomerOrder) => {
         const createdAt = new Date(order.createdAt);
-        let price: number;
-        if (
-          order.items?.template?.requiresFinish &&
-          order.items?.template?.finishPrices.length
-        ) {
-          price =
-            order.items?.template?.finishPrices?.find(
-              (x: any) =>
-                x.sizeId === order.items.sizeId &&
-                x.finish === order.items.finish,
-            )?.price || 0;
-        } else {
-          price =
-            order.items?.template?.allowedSizes?.find(
-              (x: any) => x.sizeId === order.items.sizeId,
-            )?.price || 0;
-        }
+        const price = getOrderPrice(order) ?? 0;
         const title = order.items?.template?.fullTitle;
         const orderNumber = order.orderNumber;
         const includedInInvoice = order.includedInInvoice;

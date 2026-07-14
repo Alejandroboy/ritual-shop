@@ -40,6 +40,7 @@ export type CustomerOrderItem = {
     }[];
     finishPrices: {
       sizeId: string;
+      finish: string;
       price: number;
     }[];
     requiresFinish: boolean;
