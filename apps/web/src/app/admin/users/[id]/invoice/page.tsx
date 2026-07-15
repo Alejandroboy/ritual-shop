@@ -96,15 +96,26 @@ function getAdditionalLabel(
   );
 }
 
-function getOrderPrice(order: CustomerOrder): number | undefined {
+function findOrderPricingEntry(
+  order: CustomerOrder,
+): { price: number; skuCode: string | null } | undefined {
   const items = order.items;
   if (items?.template?.requiresFinish && items?.template?.finishPrices.length) {
     return items.template.finishPrices.find(
       (x) => x.sizeId === items.sizeId && x.finish === items.finish,
-    )?.price;
+    );
   }
-  return items?.template?.allowedSizes?.find((x) => x.sizeId === items.sizeId)
-    ?.price;
+  return items?.template?.allowedSizes?.find((x) => x.sizeId === items.sizeId);
+}
+
+function getOrderPrice(order: CustomerOrder): number | undefined {
+  return findOrderPricingEntry(order)?.price;
+}
+
+function getOrderSku(order: CustomerOrder): string | undefined {
+  return (
+    order.items?.skuCode || findOrderPricingEntry(order)?.skuCode || undefined
+  );
 }
 
 function InvoicePageInner() {
@@ -175,7 +186,7 @@ function InvoicePageInner() {
 
   const toggleOrder = (order: CustomerOrder, checked: boolean) => {
     const orderId = order.id;
-    const sku = order.items.skuCode as string | undefined;
+    const sku = getOrderSku(order);
     const price = getOrderPrice(order);
     if (!sku || price == null) {
       if (checked) alert('Не удалось определить цену заказа');

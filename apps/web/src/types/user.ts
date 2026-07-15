@@ -37,11 +37,13 @@ export type CustomerOrderItem = {
     allowedSizes: {
       sizeId: string;
       price: number;
+      skuCode: string | null;
     }[];
     finishPrices: {
       sizeId: string;
       finish: string;
       price: number;
+      skuCode: string | null;
     }[];
     requiresFinish: boolean;
   };
