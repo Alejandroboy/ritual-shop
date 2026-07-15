@@ -293,7 +293,6 @@ export function Orders() {
                 <th className="px-3 py-2 font-medium">Дата</th>
                 <th className="px-3 py-2 font-medium">Счёт</th>
                 <th className="px-3 py-2 font-medium">Флаги</th>
-                <th className="px-3 py-2 font-medium">Согласовано</th>
                 <th className="px-3 py-2 font-medium"></th>
               </tr>
             </thead>
@@ -370,12 +369,12 @@ export function Orders() {
                           ).length === 0 && (
                             <span className="text-red-500 text-xs">Ретушь</span>
                           )}
+                        {o.items?.approved && (
+                          <span className="text-green-600 text-xs">
+                            Согласовано
+                          </span>
+                        )}
                       </div>
-                    </td>
-                    <td className="px-3 py-2 whitespace-nowrap">
-                      {o.items?.approved && (
-                        <span className="text-green-600">Согласовано</span>
-                      )}
                     </td>
                     <td className="px-3 py-2 whitespace-nowrap">
                       <Link
