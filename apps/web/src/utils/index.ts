@@ -5,3 +5,4 @@ export * from './api';
 export * from './assets';
 export * from './bytes-to-sizes';
 export * from './labels';
+export * from './order-pricing';

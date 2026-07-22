@@ -40,6 +40,12 @@ export class OrdersItemsService {
         assets: true,
         background: true,
         frame: true,
+        template: {
+          include: {
+            allowedSizes: true,
+            finishPrices: true,
+          },
+        },
         discussComments: {
           select: { id: true, text: true, date: true, userName: true },
           orderBy: { date: 'desc' },

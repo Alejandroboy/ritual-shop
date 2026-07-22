@@ -46,6 +46,7 @@ export type CustomerOrderItem = {
       skuCode: string | null;
     }[];
     requiresFinish: boolean;
+    perHolePrice: number;
   };
   size: {
     id: string;
@@ -69,6 +70,7 @@ export type CustomerOrderItem = {
   middleName: string;
   lastName: string;
   approveNeeded: boolean;
+  retouchNeeded: boolean;
   approved: boolean;
   approvalStage: string;
   skuCode: string;

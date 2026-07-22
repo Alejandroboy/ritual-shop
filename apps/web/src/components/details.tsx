@@ -6,8 +6,15 @@ import {
   labelOf,
   approvalStageLabels,
   adminApiFetch,
+  api,
   finishLabels,
   holePatternLabels,
+  getApprovalOption,
+  getRetouchOption,
+  getItemPrice,
+  getHolePrice,
+  formatMinor,
+  Material,
 } from '@utils';
 import { AssetThumb } from './asset-thumb';
 import { UploadAsset } from './upload-assets';
@@ -33,6 +40,23 @@ export function OrderItemsDetails({
     (u) => adminApiFetch(u).then((r) => r.json()),
   );
   const [pairs, setPairs] = React.useState<AssetPair[]>([]);
+
+  const approvalSku = data?.approveNeeded
+    ? getApprovalOption()?.skuCode
+    : undefined;
+  const retouchSku = data?.retouchNeeded
+    ? getRetouchOption(data?.template?.material as Material | undefined)
+        ?.skuCode
+    : undefined;
+
+  const { data: approvalAssortment } = useSWR(
+    approvalSku ? `/moy-sklad/sku/${approvalSku}` : null,
+    (u) => api<{ price?: number }>(u),
+  );
+  const { data: retouchAssortment } = useSWR(
+    retouchSku ? `/moy-sklad/sku/${retouchSku}` : null,
+    (u) => api<{ price?: number }>(u),
+  );
 
   const reload = React.useCallback(async () => {
     if (!id || !itemId) return;
@@ -116,12 +140,15 @@ export function OrderItemsDetails({
     } else return null;
   };
 
+  const itemPrice = formatMinor(getItemPrice(data));
+
   return (
     <div className="p-3 my-2 flex justify-between" data-qa="details">
       <div className="mr-[20px]">
         <div className="text-sm">
           {data.templateFullTitle ? data.templateFullTitle : data.templateLabel}
         </div>
+        {itemPrice && <div className="text-sm">Цена: {itemPrice}</div>}
         <div className="text-sm">Вид фона: {data.background?.name}</div>
         <div className="text-sm">Размер: {data.size?.label}</div>
         {data.frame && (
@@ -133,6 +160,7 @@ export function OrderItemsDetails({
         {data.holePattern && (
           <div className="text-sm">
             Отверстия: {holePatternLabel(data.holePattern)}
+            {getHolePrice(data) > 0 && ` (${formatMinor(getHolePrice(data))})`}
           </div>
         )}
         {data.comment && (
@@ -189,7 +217,9 @@ export function OrderItemsDetails({
 
         {data.retouchNeeded && (
           <p>
-            <b> Нужна ретушь!</b>
+            <b> Нужна ретушь!</b>&nbsp;
+            {formatMinor(retouchAssortment?.price) &&
+              `(${formatMinor(retouchAssortment?.price)})`}
           </p>
         )}
         {data.approveNeeded && (
@@ -197,6 +227,9 @@ export function OrderItemsDetails({
             <b className={`${data.approved ? 'line-through' : ''}`}>
               Нужно согласование!
             </b>
+            &nbsp;
+            {formatMinor(approvalAssortment?.price) &&
+              `(${formatMinor(approvalAssortment?.price)})`}
             {data.approved && 'Согласовано'}
           </p>
         )}

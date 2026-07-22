@@ -6,117 +6,43 @@ import {
   useSearchParams,
 } from 'next/navigation';
 import useSWR from 'swr';
-import { adminApiFetch, api } from '@utils';
+import {
+  adminApiFetch,
+  api,
+  AdditionalSku,
+  getAdditionalLabel,
+  getAdditionalOptions,
+  getApprovalOption,
+  getRetouchOption,
+  getItemPrice,
+  getItemSku,
+  Material,
+  labelOf,
+  holePatternLabels,
+  getHolePrice,
+  formatMinor,
+} from '@utils';
 import { CustomerOrder } from '@types';
 import { Fragment, Suspense, useMemo, useState } from 'react';
 import { UserOrdersFilterBar } from '../../../../../components/user-orders-filter-bar';
 
-type Material =
-  | 'CERMET'
-  | 'WHITE_CERAMIC_GRANITE'
-  | 'BLACK_CERAMIC_GRANITE'
-  | 'GLASS'
-  | 'GROWTH_PHOTOCERAMICS'
-  | 'ENGRAVING';
-
-type AdditionalSku = string;
-type AdditionalOption = { name: string; skuCode: AdditionalSku };
-
-function getAdditionalOptions(material?: Material | null): AdditionalOption[] {
-  const common: AdditionalOption[] = [
-    { name: 'Дополнительный фон на трафарете', skuCode: '20174' },
-    { name: 'Оцветнение фотографии', skuCode: '20172' },
-    { name: 'Согласование', skuCode: '20168' },
-  ];
-
-  const isKeramogranit =
-    material === 'WHITE_CERAMIC_GRANITE' ||
-    material === 'BLACK_CERAMIC_GRANITE' ||
-    material === 'GROWTH_PHOTOCERAMICS';
-
-  if (isKeramogranit) {
-    return [
-      ...common,
-      {
-        name: 'Дополнительный человек на трафарете (керамогранит)',
-        skuCode: '20175',
-      },
-      { name: 'Ретушь (керамогранит)', skuCode: '20181' },
-      { name: 'Ретушь с другой фотографии (керамогранит)', skuCode: '20178' },
-      { name: 'Сверление отверстий (керамогранит)', skuCode: '20169' },
-    ];
-  }
-  if (material === 'GLASS') {
-    return [
-      ...common,
-      {
-        name: 'Дополнительный человек на трафарете (стекло)',
-        skuCode: '20176',
-      },
-      { name: 'Ретушь (стекло)', skuCode: '20182' },
-      { name: 'Ретушь с другой фотографии (стекло)', skuCode: '20179' },
-      { name: 'Сверление отверстий (стекло)', skuCode: '20185' },
-    ];
-  }
-  if (material === 'ENGRAVING') {
-    return [
-      ...common,
-      {
-        name: 'Дополнительный человек на трафарете (гравировка)',
-        skuCode: '20177',
-      },
-      { name: 'Ретушь (гравировка)', skuCode: '20183' },
-      { name: 'Ретушь с другой фотографии (гравировка)', skuCode: '20180' },
-      { name: 'Сверление отверстий (гравировка)', skuCode: '20186' },
-    ];
-  }
-  if (material === 'CERMET') {
-    return [
-      ...common,
-      {
-        name: 'Дополнительный человек на трафарете (металлокерамика)',
-        skuCode: '20173',
-      },
-      { name: 'Ретушь (металлокерамика)', skuCode: '20184' },
-      {
-        name: 'Ретушь с другой фотографии (металлокерамика)',
-        skuCode: '20171',
-      },
-    ];
-  }
-  return common;
-}
-
-function getAdditionalLabel(
-  material: Material | null | undefined,
-  sku: string,
-): string {
-  return (
-    getAdditionalOptions(material).find((x) => x.skuCode === sku)?.name ?? sku
-  );
-}
-
-function findOrderPricingEntry(
-  order: CustomerOrder,
-): { price: number; skuCode: string | null } | undefined {
-  const items = order.items;
-  if (items?.template?.requiresFinish && items?.template?.finishPrices.length) {
-    return items.template.finishPrices.find(
-      (x) => x.sizeId === items.sizeId && x.finish === items.finish,
-    );
-  }
-  return items?.template?.allowedSizes?.find((x) => x.sizeId === items.sizeId);
-}
-
 function getOrderPrice(order: CustomerOrder): number | undefined {
-  return findOrderPricingEntry(order)?.price;
+  return getItemPrice(order.items);
 }
 
 function getOrderSku(order: CustomerOrder): string | undefined {
-  return (
-    order.items?.skuCode || findOrderPricingEntry(order)?.skuCode || undefined
-  );
+  return getItemSku(order.items);
 }
+
+const APPROVAL_SKU = getApprovalOption()?.skuCode;
+const RETOUCH_SKU_KERAMOGRANIT = getRetouchOption(
+  'WHITE_CERAMIC_GRANITE',
+)?.skuCode;
+const RETOUCH_SKU_GLASS = getRetouchOption('GLASS')?.skuCode;
+const RETOUCH_SKU_ENGRAVING = getRetouchOption('ENGRAVING')?.skuCode;
+const RETOUCH_SKU_CERMET = getRetouchOption('CERMET')?.skuCode;
+
+const holePatternLabel = labelOf<string>(holePatternLabels);
 
 function InvoicePageInner() {
   const { id } = useParams<{ id: string }>();
@@ -152,6 +78,42 @@ function InvoicePageInner() {
   const { data: ordersData, mutate: mutateOrders } = useSWR(ordersKey, (u) =>
     adminApiFetch(u).then((r) => r.json()),
   );
+
+  const fetchAssortmentPrice = (u: string) => api<{ price?: number }>(u);
+
+  const { data: approvalAssortment } = useSWR(
+    APPROVAL_SKU ? `/moy-sklad/sku/${APPROVAL_SKU}` : null,
+    fetchAssortmentPrice,
+  );
+  const { data: retouchKeramogranitAssortment } = useSWR(
+    RETOUCH_SKU_KERAMOGRANIT
+      ? `/moy-sklad/sku/${RETOUCH_SKU_KERAMOGRANIT}`
+      : null,
+    fetchAssortmentPrice,
+  );
+  const { data: retouchGlassAssortment } = useSWR(
+    RETOUCH_SKU_GLASS ? `/moy-sklad/sku/${RETOUCH_SKU_GLASS}` : null,
+    fetchAssortmentPrice,
+  );
+  const { data: retouchEngravingAssortment } = useSWR(
+    RETOUCH_SKU_ENGRAVING ? `/moy-sklad/sku/${RETOUCH_SKU_ENGRAVING}` : null,
+    fetchAssortmentPrice,
+  );
+  const { data: retouchCermetAssortment } = useSWR(
+    RETOUCH_SKU_CERMET ? `/moy-sklad/sku/${RETOUCH_SKU_CERMET}` : null,
+    fetchAssortmentPrice,
+  );
+
+  const retouchAssortmentByMaterial: Partial<
+    Record<Material, { price?: number } | undefined>
+  > = {
+    WHITE_CERAMIC_GRANITE: retouchKeramogranitAssortment,
+    BLACK_CERAMIC_GRANITE: retouchKeramogranitAssortment,
+    GROWTH_PHOTOCERAMICS: retouchKeramogranitAssortment,
+    GLASS: retouchGlassAssortment,
+    ENGRAVING: retouchEngravingAssortment,
+    CERMET: retouchCermetAssortment,
+  };
 
   const [extraByOrderId, setExtraByOrderId] = useState<
     Record<string, Record<AdditionalSku, number>>
@@ -455,7 +417,8 @@ function InvoicePageInner() {
           | Material
           | undefined;
         const additionalOptions = getAdditionalOptions(material);
-
+        const retouchPrice =
+          retouchAssortmentByMaterial[material as Material]?.price;
         return (
           <Fragment key={order.id}>
             <div className="border rounded-md px-4 py-3 mb-[10px] flex items-start justify-between gap-4">
@@ -471,15 +434,34 @@ function InvoicePageInner() {
                 <div>Номер №{orderNumber}</div>
                 <div>Создан: {createdAt.toLocaleString('ru-RU')}</div>
                 <div>
-                  Согласование{' '}
+                  Согласование:&nbsp;
                   {order.items?.approveNeeded ? 'Нужно' : 'Не нужно'}
+                  {order.items?.approveNeeded &&
+                    formatMinor(approvalAssortment?.price) &&
+                    ` (${formatMinor(approvalAssortment?.price)})`}
                 </div>
+                {order.items?.retouchNeeded && (
+                  <div>
+                    Ретушь:&nbsp;Есть
+                    {formatMinor(retouchPrice) &&
+                      ` (${formatMinor(retouchPrice)})`}
+                  </div>
+                )}
                 {order.items?.approveNeeded && (
                   <div>
-                    Согласование получено:{' '}
+                    Согласование получено:&nbsp;
                     {order.items?.approved ? 'Да' : 'Нет'}
                   </div>
                 )}
+                {order.items?.holePattern &&
+                  order.items?.holePattern !== 'NONE' && (
+                    <div>
+                      Отверстия:&nbsp;
+                      {holePatternLabel(order.items.holePattern)}
+                      {getHolePrice(order.items) > 0 &&
+                        ` (${formatMinor(getHolePrice(order.items))})`}
+                    </div>
+                  )}
               </div>
               <div className="flex flex-col items-end">
                 {includedInInvoice && <p>Добавлен в счет №{invoiceName}</p>}
