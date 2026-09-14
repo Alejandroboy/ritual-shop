@@ -1,4 +1,4 @@
-FROM node:22-alpine AS dependencies
+FROM node:22.22.3-alpine AS dependencies
 ENV NODE_ENV=development
 ENV DATABASE_URL="postgresql://ritual:f8bc908e-80af-41b7-88ec-386b1bf0d31f@db:5432/ritual?schema=public"
 
@@ -6,7 +6,7 @@ WORKDIR /app
 COPY package.json yarn.lock ./
 RUN yarn install
 
-FROM node:22-alpine AS build
+FROM node:22.22.3-alpine AS build
 
 WORKDIR /app
 ENV DATABASE_URL="postgresql://ritual:f8bc908e-80af-41b7-88ec-386b1bf0d31f@db:5432/ritual?schema=public"
@@ -17,7 +17,7 @@ RUN npx prisma generate
 RUN yarn global add @nestjs/cli
 RUN yarn build
 
-FROM node:22-alpine AS deploy
+FROM node:22.22.3-alpine AS deploy
 
 WORKDIR /app
 
