@@ -1,61 +1,39 @@
-# syntax=docker/dockerfile:1
-
-# ---------- 1. Зависимости для сборки (включая devDependencies) ----------
-FROM node:22.22.3-alpine AS dependencies
+FROM node:22-alpine AS dependencies
+ENV NODE_ENV=development
+ENV DATABASE_URL="postgresql://ritual:f8bc908e-80af-41b7-88ec-386b1bf0d31f@db:5432/ritual?schema=public"
 
 WORKDIR /app
-
 COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile
+RUN yarn install
 
-
-# ---------- 2. Сборка ----------
-FROM node:22.22.3-alpine AS build
+FROM node:22-alpine AS build
 
 WORKDIR /app
-
+ENV DATABASE_URL="postgresql://ritual:f8bc908e-80af-41b7-88ec-386b1bf0d31f@db:5432/ritual?schema=public"
 COPY --from=dependencies /app/node_modules ./node_modules
 COPY . .
 
-# nest берётся из node_modules/.bin — @nestjs/cli должен быть в devDependencies.
-# prisma generate читает только schema.prisma, подключение к БД не требуется.
 RUN npx prisma generate
+RUN yarn global add @nestjs/cli
 RUN yarn build
 
-
-# ---------- 3. Только production-зависимости ----------
-FROM node:22.22.3-alpine AS prod-deps
-
-WORKDIR /app
-
-COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile --production
-
-
-# ---------- 4. Финальный образ ----------
-FROM node:22.22.3-alpine AS deploy
+FROM node:22-alpine AS deploy
 
 WORKDIR /app
 
 ENV NODE_ENV=production
-ENV PORT=3001
-
-# Prisma engines под musl требуют openssl
-RUN apk add --no-cache openssl
-
-COPY --from=prod-deps /app/node_modules ./node_modules
-
-# Сгенерированный Prisma Client кладём поверх production-зависимостей
+ENV DATABASE_URL="postgresql://ritual:f8bc908e-80af-41b7-88ec-386b1bf0d31f@db:5432/ritual?schema=public"
+COPY --from=dependencies /app/node_modules ./node_modules
 COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=build /app/node_modules/@prisma ./node_modules/@prisma
-
 COPY --from=build /app/prisma ./prisma
 COPY --from=build /app/prisma.config.ts ./prisma.config.ts
-COPY --from=build /app/dist ./dist
-COPY package.json yarn.lock ./
+COPY package.json yarn.lock  ./
 
-USER node
+COPY --from=build /app/dist ./dist
 
 EXPOSE 3001
 
-CMD ["node", "dist/src/main.js"]
+ENV PORT=3001
+
+CMD [ "node", "dist/src/main.js" ]
