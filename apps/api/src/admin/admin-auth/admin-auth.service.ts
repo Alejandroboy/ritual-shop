@@ -8,15 +8,14 @@ import { randomUUID } from 'crypto';
 import * as argon2 from 'argon2';
 import { PrismaService } from '../../prisma/prisma.service';
 import { User } from '@prisma/client';
-
-const ACCESS_TTL = Number(process.env.JWT_ACCESS_EXPIRES) ?? 3600;
-const REFRESH_TTL = Number(process.env.JWT_REFRESH_EXPIRES) ?? 2592000;
+import { ConfigurationService } from '../../config/configuration.service';
 
 @Injectable()
 export class AdminAuthService {
   constructor(
     private jwtService: JwtService,
     private prisma: PrismaService,
+    private config: ConfigurationService,
   ) {}
 
   async validate(email: string, password: string): Promise<User | null> {
@@ -35,14 +34,14 @@ export class AdminAuthService {
   async signAccess(admin: User) {
     return this.jwtService.signAsync(
       { sub: admin.id, email: admin.email, role: admin.role },
-      { expiresIn: ACCESS_TTL },
+      { expiresIn: this.config.get('JWT_ACCESS_EXPIRES') },
     );
   }
 
   async signRefresh(admin: User, jti: string) {
     return this.jwtService.signAsync(
       { sub: admin.id, jti },
-      { expiresIn: REFRESH_TTL },
+      { expiresIn: this.config.get('JWT_REFRESH_EXPIRES') },
     );
   }
 

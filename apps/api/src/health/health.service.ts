@@ -1,129 +1,79 @@
-import { Injectable } from '@nestjs/common';
-import { ConfigurationService } from '../config/configuration.service';
-import { CheckResult, HealthResponse } from './type';
+import { Injectable, Logger } from '@nestjs/common';
 import * as net from 'net';
-import { performance as perf } from 'node:perf_hooks';
-
-const now = () => (typeof perf?.now === 'function' ? perf.now() : Date.now());
+import { ConfigurationService } from '../config/configuration.service';
+import { CheckStatus, HealthResponse } from './type';
 
 @Injectable()
 export class HealthService {
-  constructor(private readonly configurationService: ConfigurationService) {}
+  private readonly log = new Logger(HealthService.name);
 
-  private async tcpCheck(
-    name: string,
+  constructor(private readonly config: ConfigurationService) {}
+
+  private tcpCheck(
     host: string,
     port: number,
     timeoutMs = 2000,
-  ): Promise<CheckResult> {
-    const start = now();
-    return new Promise<CheckResult>((resolve) => {
+  ): Promise<CheckStatus> {
+    return new Promise<CheckStatus>((resolve) => {
       const socket = new net.Socket();
       let settled = false;
 
-      const finish = (status: 'up' | 'down', err?: Error) => {
+      const finish = (status: CheckStatus) => {
         if (settled) return;
         settled = true;
-        const latencyMs = Math.round(now() - start);
-        try {
-          socket.destroy();
-        } catch {}
-        resolve({
-          name,
-          status,
-          latencyMs,
-          details: { host, port },
-          ...(err ? { error: err.message } : {}),
-        });
+        socket.destroy();
+        resolve(status);
       };
 
       socket.setTimeout(timeoutMs);
       socket.once('connect', () => finish('up'));
-      socket.once('error', (e) => finish('down', e));
-      socket.once('timeout', () => finish('down', new Error('timeout')));
+      socket.once('error', () => finish('down'));
+      socket.once('timeout', () => finish('down'));
       try {
         socket.connect(port, host);
-      } catch (e: any) {
-        finish('down', e);
+      } catch {
+        finish('down');
       }
     });
   }
 
-  private parseHostPortFromUrl(urlStr: string, defPort: number) {
-    try {
-      const u = new URL(urlStr);
-      const host = u.hostname || 'localhost';
-      const port = u.port ? Number(u.port) : defPort;
-      return { host, port };
-    } catch {
-      return null;
-    }
+  private checkPostgres(): Promise<CheckStatus> {
+    const url = new URL(this.config.get('DATABASE_URL'));
+    return this.tcpCheck(url.hostname, url.port ? Number(url.port) : 5432);
   }
 
-  async checkPostgres(): Promise<CheckResult> {
-    const dbUrl = this.configurationService.get('DATABASE_URL');
-    const parsed = dbUrl ? this.parseHostPortFromUrl(dbUrl, 5432) : null;
-    if (!parsed) {
-      return {
-        name: 'postgres',
-        status: 'down',
-        latencyMs: null,
-        error: 'DATABASE_URL not set or invalid',
-      };
-    }
-    return this.tcpCheck('postgres', parsed.host, parsed.port);
-  }
-
-  async checkRedis(): Promise<CheckResult> {
-    const host = this.configurationService.get('REDIS_HOST');
-    const port = Number(
-      this.configurationService.get('REDIS_HOST_PORT') ?? '6379',
+  private checkRedis(): Promise<CheckStatus> {
+    return this.tcpCheck(
+      this.config.get('REDIS_HOST'),
+      this.config.get('REDIS_PORT'),
     );
-    return this.tcpCheck('redis', host, port);
   }
 
-  async checkSmtp(): Promise<CheckResult> {
-    const host = this.configurationService.get('SMTP_HOST') ?? 'localhost';
-    const port = Number(this.configurationService.get('SMTP_PORT') ?? '1025');
-    return this.tcpCheck('smtp', host, port);
+  private checkSmtp(): Promise<CheckStatus> {
+    return this.tcpCheck(
+      this.config.get('SMTP_HOST'),
+      this.config.get('SMTP_PORT') ?? 1025,
+    );
   }
 
+  // Наружу отдаём только up/down: без адресов, задержек и текстов ошибок
   async getHealth(): Promise<HealthResponse> {
     try {
-      const [pg, rd, sm] = await Promise.all([
+      const [postgres, redis, smtp] = await Promise.all([
         this.checkPostgres(),
         this.checkRedis(),
         this.checkSmtp(),
       ]);
-      const allUp = [pg, rd, sm].every((c) => c.status === 'up');
+      const allUp = [postgres, redis, smtp].every((s) => s === 'up');
       return {
-        status: allUp ? 'ok' : 'error',
-        uptimeSec: Math.round(process.uptime()),
-        timestamp: new Date().toISOString(),
-        checks: { postgres: pg, redis: rd, smtp: sm },
+        status: allUp ? 'up' : 'down',
+        checks: { postgres, redis, smtp },
       };
-    } catch (e: any) {
-      // на крайний случай — не даём 500, а возвращаем сводку с ошибкой
+    } catch (e) {
+      this.log.error(`Health check failed: ${(e as Error)?.name ?? 'Error'}`);
       return {
-        status: 'error',
-        uptimeSec: Math.round(process.uptime()),
-        timestamp: new Date().toISOString(),
-        checks: {
-          postgres: {
-            name: 'postgres',
-            status: 'down',
-            latencyMs: null,
-            error: 'n/a',
-          },
-          redis: {
-            name: 'redis',
-            status: 'down',
-            latencyMs: null,
-            error: 'n/a',
-          },
-          smtp: { name: 'smtp', status: 'down', latencyMs: null, error: 'n/a' },
-        },
-        error: e?.message ?? String(e),
+        status: 'down',
+        checks: { postgres: 'down', redis: 'down', smtp: 'down' },
       };
     }
   }

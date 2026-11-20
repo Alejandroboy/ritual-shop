@@ -5,6 +5,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { ConfigurationService } from '../config/configuration.service';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { S3Service } from '../s3/s3.service';
 import {
@@ -57,6 +58,7 @@ export class AssetsService {
     private readonly ordersItemsService: OrdersItemsService,
     private readonly email: EmailService,
     private readonly telegram: TelegramService,
+    private readonly config: ConfigurationService,
   ) {}
 
   private async assertItemBelongsToOrder(orderId: string, itemId: string) {
@@ -70,7 +72,7 @@ export class AssetsService {
 
   async toDtoWithUrls(a: OrderItemAsset): Promise<AssetDto> {
     if (a.storage !== StorageType.s3) {
-      const base = process.env.UPLOADS_PUBLIC_BASE ?? '';
+      const base = this.config.get('UPLOADS_PUBLIC_BASE');
       const path = `${base}/${a.path}`;
       return {
         id: a.id,

@@ -8,12 +8,14 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import type { Response, Request } from 'express';
 import { AdminAuthService } from '../admin/admin-auth/admin-auth.service';
+import { ConfigurationService } from '../config/configuration.service';
 
 @Injectable()
 export class AdminGuard implements CanActivate {
   constructor(
     private jwtService: JwtService,
     private adminAuthService: AdminAuthService,
+    private config: ConfigurationService,
   ) {}
 
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
@@ -25,7 +27,7 @@ export class AdminGuard implements CanActivate {
       typeof authorization === 'string' && authorization.startsWith('Bearer ')
         ? authorization.slice(7)
         : undefined;
-    let access = req.cookies?.access_token ?? fromHeader;
+    const access = req.cookies?.access_token ?? fromHeader;
     if (access) {
       try {
         const payload: any = await this.jwtService.verifyAsync(access);
@@ -46,7 +48,7 @@ export class AdminGuard implements CanActivate {
           sameSite: 'lax',
           secure: req.secure,
           path: '/',
-          maxAge: +(process.env.ADMIN_ACCESS_TTL_MIN ?? 15) * 60 * 1000,
+          maxAge: (this.config.get('ADMIN_ACCESS_TTL_MIN') ?? 15) * 60 * 1000,
         });
 
         (req as any).admin = admin;

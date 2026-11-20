@@ -1,5 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
 import { Injectable } from '@nestjs/common';
+import { ConfigurationService } from '../../config/configuration.service';
 
 type DaDataPartySuggestion = {
   value: string;
@@ -16,9 +17,8 @@ type DaDataPartySuggestion = {
 export class DaDataService {
   private readonly http: AxiosInstance;
 
-  constructor() {
-    const token = process.env.DADATA_API_KEY;
-    if (!token) throw new Error('DADATA_API_KEY is not set');
+  constructor(config: ConfigurationService) {
+    const token = config.get('DADATA_API_KEY');
 
     this.http = axios.create({
       baseURL: 'https://suggestions.dadata.ru/suggestions/api/4_1/rs',

@@ -2,6 +2,7 @@ import * as nodemailer from 'nodemailer';
 import { Injectable, Logger } from '@nestjs/common';
 import { Transporter } from 'nodemailer';
 import { createTransport } from './create-transport';
+import { ConfigurationService } from '../config/configuration.service';
 import { Finish, HolePattern, OrderStatus } from '@prisma/client';
 
 @Injectable()
@@ -9,20 +10,17 @@ export class EmailService {
   private readonly log = new Logger(EmailService.name);
   private readonly transporterP: Promise<Transporter>;
 
-  constructor() {
-    this.transporterP = createTransport();
+  constructor(private readonly config: ConfigurationService) {
+    this.transporterP = createTransport(config);
   }
 
   private get webUrl() {
-    return (process.env.PUBLIC_WEB_URL || process.env.APP_URL || '').replace(
-      /\/$/,
-      '',
-    );
+    return this.config.get('PUBLIC_WEB_URL').replace(/\/$/, '');
   }
 
   async send(to: string, subject: string, html: string, text?: string) {
     const t = await this.transporterP;
-    const from = process.env.SMTP_FROM || 'no-reply@example.com';
+    const from = this.config.get('SMTP_FROM') ?? 'no-reply@example.com';
 
     this.log.log(`Email queued OK: ${subject} -> ${to}`);
     try {

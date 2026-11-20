@@ -1,59 +1,13 @@
 import { Controller, Get } from '@nestjs/common';
 import { HealthService } from './health.service';
 import { HealthResponse } from './type';
-import { ConfigurationService } from '../config/configuration.service';
 
 @Controller('health')
 export class HealthController {
-  constructor(
-    private readonly healthService: HealthService,
-    private readonly configurationService: ConfigurationService,
-  ) {}
+  constructor(private readonly healthService: HealthService) {}
 
   @Get()
-  async root(): Promise<HealthResponse> {
-    try {
-      return await this.healthService.getHealth();
-    } catch (e: any) {
-      console.log('Health error', e);
-      return {
-        status: 'error',
-        uptimeSec: Math.round(process.uptime()),
-        timestamp: new Date().toISOString(),
-        checks: {
-          postgres: {
-            name: 'postgres',
-            status: 'down',
-            latencyMs: null,
-            error: 'controller',
-          },
-          redis: {
-            name: 'redis',
-            status: 'down',
-            latencyMs: null,
-            error: 'controller',
-          },
-          smtp: {
-            name: 'smtp',
-            status: 'down',
-            latencyMs: null,
-            error: 'controller',
-          },
-        },
-        error: e?.message ?? String(e),
-      };
-    }
-  }
-
-  @Get('env')
-  env() {
-    return {
-      databaseUrl: this.configurationService.get('DATABASE_URL'),
-      redisUrl: this.configurationService.get('REDIS_HOST'),
-      redisPort: this.configurationService.get('REDIS_HOST_PORT'),
-      smtpHost: this.configurationService.get('SMTP_HOST'),
-      smtpPort: this.configurationService.get('SMTP_PORT'),
-      secure: this.configurationService.get('SMTP_SECURE'),
-    };
+  root(): Promise<HealthResponse> {
+    return this.healthService.getHealth();
   }
 }

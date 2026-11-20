@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { ConfigurationService } from '../../config/configuration.service';
 import { Prisma } from '@prisma/client';
 import {
   getNextInvoiceCheckAt,
@@ -30,9 +31,11 @@ export class MoySkladService {
   private organizationIdPromise?: Promise<string>;
   private readonly assortmentCache = new Map<string, AssortmentResolved>();
 
-  constructor(private readonly prismaService: PrismaService) {
-    const token = process.env.MOYSKLAD_TOKEN;
-    if (!token) throw new Error('MOYSKLAD_TOKEN is not set');
+  constructor(
+    private readonly prismaService: PrismaService,
+    config: ConfigurationService,
+  ) {
+    const token = config.get('MOYSKLAD_TOKEN');
 
     this.http = axios.create({
       baseURL: this.baseUrl,

@@ -1,53 +1,17 @@
-import * as dotenv from 'dotenv';
-import * as dotenvExpand from 'dotenv-expand';
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import type { Env } from './env.schema';
 
-export type TEnvironmentVariable =
-  | 'POSTGRES_DB'
-  | 'POSTGRES_USER'
-  | 'POSTGRES_PASSWORD'
-  | 'POSTGRES_HOST_PORT'
-  | 'MAILHOG_SMTP_PORT'
-  | 'MAILHOG_UI_PORT'
-  | 'DATABASE_URL'
-  | 'REDIS_HOST'
-  | 'REDIS_HOST_PORT'
-  | 'SMTP_HOST'
-  | 'SMTP_PORT'
-  | 'SMTP_SECURE'
-  | 'SMTP_USER'
-  | 'SMTP_PASS'
-  | 'JWT_EXPIRES'
-  | 'JWT_SECRET';
-
+// Типизированная обёртка над ConfigService: значения уже провалидированы схемой
 @Injectable()
 export class ConfigurationService {
-  private readonly envConfig;
+  constructor(private readonly config: ConfigService<Env, true>) {}
 
-  constructor() {
-    this.envConfig = dotenvExpand.expand(dotenv.config()).parsed;
+  get<K extends keyof Env>(key: K): Env[K] {
+    return this.config.get(key, { infer: true });
   }
 
-  isRedisActive() {
-    return this.get('REDIS_HOST_PORT') && this.get('REDIS_HOST_PORT');
-  }
-
-  get(key: TEnvironmentVariable): string {
-    return process.env[key] || this.envConfig[key];
-  }
-
-  private getKeyValueArray(key: TEnvironmentVariable) {
-    const envString = this.get(key);
-
-    if (!envString) return [];
-
-    return envString
-      .split(',')
-      .filter(Boolean)
-      .map((providerString) => {
-        const [key, value] = providerString.split('=');
-
-        return { key, value };
-      });
+  get isProduction(): boolean {
+    return this.get('NODE_ENV') === 'production';
   }
 }

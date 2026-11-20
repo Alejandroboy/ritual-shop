@@ -9,21 +9,27 @@ import {
 } from '@nestjs/common';
 import type { CookieOptions, Response, Request } from 'express';
 import { AdminAuthService } from './admin-auth.service';
+import { ConfigurationService } from '../../config/configuration.service';
 
-const isProd = process.env.NODE_ENV === 'production';
 const baseCookie: CookieOptions = {
   httpOnly: true,
   sameSite: 'lax',
   path: '/',
 };
 
-const accessMs = +(process.env.ADMIN_ACCESS_TTL_MIN ?? 60) * 60 * 1000; // 60 мин
-const refreshMs =
-  +(process.env.ADMIN_REFRESH_TTL_DAYS ?? 14) * 24 * 60 * 60 * 1000; // 14 дн
-
 @Controller('admin/auth')
 export class AdminAuthController {
-  constructor(private adminAuthService: AdminAuthService) {}
+  private readonly accessMs: number;
+  private readonly refreshMs: number;
+
+  constructor(
+    private adminAuthService: AdminAuthService,
+    config: ConfigurationService,
+  ) {
+    this.accessMs = (config.get('ADMIN_ACCESS_TTL_MIN') ?? 60) * 60 * 1000; // 60 мин
+    this.refreshMs =
+      (config.get('ADMIN_REFRESH_TTL_DAYS') ?? 14) * 24 * 60 * 60 * 1000; // 14 дн
+  }
 
   @Post('login')
   async login(
@@ -41,12 +47,12 @@ export class AdminAuthController {
       .cookie('access_token', access, {
         ...baseCookie,
         secure,
-        maxAge: accessMs,
+        maxAge: this.accessMs,
       })
       .cookie('refresh_token', refresh, {
         ...baseCookie,
         secure,
-        maxAge: refreshMs,
+        maxAge: this.refreshMs,
       })
       .status(201)
       .json({ ok: true });
@@ -65,7 +71,7 @@ export class AdminAuthController {
       .cookie('access_token', access, {
         ...baseCookie,
         secure,
-        maxAge: accessMs,
+        maxAge: this.accessMs,
       })
       .json({ ok: true });
   }

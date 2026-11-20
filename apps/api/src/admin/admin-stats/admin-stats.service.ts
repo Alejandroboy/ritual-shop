@@ -1,11 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { Finish, OrderStatus } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import { ConfigurationService } from '../../config/configuration.service';
 import { bucketTimeSeries } from '../../common/bucket-time-series';
 
 @Injectable()
 export class AdminStatsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private config: ConfigurationService,
+  ) {}
 
   async getStats(
     from?: string,
@@ -250,8 +254,8 @@ export class AdminStatsService {
     };
     let slaCfg: Record<OrderStatus, string> = defaultSla;
     try {
-      if (process.env.ADMIN_SLA_JSON)
-        slaCfg = { ...defaultSla, ...JSON.parse(process.env.ADMIN_SLA_JSON) };
+      const slaJson = this.config.get('ADMIN_SLA_JSON');
+      if (slaJson) slaCfg = { ...defaultSla, ...JSON.parse(slaJson) };
     } catch {}
 
     const ms = (n: number) => n;

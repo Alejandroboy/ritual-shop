@@ -4,8 +4,7 @@ import { ApprovalStage, OrderStatus } from '@prisma/client';
 import { AdminOrdersService } from '../../admin/admin-orders/admin-orders.service';
 import { EmailService } from '../../email/email.service';
 import { TelegramService } from '../../notifications/telegram/telegram.service';
-
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? 'art-memory@yandex.ru';
+import { ConfigurationService } from '../../config/configuration.service';
 
 @Injectable()
 export class OrdersItemsService {
@@ -14,6 +13,7 @@ export class OrdersItemsService {
     private readonly adminOrdersService: AdminOrdersService,
     private readonly email: EmailService,
     private readonly telegram: TelegramService,
+    private readonly config: ConfigurationService,
   ) {}
 
   private async getOrderContacts(orderId: string) {
@@ -94,7 +94,9 @@ export class OrdersItemsService {
     });
 
     const { orderNumber } = await this.getOrderContacts(orderId);
-    this.email.itemApproved(ADMIN_EMAIL, orderNumber).catch(() => {});
+    this.email
+      .itemApproved(this.config.get('ADMIN_EMAIL'), orderNumber)
+      .catch(() => {});
 
     return result;
   }
@@ -174,7 +176,7 @@ export class OrdersItemsService {
           .catch(() => {});
     } else {
       this.email
-        .newDiscussComment(ADMIN_EMAIL, orderNumber, text)
+        .newDiscussComment(this.config.get('ADMIN_EMAIL'), orderNumber, text)
         .catch(() => {});
     }
 

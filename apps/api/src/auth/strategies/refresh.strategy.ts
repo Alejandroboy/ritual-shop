@@ -3,6 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { Request } from 'express';
 import { Role } from '@prisma/client';
+import { ConfigurationService } from '../../config/configuration.service';
 
 type Payload = { sub: string; role: Role; email: string };
 
@@ -12,14 +13,14 @@ function cookieExtractor(name: string) {
 
 @Injectable()
 export class RefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
-  constructor() {
+  constructor(config: ConfigurationService) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
         cookieExtractor('refresh_token'),
         ExtractJwt.fromAuthHeaderAsBearerToken(),
       ]),
       ignoreExpiration: false,
-      secretOrKey: process.env.JWT_SECRET || 'dev_secret_change_me',
+      secretOrKey: config.get('JWT_SECRET'),
       passReqToCallback: true,
     });
   }

@@ -1,18 +1,19 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OrderStatus } from '@prisma/client';
+import { ConfigurationService } from '../../config/configuration.service';
 
 @Injectable()
 export class TelegramService {
   private readonly log = new Logger(TelegramService.name);
+
+  constructor(private readonly config: ConfigurationService) {}
+
   private get token() {
-    return process.env.TELEGRAM_BOT_TOKEN!;
+    return this.config.get('TELEGRAM_BOT_TOKEN');
   }
 
   private get webUrl() {
-    return (process.env.PUBLIC_WEB_URL || process.env.APP_URL || '').replace(
-      /\/$/,
-      '',
-    );
+    return this.config.get('PUBLIC_WEB_URL').replace(/\/$/, '');
   }
 
   async sendMessage(chatId: string | null, text: string | null, html = false) {

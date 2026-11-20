@@ -19,7 +19,7 @@ import { ConfigurationModule } from '../config/configuration.module';
       imports: [ConfigurationModule],
       inject: [ConfigurationService],
       useFactory: (cfg: ConfigurationService): JwtModuleOptions => ({
-        secret: cfg.get('JWT_SECRET') || 'dev_secret_change_me',
+        secret: cfg.get('JWT_SECRET'),
       }),
     }),
   ],

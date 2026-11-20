@@ -8,6 +8,7 @@ import {
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Readable } from 'stream';
 import sharp from 'sharp';
+import { ConfigurationService } from '../config/configuration.service';
 
 function pad2(n: number) {
   return String(n).padStart(2, '0');
@@ -18,18 +19,23 @@ function monthKey(d: Date) {
 
 @Injectable()
 export class S3Service {
-  private s3 = new S3Client({
-    region: process.env.S3_REGION || 'ru-1',
-    endpoint: process.env.S3_ENDPOINT,
-    forcePathStyle: true,
-    credentials: {
-      accessKeyId: process.env.S3_ACCESS_KEY!,
-      secretAccessKey: process.env.S3_SECRET_KEY!,
-    },
-  });
+  private readonly s3: S3Client;
+  private readonly bucket: string;
+  private readonly expires: number;
 
-  private bucket = process.env.S3_BUCKET!;
-  private expires = Number(process.env.PRESIGN_EXPIRES || 60 * 60 * 5);
+  constructor(config: ConfigurationService) {
+    this.s3 = new S3Client({
+      region: config.get('S3_REGION'),
+      endpoint: config.get('S3_ENDPOINT'),
+      forcePathStyle: true,
+      credentials: {
+        accessKeyId: config.get('S3_ACCESS_KEY'),
+        secretAccessKey: config.get('S3_SECRET_KEY'),
+      },
+    });
+    this.bucket = config.get('S3_BUCKET');
+    this.expires = config.get('PRESIGN_EXPIRES');
+  }
 
   makeKey(params: {
     orderNumber: string;

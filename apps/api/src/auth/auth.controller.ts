@@ -15,6 +15,7 @@ import { RegisterDto } from './dto/register.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { PrismaService } from '../prisma/prisma.service';
+import { ConfigurationService } from '../config/configuration.service';
 
 type Me = { userId: string; role: any; email: string } | undefined;
 
@@ -23,6 +24,7 @@ export class AuthController {
   constructor(
     private readonly auth: AuthService,
     private readonly prisma: PrismaService,
+    private readonly config: ConfigurationService,
   ) {}
 
   private setAuthCookies(
@@ -30,7 +32,7 @@ export class AuthController {
     accessToken: string,
     refreshToken: string,
   ) {
-    const isProd = process.env.NODE_ENV === 'production';
+    const isProd = this.config.isProduction;
     res.cookie('access_token', accessToken, {
       httpOnly: true,
       secure: isProd,

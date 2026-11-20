@@ -13,11 +13,7 @@ import { AdminGuard } from '../../common/admin.guard';
       imports: [ConfigurationModule],
       useFactory: (configService: ConfigurationService) => ({
         secret: configService.get('JWT_SECRET'),
-        signOptions: {
-          expiresIn: Number(configService.get('JWT_EXPIRES'))
-            ? Number(configService.get('JWT_EXPIRES'))
-            : 900,
-        },
+        signOptions: { expiresIn: configService.get('JWT_EXPIRES') },
       }),
       inject: [ConfigurationService],
     }),

@@ -1,5 +1,6 @@
 import { Controller, Get, Query, BadRequestException } from '@nestjs/common';
 import crypto from 'crypto';
+import { ConfigurationService } from '../../config/configuration.service';
 
 function b64url(b: Buffer) {
   return b
@@ -14,6 +15,8 @@ function sign(base: string, secret: string) {
 
 @Controller('telegram')
 export class TelegramLinkController {
+  constructor(private readonly config: ConfigurationService) {}
+
   @Get('subscribe-link')
   getLink(@Query('userId') userId: string) {
     if (!userId) throw new BadRequestException('userId required');
@@ -22,17 +25,14 @@ export class TelegramLinkController {
     const base = `u:${userId}:${ts36}`;
     const sig = b64url(
       crypto
-        .createHmac(
-          'sha256',
-          process.env.TELEGRAM_WEBHOOK_SECRET || 'no-secret',
-        )
+        .createHmac('sha256', this.config.get('TELEGRAM_WEBHOOK_SECRET'))
         .update(base)
         .digest()
         .subarray(0, 10),
     );
 
     const payload = `u${userId}-${ts36}-${sig}`;
-    const url = `https://t.me/${process.env.TELEGRAM_BOT_USERNAME}?start=${payload}`;
+    const url = `https://t.me/${this.config.get('TELEGRAM_BOT_USERNAME')}?start=${payload}`;
     return { url };
   }
 }

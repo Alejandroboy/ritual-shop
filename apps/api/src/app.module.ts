@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { EmailModule } from './email/email.module';
 import { ConfigurationModule } from './config/configuration.module';
+import { ConfigurationService } from './config/configuration.service';
 import { HealthModule } from './health/health.module';
 import { CatalogModule } from './catalog/catalog.module';
 import { OrdersModule } from './orders/orders.module';
@@ -25,11 +26,15 @@ import { BullModule } from '@nestjs/bullmq';
 
 @Module({
   imports: [
-    BullModule.forRoot({
-      connection: {
-        host: process.env.REDIS_HOST || '127.0.0.1',
-        port: Number(process.env.REDIS_PORT || 6379),
-      },
+    ConfigurationModule,
+    BullModule.forRootAsync({
+      inject: [ConfigurationService],
+      useFactory: (config: ConfigurationService) => ({
+        connection: {
+          host: config.get('REDIS_HOST'),
+          port: config.get('REDIS_PORT'),
+        },
+      }),
     }),
     OrdersItemsModule,
     DaDataModule,
@@ -46,7 +51,6 @@ import { BullModule } from '@nestjs/bullmq';
     AdminTemplatesModule,
     AdminStatsModule,
     CatalogModule,
-    ConfigurationModule,
     EmailModule,
     HealthModule,
     OrdersModule,
