@@ -54,7 +54,10 @@ ADMIN_EMAIL=... ADMIN_PASSWORD=... yarn tsx prisma/seed-admin.ts   # первы�
 - `auth/` — логин/регистрация/refresh; `strategies/` (`jwt`, `jwt-refresh`; токен из cookie `access_token`/`refresh_token` или Bearer; `req.user = { userId, role, email }`), `guards/` (`JwtAuthGuard`, `RolesGuard`), `decorators/` (`@CurrentUser()`, `@Roles(...Role[])`).
 - `common/admin.guard.ts` — `AdminGuard` для `admin/*`; `common/mailer.service.ts`, `helpers.ts`.
 - `admin/` — `admin-auth`, `admin-orders`, `admin-stats`, `admin-templates`, `admin-users`.
-- `orders/` (+ `orders-items/`), `assets/` (фото к позициям), `catalog/`, `users/`, `s3/` (`uploads`), `email/`, `health/`, `sync/`, `prisma/` (PrismaService), `config/`.
+- `orders/` (+ `orders-items/`), `assets/` (фото к позициям), `catalog/`, `users/`, `s3/` (`uploads`), `email/`, `health/` (только up/down), `sync/`, `prisma/` (PrismaService).
+- `config/` — окружение: `env.schema.ts` (zod-схема; без обязательных переменных API не стартует и перечисляет, чего не хватает),
+  `ConfigurationService.get('KEY')` — типизированная обёртка над `ConfigService`. В `src` не читать `process.env` напрямую:
+  новую переменную добавить в схему и во все `.env.example` (корень, `apps/api`, `apps/web`).
 - `integrations/moy-sklad` (счета; `invoice-sync.job.ts` — cron каждые 5 мин), `integrations/da-data`, `notifications/telegram`.
 - Очереди: `reminders/` — BullMQ-очередь `approval-reminder` (напоминания о согласовании).
 - DTO — в `dto/` рядом с модулем, class-validator; глобальный `ValidationPipe({ whitelist, transform })`.
@@ -94,6 +97,7 @@ ADMIN_EMAIL=... ADMIN_PASSWORD=... yarn tsx prisma/seed-admin.ts   # первы�
 - Роли: `ADMIN_GOD` > `ADMIN` > `MANAGER` > `CUSTOMER`.
 - `OrderStatus`: DRAFT, ACCEPTED, IN_PROGRESS, APPROVAL, COMPLETED, READY, CANCELLED.
 - Согласование макета: `ApprovalStage` NOT_STARTED → IN_PROGRESS → APPROVED (+ флаг `approved`); счета: `InvoiceStatus` UNPAID/PARTIAL/PAID.
+- Прод-compose передаёт контейнеру `api` корневой `.env` (`env_file`), `DATABASE_URL` для него собирается из `POSTGRES_*`.
 - Текущее состояние кода расходится с правилами (чинить отдельными задачами, не попутно): нет глобального guard и
-  декоратора `@Public`, часть контроллеров (orders, assets, catalog и др.) без guards; `.env.example` отсутствует;
-  JWT-стратегии имеют дефолтный секрет; `AdminGuard` сравнивает роли строками; есть `console.log`.
+  декоратора `@Public`, часть контроллеров (orders, assets, catalog, `telegram/subscribe-link` с `userId` из query и др.)
+  без guards; `AdminGuard` сравнивает роли строками; есть `console.log`, Prisma логирует SQL с параметрами.
