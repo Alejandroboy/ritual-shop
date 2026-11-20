@@ -15,10 +15,26 @@ const prisma = new PrismaClient({
   adapter,
 });
 
+const MIN_PASSWORD_LENGTH = 12;
+
+function requireEnv(name: string): string {
+  const value = process.env[name];
+  if (!value?.trim()) {
+    throw new Error(
+      `${name} is not set. Usage: ADMIN_EMAIL=... ADMIN_PASSWORD=... yarn tsx prisma/seed-admin.ts`,
+    );
+  }
+  return value;
+}
+
 async function main() {
-  const email = process.env.ADMIN_EMAIL ?? 'shepardhero@gmail.com';
-  const password =
-    process.env.ADMIN_PASSWORD ?? '6a3eb8a0-8983-4932-9eae-6c5d10acbee8';
+  const email = requireEnv('ADMIN_EMAIL');
+  const password = requireEnv('ADMIN_PASSWORD');
+  if (password.length < MIN_PASSWORD_LENGTH) {
+    throw new Error(
+      `ADMIN_PASSWORD must be at least ${MIN_PASSWORD_LENGTH} characters long`,
+    );
+  }
 
   const passwordHash = await argon2.hash(password, { type: argon2.argon2id });
 
@@ -28,12 +44,17 @@ async function main() {
     create: {
       email,
       passwordHash,
-      role: 'ADMIN_GOD',
+      role: Role.ADMIN_GOD,
       name: 'Alejandro',
     },
   });
 
-  console.log(`Admin seeded: ${email}, role: ${'ADMIN_GOD'}`);
+  console.log(`Admin seeded with role ${Role.ADMIN_GOD}`);
 }
 
-main().finally(() => prisma.$disconnect());
+main()
+  .catch((e: unknown) => {
+    console.error(e instanceof Error ? e.message : e);
+    process.exitCode = 1;
+  })
+  .finally(() => prisma.$disconnect());
