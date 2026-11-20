@@ -33,7 +33,17 @@ docker compose -f docker-compose.development.yml --profile infrastructure up -d 
 | применить миграции | `yarn prisma:deploy` (только локально; на сервере — при выкатке) |
 | сиды | `yarn prisma:seed` (`prisma db seed`), `yarn prisma:seed-admin`, `yarn prisma:seed-group`, `yarn prisma:seed-once`, `yarn prisma:backfill` |
 
-Конфиг Prisma — `prisma.config.ts` (DATABASE_URL из `.env`). Внимание: `seed-admin`/`seed-group`/`backfill` запускают `.ts` через `node`, а seed-команда описана в `package.json#prisma` — в Prisma 7 это может не работать; при проблемах `yarn tsx prisma/<file>.ts`.
+Конфиг Prisma — `prisma.config.ts` (DATABASE_URL из `.env`).
+
+**Локальная БД с нуля** (дампов в репозитории нет и не будет — `*.sql`/`*.dump`/`db/backups/` в `.gitignore`):
+
+```bash
+yarn prisma:deploy                                          # схема
+yarn tsx prisma/seed.group.ts                               # справочники: размеры, рамки, фоны, цены отверстий, шаблоны (prisma/templates/*) с ценами
+ADMIN_EMAIL=... ADMIN_PASSWORD=... yarn tsx prisma/seed-admin.ts   # первый ADMIN_GOD, пароль ≥ 12 символов
+```
+
+`prisma/seed.ts` (и `yarn prisma:seed`) устарел: создаёт `PrismaClient` без adapter и в Prisma 7 падает сразу. Актуальный каталог — `seed.group.ts`.
 
 **apps/web** (`cd apps/web`): `yarn dev` · `yarn build` · `yarn start` · `yarn lint` · `yarn typecheck`. Тестов нет.
 
