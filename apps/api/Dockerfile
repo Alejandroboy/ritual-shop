@@ -1,9 +1,19 @@
 FROM node:22.22.3-alpine AS dependencies
 ENV NODE_ENV=development
+# На RU-VPS registry.npmjs.org / yarnpkg часто тормозит или таймаутится.
+# Переопределение: docker compose build --build-arg NPM_REGISTRY=https://registry.npmjs.org
+ARG NPM_REGISTRY=https://registry.npmmirror.com
 
 WORKDIR /app
 COPY package.json yarn.lock ./
-RUN yarn install
+# yarn v1 качает по URL из yarn.lock (resolved) — подменяем хост зеркала
+RUN yarn config set registry "${NPM_REGISTRY}" \
+  && yarn config set network-timeout 600000 \
+  && sed -i \
+    -e "s|https://registry.yarnpkg.com|${NPM_REGISTRY}|g" \
+    -e "s|https://registry.npmjs.org|${NPM_REGISTRY}|g" \
+    yarn.lock \
+  && yarn install
 
 FROM node:22.22.3-alpine AS build
 
