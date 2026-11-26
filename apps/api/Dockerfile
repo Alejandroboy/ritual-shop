@@ -18,7 +18,11 @@ ENV npm_config_python=/usr/bin/python3
 # тогда тоже лезут в gyp и валят install. Prebuild с npm; при fallback — headers с зеркала.
 
 WORKDIR /app
-RUN apk add --no-cache python3 make g++
+# dl-cdn.alpinelinux.org с NetAngels часто SSL timeout — как github/prisma.
+# Зеркало: docker compose build --build-arg APK_MIRROR=mirror.yandex.ru/mirrors/alpine
+ARG APK_MIRROR=mirrors.aliyun.com/alpine
+RUN sed -i "s|dl-cdn.alpinelinux.org/alpine|${APK_MIRROR}|g" /etc/apk/repositories \
+  && apk add --no-cache --verbose python3 make g++
 
 COPY package.json yarn.lock ./
 RUN yarn config set registry "${NPM_REGISTRY}" \
@@ -60,7 +64,9 @@ COPY package.json yarn.lock  ./
 COPY --from=build /app/dist ./dist
 
 # runtime для sharp на alpine (prebuilt иногда требует)
-RUN apk add --no-cache libc6-compat
+ARG APK_MIRROR=mirrors.aliyun.com/alpine
+RUN sed -i "s|dl-cdn.alpinelinux.org/alpine|${APK_MIRROR}|g" /etc/apk/repositories \
+  && apk add --no-cache libc6-compat
 
 EXPOSE 3001
 
